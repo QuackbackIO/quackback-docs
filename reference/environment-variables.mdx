@@ -1,0 +1,197 @@
+---
+title: "Environment Variables"
+description: "Complete reference for all Quackback configuration options"
+icon: "gear"
+---
+
+# Environment Variables
+
+Complete reference for all Quackback configuration options.
+
+## Required Variables
+
+<Warning>
+These variables must be set for Quackback to run. The application will fail to start if any are missing.
+</Warning>
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `DATABASE_URL` | PostgreSQL connection string | `postgresql://postgres:password@localhost:5432/quackback` |
+| `BETTER_AUTH_SECRET` | Encryption key for auth (32+ chars) | `openssl rand -base64 32` |
+| `BETTER_AUTH_URL` | Public URL for auth callbacks | `https://feedback.example.com` |
+| `ROOT_URL` | Public instance URL | `https://feedback.example.com` |
+
+## Email Configuration
+
+Configure email delivery for OTP codes, notifications, and invitations.
+
+<Tip>
+If email is not configured, OTP codes and other emails are printed to the console. This is useful for local development.
+</Tip>
+
+### SMTP
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `EMAIL_SMTP_HOST` | SMTP server hostname | `smtp.sendgrid.net` |
+| `EMAIL_SMTP_PORT` | SMTP port | `587` |
+| `EMAIL_SMTP_USER` | SMTP username | `apikey` |
+| `EMAIL_SMTP_PASS` | SMTP password | `SG.xxxx` |
+| `EMAIL_SMTP_SECURE` | Use TLS (for port 465) | `true` |
+| `EMAIL_FROM` | Sender email address | `feedback@example.com` |
+
+### Resend
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `EMAIL_RESEND_API_KEY` | Resend API key | `re_xxxxxxxxxxxx` |
+| `EMAIL_FROM` | Sender email address | `feedback@example.com` |
+
+## OAuth Providers
+
+Enable social login for portal users and team members.
+
+### GitHub
+
+| Variable | Description |
+|----------|-------------|
+| `GITHUB_CLIENT_ID` | GitHub OAuth App client ID |
+| `GITHUB_CLIENT_SECRET` | GitHub OAuth App client secret |
+
+Create at: [GitHub Developer Settings](https://github.com/settings/developers)
+
+Callback URL: `https://your-domain.com/api/auth/callback/github`
+
+### Google
+
+| Variable | Description |
+|----------|-------------|
+| `GOOGLE_CLIENT_ID` | Google OAuth client ID |
+| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
+
+Create at: [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
+
+Callback URL: `https://your-domain.com/api/auth/callback/google`
+
+### Microsoft / Azure AD
+
+| Variable | Description |
+|----------|-------------|
+| `MICROSOFT_CLIENT_ID` | Azure AD application ID |
+| `MICROSOFT_CLIENT_SECRET` | Azure AD client secret |
+| `MICROSOFT_TENANT_ID` | Azure AD tenant ID |
+
+## Integrations
+
+### Slack
+
+| Variable | Description |
+|----------|-------------|
+| `SLACK_CLIENT_ID` | Slack App client ID |
+| `SLACK_CLIENT_SECRET` | Slack App client secret |
+
+Create at: [Slack API](https://api.slack.com/apps)
+
+Required scopes: `channels:read`, `chat:write`, `team:read`
+
+### Linear
+
+| Variable | Description |
+|----------|-------------|
+| `LINEAR_CLIENT_ID` | Linear OAuth client ID |
+| `LINEAR_CLIENT_SECRET` | Linear OAuth client secret |
+
+### GitHub App (Issue Sync)
+
+| Variable | Description |
+|----------|-------------|
+| `GITHUB_APP_ID` | GitHub App ID for issue sync |
+| `GITHUB_APP_PRIVATE_KEY` | GitHub App private key |
+
+Create at: [GitHub Apps](https://github.com/settings/apps)
+
+### Integration Security
+
+| Variable | Description |
+|----------|-------------|
+| `INTEGRATION_ENCRYPTION_KEY` | Key for encrypting stored OAuth tokens |
+
+Generate with: `openssl rand -base64 32`
+
+## Security
+
+| Variable | Description |
+|----------|-------------|
+| `ENCRYPTION_KEY` | 32-byte hex key for AES-256-GCM encryption |
+
+<Note>
+Generate the encryption key with: `openssl rand -hex 32`
+
+This key is used for encrypting sensitive data like connection strings.
+</Note>
+
+## Build Configuration
+
+These affect how Quackback is built, not runtime behavior.
+
+| Variable | Description | Default |
+|----------|-------------|---------|
+| `EDITION` | Build edition | `self-hosted` |
+| `INCLUDE_EE` | Include Enterprise features | `false` |
+
+Values for `EDITION`:
+- `self-hosted` - Single-tenant deployment
+- `cloud` - Multi-tenant SaaS (internal use)
+
+## Complete Example
+
+```bash
+# ===================
+# Required
+# ===================
+DATABASE_URL="postgresql://postgres:password@localhost:5432/quackback"
+BETTER_AUTH_SECRET="your-32-character-minimum-secret-key-here"
+BETTER_AUTH_URL="https://feedback.yourcompany.com"
+ROOT_URL="https://feedback.yourcompany.com"
+
+# ===================
+# Email (choose one)
+# ===================
+# SMTP
+EMAIL_SMTP_HOST="smtp.sendgrid.net"
+EMAIL_SMTP_PORT="587"
+EMAIL_SMTP_USER="apikey"
+EMAIL_SMTP_PASS="SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
+EMAIL_FROM="Quackback <feedback@yourcompany.com>"
+
+# Or Resend
+# EMAIL_RESEND_API_KEY="re_xxxxxxxxxxxx"
+# EMAIL_FROM="Quackback <feedback@yourcompany.com>"
+
+# ===================
+# OAuth (optional)
+# ===================
+GITHUB_CLIENT_ID="your-github-client-id"
+GITHUB_CLIENT_SECRET="your-github-client-secret"
+
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+
+# ===================
+# Integrations (optional)
+# ===================
+SLACK_CLIENT_ID="your-slack-client-id"
+SLACK_CLIENT_SECRET="your-slack-client-secret"
+INTEGRATION_ENCRYPTION_KEY="your-encryption-key"
+
+# ===================
+# Security (optional)
+# ===================
+ENCRYPTION_KEY="your-32-byte-hex-key"
+```
+
+## Validation
+
+<Note>
+Quackback validates required variables on startup. Missing variables will cause the application to fail with a clear error message indicating which variables are missing.
+</Note>

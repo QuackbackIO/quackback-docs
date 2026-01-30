@@ -1,0 +1,139 @@
+---
+title: "Linear Integration"
+description: "Sync feedback with Linear issues for seamless project management"
+icon: "linear"
+---
+
+# Linear Integration
+
+Sync feedback with Linear issues for seamless project management.
+
+<Warning>
+**Status: Coming Soon**
+
+The Linear integration is planned but not yet implemented. This page outlines the planned functionality.
+</Warning>
+
+## Planned Features
+
+### Two-Way Sync
+
+Connect feedback posts to Linear issues:
+
+- Create Linear issues from feedback posts
+- Link existing issues to posts
+- Sync status changes between platforms
+
+### Automatic Issue Creation
+
+Configure rules to automatically create Linear issues:
+
+- When posts reach a certain status (e.g., "Planned")
+- When posts are in specific boards
+- When posts receive enough votes
+
+### Status Mapping
+
+Map Quackback statuses to Linear workflow states:
+
+| Quackback Status | Linear State |
+|------------------|--------------|
+| Under Review | Backlog |
+| Planned | Todo |
+| In Progress | In Progress |
+| Shipped | Done |
+
+### Backlink Comments
+
+When a Linear issue is created:
+
+- Add a comment on the Quackback post with the issue link
+- Add a comment on the Linear issue linking to the feedback
+
+## Planned Setup Flow
+
+### 1. Connect to Linear
+
+1. Navigate to **Admin > Settings > Integrations**
+2. Click **Linear**
+3. Click **Connect to Linear**
+4. Authorize Quackback in Linear
+5. Select your Linear workspace
+
+### 2. Configure Sync Settings
+
+1. Choose default team for new issues
+2. Map statuses between platforms
+3. Configure automatic issue creation rules
+
+### 3. Configure Event Mappings
+
+Choose which events trigger Linear actions:
+
+| Event | Action |
+|-------|--------|
+| Post status changed to "Planned" | Create issue |
+| Post merged | Link to existing issue |
+| Linear issue completed | Update post status |
+
+## Self-Hosted Configuration
+
+For self-hosted instances, configure Linear OAuth credentials:
+
+```bash
+# .env
+LINEAR_CLIENT_ID="your_client_id"
+LINEAR_CLIENT_SECRET="your_client_secret"
+```
+
+<Note>
+Create a Linear OAuth application:
+
+1. Go to [Linear Settings > API](https://linear.app/settings/api)
+2. Create a new OAuth application
+3. Set redirect URI to `https://your-domain.com/api/integrations/linear/callback`
+4. Copy the client ID and secret
+</Note>
+
+## Feature Request
+
+<Tip>
+Want Linear integration sooner? Let us know:
+
+- Vote for the feature on our [roadmap](https://github.com/quackback/quackback/discussions)
+- Share your use case in the discussions
+- Contribute to the implementation
+</Tip>
+
+## Technical Notes
+
+The Linear integration will follow the same hook architecture as existing integrations:
+
+- OAuth2 for authentication
+- Encrypted token storage with workspace-specific keys
+- Bidirectional sync via Linear webhooks
+- Event-driven updates through the hook system
+
+### API Scopes
+
+The integration will request these Linear API scopes:
+
+| Scope | Purpose |
+|-------|---------|
+| `read` | Read issues and projects |
+| `write` | Create and update issues |
+| `issues:create` | Create new issues |
+
+## Alternative: Manual Linking
+
+While waiting for native Linear support:
+
+1. Copy the feedback post URL
+2. Paste it in the Linear issue description
+3. Reference the Linear issue in a Quackback comment
+
+## Next Steps
+
+- [Slack](/integrations/slack) - Currently available integration
+- [Webhooks](/integrations/webhooks) - Build custom integrations
+- [Integrations Overview](/integrations/overview) - All integrations

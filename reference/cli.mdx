@@ -1,0 +1,373 @@
+---
+title: "CLI Reference"
+description: "Command reference for Quackback development and operations"
+icon: "terminal"
+---
+
+# CLI Reference
+
+Command reference for Quackback development and operations.
+
+## Development Commands
+
+### Start Development Server
+
+```bash
+bun run dev
+```
+
+Starts the development server at `http://localhost:3000`.
+
+Options:
+- Hot reloading enabled
+- Source maps enabled
+- OTP codes printed to console
+
+### Start Cloud Development
+
+```bash
+bun run dev:cloud
+```
+
+Runs in multi-tenant cloud mode for testing tenant features.
+
+### Build for Production
+
+```bash
+bun run build
+```
+
+Creates optimized production build in `.output/`.
+
+### Preview Production Build
+
+```bash
+bun run preview
+```
+
+Preview the production build locally. Run from `apps/web/` directory.
+
+### Start Production Server
+
+```bash
+bun run start
+```
+
+Starts the production server. Requires `bun run build` first. Run from `apps/web/` directory.
+
+## Database Commands
+
+### Run Migrations
+
+```bash
+bun run db:migrate
+```
+
+Applies pending database migrations. Safe to run multiple times.
+
+### Generate Migration
+
+```bash
+bun run db:generate
+```
+
+Creates a new migration from schema changes. Run after modifying files in `packages/db/src/schema/`.
+
+### Open Drizzle Studio
+
+```bash
+bun run db:studio
+```
+
+Opens visual database browser at `https://local.drizzle.studio`.
+
+### Seed Demo Data
+
+```bash
+bun run db:seed
+```
+
+Populates database with demo workspace and sample data.
+
+### Reset Database
+
+```bash
+bun run db:reset
+```
+
+<Warning>
+This command destroys all data. It drops and recreates the database, then runs migrations. Use with caution.
+</Warning>
+
+## Code Quality
+
+### Lint Code
+
+```bash
+bun run lint
+```
+
+Runs ESLint checks. Exits with error if issues found.
+
+### Type Check
+
+```bash
+cd apps/web && bun run typecheck
+```
+
+Runs TypeScript compiler in check mode. No output if successful. Must be run from `apps/web/` directory.
+
+### Generate Routes
+
+```bash
+cd apps/web && bun run generate:routes
+```
+
+Generates TanStack Router route definitions. Automatically run as part of typecheck.
+
+## Testing
+
+### Run Unit Tests
+
+```bash
+bun run test
+```
+
+Runs Vitest unit tests. By default runs in watch mode.
+
+### Run Specific Test
+
+```bash
+bun run test path/to/test.ts
+```
+
+Runs a specific test file.
+
+### E2E Tests
+
+```bash
+bun run test:e2e
+```
+
+Runs Playwright end-to-end tests in headless mode.
+
+### E2E with UI
+
+```bash
+bun run test:e2e:ui
+```
+
+Opens Playwright's interactive test UI.
+
+### E2E Headed
+
+```bash
+bun run test:e2e:headed
+```
+
+Runs E2E tests in visible browser windows.
+
+## Setup & Utilities
+
+### Initial Setup
+
+```bash
+bun run setup
+```
+
+<Tip>
+This is the recommended way to get started. It handles all the setup steps in one command.
+</Tip>
+
+One-time setup script:
+1. Checks prerequisites
+2. Installs dependencies
+3. Creates `.env` from template
+4. Generates auth secret
+5. Starts PostgreSQL
+6. Runs migrations
+
+### Install Dependencies
+
+```bash
+bun install
+```
+
+Installs all project dependencies.
+
+## Docker Commands
+
+### Start Services
+
+```bash
+docker compose up -d
+```
+
+Starts PostgreSQL and application in background.
+
+### View Logs
+
+```bash
+docker compose logs -f
+```
+
+Follow logs from all services.
+
+```bash
+docker compose logs app --tail 100
+```
+
+View last 100 lines from app service.
+
+### Stop Services
+
+```bash
+docker compose down
+```
+
+Stops and removes containers (preserves volumes).
+
+### Reset Everything
+
+```bash
+docker compose down -v
+```
+
+<Warning>
+This command stops containers and removes volumes, destroying all data. Use only when you want a clean slate.
+</Warning>
+
+### Rebuild Images
+
+```bash
+docker compose build --no-cache
+```
+
+Rebuilds Docker images from scratch.
+
+## Environment Variables
+
+### Example
+
+```bash
+# Copy template
+cp .env.example .env
+
+# Generate secret
+openssl rand -base64 32
+```
+
+## Build Variants
+
+### Self-Hosted (Default)
+
+```bash
+EDITION=self-hosted bun run build
+```
+
+Single-tenant deployment.
+
+### Cloud
+
+```bash
+EDITION=cloud bun run build
+```
+
+Multi-tenant SaaS deployment.
+
+### Enterprise
+
+```bash
+INCLUDE_EE=true bun run build
+```
+
+<Note>
+Enterprise features require a valid license. Contact the Quackback team for licensing information.
+</Note>
+
+## Data Import
+
+### Import Data
+
+```bash
+bun run import
+```
+
+CLI tool for importing data from other feedback platforms.
+
+### Import from UserVoice
+
+```bash
+bun run import:uservoice
+```
+
+Import data from UserVoice exports.
+
+### Generate Sample CSV
+
+```bash
+bun run db:generate-csv
+```
+
+Generates sample CSV data for testing imports.
+
+## AI Features
+
+### Backfill AI Data
+
+```bash
+bun run ai:backfill
+```
+
+Backfill AI-generated data (embeddings, sentiment) for existing posts.
+
+## Quick Reference
+
+| Command | Description |
+|---------|-------------|
+| `bun run dev` | Start dev server |
+| `bun run build` | Production build |
+| `bun run db:migrate` | Run migrations |
+| `bun run db:studio` | Database browser |
+| `bun run db:seed` | Seed demo data |
+| `bun run db:reset` | Reset database |
+| `bun run lint` | Check code quality |
+| `bun run test` | Run unit tests |
+| `bun run test:e2e` | Run E2E tests |
+| `bun run setup` | Initial setup |
+| `bun run import` | Import data CLI |
+
+## Troubleshooting
+
+### Command Not Found
+
+```bash
+# Ensure Bun is installed
+curl -fsSL https://bun.sh/install | bash
+
+# Restart shell or source profile
+source ~/.bashrc
+```
+
+### Permission Denied
+
+```bash
+# Fix script permissions
+chmod +x scripts/*.sh
+```
+
+### Port in Use
+
+```bash
+# Find process
+lsof -i :3000
+
+# Kill it
+kill -9 <PID>
+```
+
+## Next Steps
+
+- [Development Setup](/developers/setup) - Full setup guide
+- [Environment Variables](/reference/environment-variables) - Configuration
+- [Docker Deployment](/self-hosting/docker) - Production deployment

@@ -1,0 +1,584 @@
+---
+title: "Testing"
+description: "Learn how to write and run unit tests with Vitest and E2E tests with Playwright"
+icon: "flask"
+---
+
+# Testing
+
+Quackback uses two testing frameworks: **Vitest** for unit tests and **Playwright** for end-to-end (E2E) tests.
+
+## Test Commands
+
+Run tests using these commands from the project root:
+
+```bash
+# Unit tests (Vitest)
+bun run test              # Run all unit tests
+bun run test <file>       # Run a specific test file
+bun run test --watch      # Watch mode for development
+
+# E2E tests (Playwright)
+bun run test:e2e          # Run all E2E tests (headless)
+bun run test:e2e:ui       # Run with Playwright's interactive UI
+bun run test:e2e:headed   # Run in headed browser mode
+```
+
+---
+
+## Unit Testing with Vitest
+
+Unit tests verify individual functions, modules, and utilities in isolation.
+
+### Test File Locations
+
+Unit tests are placed alongside the code they test or in `__tests__` directories:
+
+```
+packages/
+  ids/
+    src/
+      __tests__/
+        core.test.ts     # Tests for packages/ids/src/core.ts
+        zod.test.ts      # Tests for packages/ids/src/zod.ts
+```
+
+### Vitest Configuration
+
+The root `vitest.config.ts` configures the test environment:
+
+```typescript
+import { defineConfig } from 'vitest/config'
+import path from 'path'
+
+export default defineConfig({
+  test: {
+    globals: true,              // Use global describe, it, expect
+    environment: 'node',        // Node.js environment
+    include: ['**/*.test.ts'],  // Test file pattern
+    exclude: ['**/node_modules/**'],
+  },
+  resolve: {
+    alias: {
+      '@quackback/db': path.resolve(__dirname, './packages/db/index.ts'),
+      '@': path.resolve(__dirname, './apps/web/src'),
+    },
+  },
+})
+```
+
+### Writing Unit Tests
+
+Basic test structure:
+
+```typescript
+import { describe, it, expect } from 'vitest'
+import { generateId, toUuid, fromUuid } from '../core'
+
+describe('TypeID Core', () => {
+  describe('generateId', () => {
+    it('generates a valid TypeID with the correct prefix', () => {
+      const id = generateId('post')
+      expect(id).toMatch(/^post_[0-7][0-9a-hjkmnp-tv-z]{25}$/)
+    })
+
+    it('generates unique IDs on each call', () => {
+      const ids = new Set<string>()
+      for (let i = 0; i < 1000; i++) {
+        ids.add(generateId('post'))
+      }
+      expect(ids.size).toBe(1000)
+    })
+  })
+
+  describe('round-trip conversion', () => {
+    it('preserves ID through UUID round-trip', () => {
+      const original = generateId('post')
+      const uuid = toUuid(original)
+      const restored = fromUuid('post', uuid)
+      expect(restored).toBe(original)
+    })
+  })
+})
+```
+
+### Testing Error Cases
+
+```typescript
+describe('toUuid', () => {
+  it('throws on invalid TypeID format', () => {
+    expect(() => toUuid('invalid')).toThrow()
+    expect(() => toUuid('post_invalid')).toThrow()
+    expect(() => toUuid('')).toThrow()
+  })
+})
+
+describe('fromUuid', () => {
+  it('throws on invalid UUID format', () => {
+    expect(() => fromUuid('post', 'invalid')).toThrow('Invalid UUID format')
+    expect(() => fromUuid('post', '01893d8c-7e80-7000')).toThrow()
+  })
+})
+```
+
+---
+
+## E2E Testing with Playwright
+
+E2E tests verify complete user flows through the browser.
+
+### Test File Structure
+
+E2E tests are in `apps/web/e2e/`:
+
+```
+apps/web/e2e/
+  tests/
+    admin/                    # Tests requiring admin authentication
+      boards.spec.ts          # Board management tests
+      post-management.spec.ts # Admin post operations
+      statuses.spec.ts        # Status configuration tests
+      users.spec.ts           # User management tests
+    auth/                     # Authentication flow tests
+      admin-login.spec.ts     # Admin login tests
+    public/                   # Public portal tests (no auth needed)
+      comments.spec.ts        # Comment functionality
+      post-list.spec.ts       # Post listing and filtering
+      post-submission.spec.ts # Creating new posts
+      voting.spec.ts          # Voting functionality
+  fixtures/
+    auth.ts                   # Test fixtures and credentials
+  utils/
+    helpers.ts                # Reusable test utilities
+    db-helpers.ts             # Database utilities for tests
+  scripts/
+    get-otp.ts                # Script to fetch OTP codes
+    ensure-role.ts            # Script to ensure user roles
+  global-setup.ts             # Runs before all tests
+  global-teardown.ts          # Runs after all tests
+```
+
+### Playwright Configuration
+
+`apps/web/playwright.config.ts` configures test projects:
+
+```typescript
+import { defineConfig, devices } from '@playwright/test'
+
+export default defineConfig({
+  testDir: './e2e',
+  fullyParallel: true,
+  forbidOnly: !!process.env.CI,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : undefined,
+
+  use: {
+    baseURL: 'http://acme.localhost:3000',
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+  },
+
+  projects: [
+    // Setup project - authenticates and saves state
+    {
+      name: 'setup',
+      testMatch: /global-setup\.ts/,
+      teardown: 'cleanup',
+    },
+    {
+      name: 'cleanup',
+      testMatch: /global-teardown\.ts/,
+    },
+
+    // Admin tests - uses saved auth state
+    {
+      name: 'chromium',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1920, height: 1080 },
+        storageState: 'e2e/.auth/admin.json',
+      },
+      dependencies: ['setup'],
+      testMatch: /tests\/admin\/.+\.spec\.ts/,
+    },
+
+    // Auth tests - no stored state
+    {
+      name: 'chromium-auth',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /tests\/auth\/.+\.spec\.ts/,
+    },
+
+    // Public tests - no authentication needed
+    {
+      name: 'chromium-public',
+      use: { ...devices['Desktop Chrome'] },
+      testMatch: /tests\/public\/.+\.spec\.ts/,
+    },
+  ],
+
+  webServer: {
+    command: 'bun run dev',
+    url: 'http://acme.localhost:3000',
+    reuseExistingServer: !process.env.CI,
+    timeout: 120 * 1000,
+  },
+
+  timeout: 30 * 1000,
+  expect: { timeout: 5 * 1000 },
+})
+```
+
+### Authentication in Tests
+
+#### Global Setup
+
+The `global-setup.ts` authenticates once and saves the session:
+
+```typescript
+import { test as setup, expect } from '@playwright/test'
+import { getOtpCode, ensureTestUserHasRole } from './utils/db-helpers'
+
+const ADMIN_EMAIL = 'demo@example.com'
+const AUTH_FILE = 'e2e/.auth/admin.json'
+const TEST_HOST = 'acme.localhost:3000'
+
+setup('authenticate as admin', async ({ page }) => {
+  const request = page.request
+
+  // Request OTP code via Better-auth
+  await request.post('/api/auth/email-otp/send-verification-otp', {
+    data: { email: ADMIN_EMAIL, type: 'sign-in' },
+  })
+
+  // Get OTP from database
+  const code = await getOtpCode(ADMIN_EMAIL, TEST_HOST)
+
+  // Verify OTP and sign in
+  await request.post('/api/auth/sign-in/email-otp', {
+    data: { email: ADMIN_EMAIL, otp: code },
+  })
+
+  // Ensure admin role
+  ensureTestUserHasRole(ADMIN_EMAIL, 'admin')
+
+  // Navigate and verify
+  await page.goto('/admin')
+  await expect(page).toHaveURL(/\/admin/, { timeout: 10000 })
+
+  // Save auth state
+  await page.context().storageState({ path: AUTH_FILE })
+})
+```
+
+#### Test-Level Authentication
+
+For tests that need their own auth context:
+
+```typescript
+import { test, expect, Page, BrowserContext } from '@playwright/test'
+import { getOtpCode } from '../../utils/db-helpers'
+
+const TEST_EMAIL = 'demo@example.com'
+const TEST_HOST = 'acme.localhost:3000'
+
+test.describe.configure({ mode: 'serial' })
+
+async function loginWithOTP(page: Page) {
+  const context = page.context()
+
+  // Request OTP
+  await context.request.post('/api/auth/email-otp/send-verification-otp', {
+    data: { email: TEST_EMAIL, type: 'sign-in' },
+  })
+
+  // Get and verify OTP
+  const code = await getOtpCode(TEST_EMAIL, TEST_HOST)
+  await context.request.post('/api/auth/sign-in/email-otp', {
+    data: { email: TEST_EMAIL, otp: code },
+  })
+
+  // Navigate to verify
+  await page.goto('/')
+  await page.waitForLoadState('networkidle')
+}
+
+let globalContext: BrowserContext
+let globalPage: Page
+
+test.beforeAll(async ({ browser }) => {
+  globalContext = await browser.newContext()
+  globalPage = await globalContext.newPage()
+  await loginWithOTP(globalPage)
+})
+
+test.afterAll(async () => {
+  await globalPage.close()
+  await globalContext.close()
+})
+```
+
+### Writing E2E Tests
+
+#### Basic Test Structure
+
+```typescript
+import { test, expect } from '@playwright/test'
+
+test.describe('Admin Board Management', () => {
+  test.beforeEach(async ({ page }) => {
+    await page.goto('/admin/settings/boards')
+    await page.waitForLoadState('networkidle')
+  })
+
+  test('displays board settings page', async ({ page }) => {
+    await expect(page.getByText('General Settings')).toBeVisible({ timeout: 10000 })
+  })
+
+  test('can edit board name', async ({ page }) => {
+    const nameInput = page.getByRole('textbox', { name: 'Board name', exact: true })
+    await nameInput.clear()
+    await nameInput.fill('Test Board Name')
+
+    const saveButton = page.getByRole('button', { name: 'Save changes' })
+    await saveButton.click()
+    await page.waitForLoadState('networkidle')
+  })
+})
+```
+
+#### Testing Forms
+
+```typescript
+test('can create a new board', async ({ page }) => {
+  // Open dialog
+  await page.getByRole('button', { name: 'New board' }).click()
+  const dialog = page.getByRole('dialog')
+  await expect(dialog).toBeVisible()
+
+  // Fill form (scope selectors to dialog)
+  const testBoardName = `E2E Test Board ${Date.now()}`
+  await dialog.getByLabel('Board name').fill(testBoardName)
+  await dialog.getByLabel('Description').fill('Board created by Playwright test')
+
+  // Verify default state
+  const publicSwitch = dialog.getByRole('switch', { name: 'Public board' })
+  await expect(publicSwitch).toBeChecked()
+
+  // Submit
+  await dialog.getByRole('button', { name: 'Create board' }).click()
+  await expect(dialog).toBeHidden({ timeout: 10000 })
+
+  // Verify result
+  await page.waitForLoadState('networkidle')
+  await expect(page.getByTestId('board-switcher')).toContainText(testBoardName)
+})
+```
+
+#### Testing Rich Text Editors (TipTap)
+
+```typescript
+test('can type in TipTap editor', async ({ page }) => {
+  const editor = page.locator('.tiptap')
+  await editor.click()
+  await page.keyboard.type('This is plain text content')
+  await expect(editor).toContainText('This is plain text content')
+})
+
+test('can format text as bold', async ({ page }) => {
+  const editor = page.locator('.tiptap')
+  await editor.click()
+  await page.keyboard.type('bold text')
+
+  // Select all and apply bold
+  await editor.click({ clickCount: 3 })
+  const boldButton = page.locator('button:has(svg.lucide-bold)')
+  await boldButton.click()
+
+  await expect(editor.locator('strong')).toContainText('bold text')
+})
+```
+
+#### Serial Test Execution
+
+For tests that must run in order or modify shared state:
+
+```typescript
+test.describe('Board Deletion Flow', () => {
+  test.describe.configure({ mode: 'serial' })
+
+  test('can delete a board after typing confirmation', async ({ page }) => {
+    // Create board first
+    await page.goto('/admin/settings/boards')
+    const testBoardName = `Test Delete Board ${Date.now()}`
+    // ... create board ...
+
+    // Delete it
+    const deleteButton = page.getByRole('button', { name: 'Delete board', exact: true })
+    const confirmInput = page.getByPlaceholder(testBoardName)
+    await confirmInput.fill(testBoardName)
+    await deleteButton.click()
+
+    await expect(page).toHaveURL(/\/admin\/settings\/boards/)
+  })
+})
+```
+
+### Test Utilities
+
+#### Helper Functions (`utils/helpers.ts`)
+
+```typescript
+import { Page, expect } from '@playwright/test'
+
+// Wait for toast notifications
+export async function waitForToast(page: Page, text: string | RegExp) {
+  const toast = page.locator('[data-sonner-toast]').filter({ hasText: text })
+  await expect(toast).toBeVisible({ timeout: 5000 })
+  return toast
+}
+
+// Select from Radix Select component
+export async function selectOption(page: Page, triggerLabel: string, optionText: string) {
+  await page.getByRole('combobox', { name: triggerLabel }).click()
+  await page.getByRole('option', { name: optionText }).click()
+}
+
+// Fill TipTap rich text editor
+export async function fillRichTextEditor(page: Page, content: string) {
+  const editor = page.locator('.ProseMirror[contenteditable="true"]')
+  await editor.click()
+  await editor.fill(content)
+}
+
+// Open and close dialogs
+export async function openDialog(page: Page, triggerText: string | RegExp) {
+  await page.getByRole('button', { name: triggerText }).click()
+  await expect(page.getByRole('dialog')).toBeVisible()
+}
+
+export async function closeDialog(page: Page) {
+  await page.keyboard.press('Escape')
+  await expect(page.getByRole('dialog')).toBeHidden()
+}
+```
+
+#### Database Helpers (`utils/db-helpers.ts`)
+
+```typescript
+import { execSync } from 'child_process'
+import { resolve } from 'path'
+
+// Get OTP code for a user
+export function getOtpCode(email: string, host: string): string {
+  const scriptPath = resolve(__dirname, '../scripts/get-otp.ts')
+  const result = execSync(
+    `dotenv -e ../../.env -- bun "${scriptPath}" "${email}" "${host}"`,
+    { encoding: 'utf-8', cwd: resolve(__dirname, '../..') }
+  )
+  return result.trim()
+}
+
+// Ensure user has the required role
+export function ensureTestUserHasRole(email: string, role: string = 'admin'): void {
+  const scriptPath = resolve(__dirname, '../scripts/ensure-role.ts')
+  execSync(
+    `dotenv -e ../../.env -- bun "${scriptPath}" "${email}" "${role}"`,
+    { encoding: 'utf-8', cwd: resolve(__dirname, '../..') }
+  )
+}
+```
+
+### Best Practices
+
+#### Locator Strategies
+
+```typescript
+// Prefer role-based selectors
+page.getByRole('button', { name: 'Save changes' })
+page.getByRole('textbox', { name: 'Board name' })
+page.getByRole('dialog')
+
+// Use labels for form fields
+page.getByLabel('Board name')
+page.getByLabel('Description')
+
+// Use placeholder for inputs
+page.getByPlaceholder("What's your idea?")
+
+// Use text content
+page.getByText('General Settings')
+
+// Use test IDs for complex cases
+page.getByTestId('board-switcher')
+
+// Scope to parent for disambiguation
+const dialog = page.getByRole('dialog')
+await dialog.getByLabel('Board name').fill('test')
+```
+
+#### Waiting Strategies
+
+```typescript
+// Wait for network to settle
+await page.waitForLoadState('networkidle')
+
+// Wait for elements
+await expect(page.getByText('Success')).toBeVisible({ timeout: 10000 })
+
+// Wait for URL changes
+await expect(page).toHaveURL(/\/admin/, { timeout: 10000 })
+
+// Wait for dialogs to close
+await expect(page.getByRole('dialog')).toBeHidden({ timeout: 10000 })
+
+// Wait for loading states
+await expect(page.getByRole('button', { name: 'Saving...' })).toBeVisible()
+await expect(page.getByRole('button', { name: 'Save changes' })).toBeVisible()
+```
+
+#### Unique Test Data
+
+```typescript
+// Use timestamps for unique names
+const uniqueTitle = `E2E Test Post ${Date.now()}`
+const testBoardName = `Test Board ${Date.now()}`
+```
+
+### Running Tests
+
+```bash
+# All E2E tests
+bun run test:e2e
+
+# Specific test file
+bunx playwright test e2e/tests/admin/boards.spec.ts
+
+# Specific test
+bunx playwright test -g "can create a new board"
+
+# With UI mode (recommended for debugging)
+bun run test:e2e:ui
+
+# Headed mode (see browser)
+bun run test:e2e:headed
+
+# Debug mode
+bunx playwright test --debug
+```
+
+### Debugging Tests
+
+1. **Use UI mode**: `bun run test:e2e:ui` for interactive debugging
+2. **Add screenshots**: Automatic on failure, or `await page.screenshot({ path: 'debug.png' })`
+3. **Use traces**: `await page.context().tracing.start({ screenshots: true })`
+4. **Console logs**: `console.log` in tests appears in terminal
+5. **Slow down**: `slowMo: 100` in config for visual debugging
+
+---
+
+## Related Documentation
+
+- [Server Functions](./server-functions.md) - Testing server function logic
+- [Architecture](./architecture.md) - Understanding the codebase structure
+- [Setup](./setup.md) - Setting up the development environment

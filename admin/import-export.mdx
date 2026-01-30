@@ -1,0 +1,240 @@
+---
+title: "Import & Export"
+description: "Migrate data into Quackback from other platforms or export for backup and analysis"
+icon: "arrow-right-left"
+---
+
+# Import & Export
+
+Migrate data into Quackback or export for backup and analysis.
+
+## CSV Import
+
+### Supported Data
+
+Import posts into any board:
+- Titles and content
+- Statuses and tags
+- Author information
+- Vote counts
+- Dates
+
+### Import Process
+
+1. Go to **Admin → Settings → Boards**
+2. Select the target board from the dropdown
+3. Click the **Import Data** tab
+4. Upload your CSV file
+5. Map columns to fields
+6. Review and confirm
+7. Import completes
+
+### CSV Format
+
+#### Required Columns
+
+| Column | Description |
+|--------|-------------|
+| `title` | Post title (required) |
+
+#### Optional Columns
+
+| Column | Description | Format |
+|--------|-------------|--------|
+| `content` | Post body | Plain text or markdown |
+| `status` | Status name | Must match existing status |
+| `tags` | Tag names | Comma-separated |
+| `author_email` | Author email | Valid email |
+| `author_name` | Author display name | Text |
+| `vote_count` | Number of votes | Integer |
+| `created_at` | Creation date | ISO 8601 |
+
+### Example CSV
+
+```csv
+title,content,status,tags,author_email,author_name,vote_count,created_at
+"Dark mode support","Add dark theme option for the dashboard","Planned","ui,accessibility",jane@example.com,Jane Doe,42,2024-01-15T10:30:00Z
+"Export to PDF","Allow exporting reports as PDF files","Under Review","reports,export",john@example.com,John Smith,18,2024-01-10T08:00:00Z
+"Mobile app","Native mobile application for iOS and Android","Planned","mobile",,,25,2024-01-01T00:00:00Z
+```
+
+### Import Limits
+
+| Limit | Value |
+|-------|-------|
+| File size | 10 MB |
+| Rows | 10,000 |
+| Columns | Unlimited |
+
+### Column Mapping
+
+During import, you'll map CSV columns to Quackback fields:
+
+1. Preview shows first few rows
+2. Select corresponding field for each column
+3. Skip columns you don't want to import
+4. Confirm mapping
+
+### Handling Statuses
+
+<Note>
+Statuses in CSV must match existing status names:
+- Case-insensitive matching
+- Unmatched statuses use default
+- You can create statuses beforehand
+</Note>
+
+### Handling Tags
+
+Tags are created automatically:
+- New tags created on import
+- Comma-separated in CSV
+- Report shows created tags
+
+### Import Results
+
+After import, you'll see:
+
+```
+Import Complete
+
+✓ 150 posts imported
+• 3 posts skipped (duplicate titles)
+• 5 new tags created
+• 2 rows had errors (see details)
+
+[View Imported Posts] [Download Error Report]
+```
+
+## CSV Export
+
+### Export Process
+
+1. Go to **Admin → Settings → Boards**
+2. Select a board from the dropdown
+3. Click the **Export Data** tab
+4. Click the export button
+5. Download starts automatically
+
+### Export Format
+
+Exported CSV includes:
+
+| Column | Description |
+|--------|-------------|
+| `id` | Post TypeID |
+| `title` | Post title |
+| `content` | Post content |
+| `status` | Status name |
+| `tags` | Comma-separated tags |
+| `board` | Board name |
+| `author_name` | Author display name |
+| `author_email` | Author email |
+| `vote_count` | Number of votes |
+| `comment_count` | Number of comments |
+| `created_at` | Creation timestamp |
+| `updated_at` | Last update timestamp |
+
+### Export Scope
+
+Export is per-board. Select the board you want to export from the board dropdown, then navigate to the Export Data tab.
+
+### Use Cases
+
+- **Backup** - Regular data exports
+- **Analysis** - Import into spreadsheets
+- **Migration** - Move to another system
+- **Reporting** - Share with stakeholders
+
+## Migrating from Other Platforms
+
+### From UserVoice
+
+1. Export from UserVoice (CSV format)
+2. Map columns:
+   - `suggestion_title` → `title`
+   - `suggestion_text` → `content`
+   - `status` → `status`
+   - `vote_count` → `vote_count`
+
+### From Canny
+
+1. Export from Canny
+2. Map columns:
+   - `title` → `title`
+   - `details` → `content`
+   - `status` → `status`
+   - `votes` → `vote_count`
+
+### From Spreadsheet
+
+If you've been tracking feedback in a spreadsheet:
+
+1. Add column headers matching Quackback format
+2. Ensure dates are ISO 8601 format
+3. Clean up status names to match your statuses
+4. Export as CSV (UTF-8 encoding)
+
+## Best Practices
+
+### Before Import
+
+<Tip>
+1. **Create statuses first** - Import matches by name
+2. **Clean your data** - Remove duplicates, fix formatting
+3. **Test with sample** - Import a few rows first
+4. **Backup existing data** - Export current posts
+</Tip>
+
+### Data Cleaning
+
+Common issues to fix:
+
+| Issue | Solution |
+|-------|----------|
+| Extra whitespace | Trim cells |
+| Inconsistent statuses | Normalize names |
+| HTML in content | Convert to markdown |
+| Date formats | Use ISO 8601 |
+| Encoding issues | Save as UTF-8 |
+
+### Large Imports
+
+<Warning>
+For 5,000+ posts:
+
+1. Split into batches of 2,000
+2. Import sequentially
+3. Verify each batch
+4. Allow time between batches
+</Warning>
+
+## Troubleshooting
+
+### "Invalid CSV format"
+
+- Check file encoding (use UTF-8)
+- Verify proper quoting for fields with commas
+- Ensure consistent column count
+
+### "Status not found"
+
+- Create the status before importing
+- Check spelling matches exactly
+
+### "Date parse error"
+
+- Use ISO 8601: `2024-01-15T10:30:00Z`
+- Or: `2024-01-15` (date only)
+
+### "Import stuck"
+
+- Large files take time
+- Check browser console for errors
+- Try smaller batches
+
+## Next Steps
+
+- [Boards](/admin/boards) - Manage import targets
+- [Statuses](/admin/statuses) - Set up statuses before import
+- [Feedback](/admin/inbox) - View imported posts

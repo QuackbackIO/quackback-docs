@@ -1,0 +1,323 @@
+---
+title: "Docker Deployment"
+description: "Deploy Quackback using Docker for the simplest production setup"
+icon: "docker"
+---
+
+# Docker Deployment
+
+Deploy Quackback using Docker for the simplest production setup.
+
+## Prerequisites
+
+- Docker Engine 20.10+
+- Docker Compose v2+
+- 1GB RAM minimum (2GB recommended)
+- PostgreSQL 18+ (included in docker-compose, or bring your own)
+
+## Quick Deploy
+
+### Using Docker Compose (Recommended)
+
+```bash
+# Clone the repository
+git clone https://github.com/quackbackhq/quackback.git
+cd quackback
+
+# Configure environment
+cp .env.example .env
+# Edit .env with your settings (see Configuration below)
+
+# Start services
+docker compose up -d
+```
+
+### Using Docker Run
+
+```bash
+docker run -d \
+  --name quackback \
+  -p 3000:3000 \
+  -e DATABASE_URL="postgresql://user:pass@host:5432/quackback" \
+  -e BETTER_AUTH_SECRET="your-32-char-secret" \
+  -e BETTER_AUTH_URL="https://feedback.yourcompany.com" \
+  -e ROOT_URL="https://feedback.yourcompany.com" \
+  ghcr.io/quackbackhq/quackback:latest
+```
+
+## Configuration
+
+### Required Environment Variables
+
+```bash
+# Database connection
+DATABASE_URL="postgresql://postgres:postgres@postgres:5432/quackback"
+
+# Authentication (generate with: openssl rand -base64 32)
+BETTER_AUTH_SECRET="your-32-character-minimum-secret-key"
+
+# Public URLs (must match your domain)
+BETTER_AUTH_URL="https://feedback.yourcompany.com"
+ROOT_URL="https://feedback.yourcompany.com"
+```
+
+### Email Configuration
+
+<Note>
+Without email configuration, OTP codes are printed to the console. For production, configure one of the email providers below.
+</Note>
+
+**SMTP (Recommended)**
+```bash
+EMAIL_SMTP_HOST="smtp.example.com"
+EMAIL_SMTP_PORT="587"
+EMAIL_SMTP_USER="your-username"
+EMAIL_SMTP_PASS="your-password"
+EMAIL_FROM="feedback@yourcompany.com"
+```
+
+**Resend**
+```bash
+EMAIL_RESEND_API_KEY="re_xxxxxxxxxxxx"
+EMAIL_FROM="feedback@yourcompany.com"
+```
+
+### OAuth Providers (Optional)
+
+```bash
+# GitHub
+GITHUB_CLIENT_ID="your-github-client-id"
+GITHUB_CLIENT_SECRET="your-github-client-secret"
+
+# Google
+GOOGLE_CLIENT_ID="your-google-client-id"
+GOOGLE_CLIENT_SECRET="your-google-client-secret"
+```
+
+### Integrations (Optional)
+
+```bash
+# Slack
+SLACK_CLIENT_ID="your-slack-client-id"
+SLACK_CLIENT_SECRET="your-slack-client-secret"
+
+# Encryption key for storing OAuth tokens
+INTEGRATION_ENCRYPTION_KEY="your-encryption-key"
+```
+
+See [Environment Variables Reference](/reference/environment-variables) for all options.
+
+## Docker Compose Configuration
+
+The included `docker-compose.yml` uses a custom PostgreSQL 18 image with required extensions:
+
+```yaml
+services:
+  postgres:
+    build:
+      context: ./docker/postgres
+      dockerfile: Dockerfile
+    container_name: quackback-db
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: quackback
+    ports:
+      - '5432:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql
+    command: postgres -c shared_preload_libraries=pg_cron -c cron.database_name=quackback
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres']
+      interval: 5s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+```
+
+<Tip>
+The custom Dockerfile (`docker/postgres/Dockerfile`) installs `pg_cron` and `pgvector` extensions on PostgreSQL 18.
+</Tip>
+
+## Database Setup
+
+### Using the Included PostgreSQL
+
+The docker-compose setup includes PostgreSQL 17 with required extensions (`pgvector`, `pg_cron`). Migrations run automatically on startup.
+
+### Using an External Database
+
+For managed databases (AWS RDS, Supabase, Neon, etc.):
+
+1. Create a PostgreSQL 18+ database
+2. Ensure the `pgvector` extension is available
+3. Update `DATABASE_URL` in your `.env`
+4. Run migrations manually:
+
+```bash
+docker run --rm \
+  -e DATABASE_URL="your-external-db-url" \
+  ghcr.io/quackbackhq/quackback:latest \
+  bun run db:migrate
+```
+
+## Reverse Proxy Setup
+
+### Nginx
+
+```nginx
+server {
+    listen 443 ssl http2;
+    server_name feedback.yourcompany.com;
+
+    ssl_certificate /path/to/cert.pem;
+    ssl_certificate_key /path/to/key.pem;
+
+    location / {
+        proxy_pass http://localhost:3000;
+        proxy_http_version 1.1;
+        proxy_set_header Upgrade $http_upgrade;
+        proxy_set_header Connection 'upgrade';
+        proxy_set_header Host $host;
+        proxy_set_header X-Real-IP $remote_addr;
+        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+        proxy_set_header X-Forwarded-Proto $scheme;
+        proxy_cache_bypass $http_upgrade;
+    }
+}
+```
+
+### Caddy
+
+```
+feedback.yourcompany.com {
+    reverse_proxy localhost:3000
+}
+```
+
+### Traefik
+
+Add labels to your docker-compose service:
+
+```yaml
+services:
+  app:
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.quackback.rule=Host(`feedback.yourcompany.com`)"
+      - "traefik.http.routers.quackback.tls.certresolver=letsencrypt"
+      - "traefik.http.services.quackback.loadbalancer.server.port=3000"
+```
+
+## Health Checks
+
+Quackback exposes health endpoints:
+
+```bash
+# Application health
+curl http://localhost:3000/api/health
+
+# Ready check (includes database)
+curl http://localhost:3000/api/ready
+```
+
+## Upgrading
+
+### Standard Upgrade
+
+```bash
+# Pull latest image
+docker compose pull
+
+# Restart with new image (migrations run automatically)
+docker compose up -d
+```
+
+### Backup Before Upgrade
+
+<Warning>
+Always backup your database before upgrading to prevent data loss in case of issues.
+</Warning>
+
+```bash
+# Backup database
+docker compose exec postgres pg_dump -U postgres quackback > backup.sql
+
+# Then upgrade
+docker compose pull
+docker compose up -d
+```
+
+### Rollback
+
+```bash
+# Stop current version
+docker compose down
+
+# Restore database
+docker compose up -d postgres
+docker compose exec -T postgres psql -U postgres quackback < backup.sql
+
+# Start previous version
+docker compose up -d app
+```
+
+## Troubleshooting
+
+### Container won't start
+
+Check logs:
+```bash
+docker compose logs app
+```
+
+### Database connection failed
+
+1. Verify PostgreSQL is healthy:
+   ```bash
+   docker compose ps
+   ```
+
+2. Test connection:
+   ```bash
+   docker compose exec postgres psql -U postgres -c "SELECT 1"
+   ```
+
+### Migrations failed
+
+Run migrations manually with verbose output:
+```bash
+docker compose exec app bun run db:migrate
+```
+
+### Port already in use
+
+```bash
+# Find process using port 3000
+lsof -i :3000
+
+# Or change the port in docker-compose.yml
+ports:
+  - "8080:3000"
+```
+
+## Security Considerations
+
+<Warning>
+Follow these security best practices for production deployments.
+</Warning>
+
+1. **Use strong secrets** - Generate with `openssl rand -base64 32`
+2. **Enable HTTPS** - Always use TLS in production
+3. **Restrict database access** - Don't expose PostgreSQL publicly
+4. **Regular backups** - Automate database backups
+5. **Keep updated** - Pull latest images regularly
+
+## Next Steps
+
+- [Configuration Reference](/reference/environment-variables) - All environment variables
+- [Reverse Proxy Setup](/self-hosting/reverse-proxy) - Detailed proxy configurations
+- [Upgrading](/self-hosting/upgrading) - Version upgrade procedures

@@ -1,0 +1,239 @@
+---
+title: "Slack Integration"
+description: "Get notified about feedback activity directly in your Slack workspace"
+icon: "slack"
+---
+
+# Slack Integration
+
+Get notified about feedback activity directly in your Slack workspace.
+
+## Overview
+
+The Slack integration sends notifications to channels when:
+- New feedback is submitted
+- Post status changes
+- New comments are posted
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- Permission to install apps in your Slack workspace
+
+## Setup
+
+### 1. Start the Connection
+
+1. Go to **Admin → Settings → Integrations**
+2. Click **Slack**
+3. Click **Connect to Slack**
+
+### 2. Authorize the App
+
+You'll be redirected to Slack:
+
+1. Select your Slack workspace
+2. Review the permissions requested
+3. Click **Allow**
+
+### 3. Select a Channel
+
+Back in Quackback:
+
+1. Choose a default channel for notifications
+2. Select from public channels or private channels the app was added to
+
+### 4. Configure Events
+
+Choose which events trigger Slack notifications:
+
+| Event | Description |
+|-------|-------------|
+| New post | Someone submits new feedback |
+| Status change | Post status is updated |
+| New comment | Comment added to a post |
+
+### 5. Save and Test
+
+1. Click **Save**
+2. Click **Send Test** to verify the connection
+3. Check your Slack channel for the test message
+
+## Notification Format
+
+Slack notifications use Block Kit formatting for rich messages.
+
+**New post:**
+```
+📬 New post from jane@example.com
+
+> "Add dark mode support"
+> It would be great to have a dark mode...
+
+in feature-requests
+```
+
+**Status change:**
+```
+🔄 Status updated by admin@example.com
+
+> "Add dark mode support"
+> Under Review → Planned
+```
+
+**New comment:**
+```
+💬 New comment from jane@example.com
+
+> "Add dark mode support"
+> Great idea! We're considering this for Q2.
+```
+
+All notifications include clickable links to the post.
+
+## Event Mapping
+
+Send different events to different channels:
+
+1. Go to the Slack integration settings
+2. Click **Add Event Mapping**
+3. Configure:
+   - **Event type**: post.created, post.status_changed, etc.
+   - **Channel**: Target Slack channel
+   - **Filters** (optional): Board, status, or other conditions
+
+### Example Configurations
+
+**All new feedback to #product-feedback:**
+- Event: post.created
+- Channel: #product-feedback
+
+**Only "Shipped" items to #shipped:**
+- Event: post.status_changed
+- Channel: #shipped
+- Filter: Status = "Shipped"
+
+**Bug reports to #bugs:**
+- Event: post.created
+- Channel: #bugs
+- Filter: Board = "Bug Reports"
+
+## Private Channels
+
+To post to private channels:
+
+1. In Slack, open the private channel
+2. Type `/invite @Quackback` or use channel settings
+3. The channel now appears in Quackback's channel selector
+
+## Managing the Integration
+
+### Pause Notifications
+
+Temporarily stop notifications:
+
+1. Go to **Admin → Settings → Integrations → Slack**
+2. Toggle **Enabled** off
+3. Notifications pause, but the connection remains
+
+### Reconnect
+
+If you see connection errors:
+
+1. Click **Reconnect**
+2. Re-authorize in Slack
+3. Reconfigure channels if needed
+
+### Disconnect
+
+To fully remove the integration:
+
+1. Go to **Admin → Settings → Integrations → Slack**
+2. Click **Disconnect**
+3. Confirm the action
+
+<Note>
+This removes the connection but doesn't uninstall the app from Slack.
+</Note>
+
+## Troubleshooting
+
+### Notifications Not Appearing
+
+1. **Check integration status** - Look for errors in settings
+2. **Verify channel** - Ensure the channel still exists
+3. **Check event mappings** - Confirm events are configured
+4. **App permissions** - Verify the app is in the channel
+
+### "Channel Not Found" Error
+
+The channel may have been:
+- Deleted
+- Made private (app needs re-invitation)
+- Renamed (select it again in settings)
+
+### "Token Expired" Error
+
+1. Click **Reconnect**
+2. Re-authorize the app in Slack
+3. Test the connection
+
+### Duplicate Notifications
+
+Check for:
+- Multiple event mappings for the same event
+- Multiple Slack integrations connected
+
+## Permissions
+
+The Slack app requests:
+
+| Permission | Purpose |
+|------------|---------|
+| `channels:read` | List public channels |
+| `groups:read` | List private channels (when invited) |
+| `channels:join` | Auto-join public channels for posting |
+| `chat:write` | Post notifications |
+| `team:read` | Get workspace info |
+
+<Note>
+The app cannot:
+- Read your messages
+- Access private channels (unless invited)
+- Post as individual users
+</Note>
+
+## Best Practices
+
+### Dedicated Channel
+
+<Tip>
+Create a `#product-feedback` channel specifically for Quackback notifications. This keeps feedback organized, prevents noise in other channels, and makes it easy to find feedback history.
+</Tip>
+
+### Smart Filtering
+
+Don't send everything to one channel. Instead:
+- Route by board (bugs vs features)
+- Filter by status (only shipped items)
+- Use separate channels for high-priority items
+
+### React to Notifications
+
+Use Slack's reaction emojis:
+- 👀 to indicate you've seen it
+- ✅ when handled
+- 📌 for important items
+
+### Link to Posts
+
+Slack notifications include links back to Quackback. Click through to:
+- Add comments
+- Change status
+- See full context
+
+## Next Steps
+
+- [Webhooks](/integrations/webhooks) - Build custom integrations
+- [Event Mappings](/integrations/overview#event-mappings) - Advanced configuration
+- [Admin Guide](/admin/inbox) - Managing feedback

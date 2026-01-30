@@ -1,0 +1,166 @@
+---
+title: "Integrations Overview"
+description: "Connect Quackback to your existing tools to streamline your feedback workflow"
+icon: "plug"
+---
+
+# Integrations Overview
+
+Connect Quackback to your existing tools to streamline your feedback workflow.
+
+## Available Integrations
+
+| Integration | Status | Description |
+|-------------|--------|-------------|
+| [Slack](/integrations/slack) | Available | Post notifications to Slack channels |
+| [Webhooks](/integrations/webhooks) | Planned | Send events to any HTTP endpoint |
+| [Discord](/integrations/discord) | Planned | Post notifications to Discord |
+| [Linear](/integrations/linear) | Planned | Sync feedback with Linear issues |
+| Jira | Planned | Sync feedback with Jira issues |
+
+## How Integrations Work
+
+Quackback uses an **event-driven** integration system:
+
+```
+Event Occurs → Event Dispatched → Integration Triggered → Notification Sent
+```
+
+### Events
+
+Integrations can respond to these events:
+
+| Event | Description |
+|-------|-------------|
+| `post.created` | New feedback post submitted |
+| `post.status_changed` | Post status updated (e.g., Planned → Shipped) |
+| `comment.created` | New comment on a post |
+
+### Event Mappings
+
+Configure which events trigger which integrations:
+
+1. Go to **Admin → Settings → Integrations**
+2. Select an integration
+3. Configure **Event Mappings**
+4. Choose which events to send
+
+For example, only send to Slack when a post becomes "Planned".
+
+## Setting Up Integrations
+
+### General Flow
+
+1. Navigate to **Admin → Settings → Integrations**
+2. Click on the integration you want to set up
+3. Follow the connection flow (usually OAuth)
+4. Configure notification settings
+5. Test the connection
+6. Enable the integration
+
+### Permissions Required
+
+<Note>
+Only **Admins** can configure integrations.
+</Note>
+
+## Integration Status
+
+Each integration shows its current status:
+
+| Status | Meaning |
+|--------|---------|
+| **Connected** | Working normally |
+| **Paused** | Temporarily disabled |
+| **Error** | Connection issue, needs attention |
+| **Not Connected** | Not yet set up |
+
+### Pausing Integrations
+
+Temporarily disable an integration without disconnecting:
+
+1. Go to the integration settings
+2. Toggle **Enabled** off
+3. The integration pauses but credentials are preserved
+
+### Reconnecting
+
+If an integration shows errors:
+
+1. Check the error message
+2. Re-authenticate if tokens expired
+3. Verify the connected service is working
+4. Contact support if issues persist
+
+## Security
+
+### OAuth Tokens
+
+Integration OAuth tokens are:
+- Encrypted at rest using AES-256-GCM with workspace-specific keys
+- Scoped to minimum required permissions
+- Revocable from both Quackback and the connected service
+
+## Best Practices
+
+### Start Simple
+
+<Tip>
+Begin with one integration. Add more as your workflow matures.
+</Tip>
+
+### Map Relevant Events
+
+Don't send every event to every channel. Be selective:
+- New feedback → general notification
+- Status changes → specific channels
+- Comments → maybe skip or use digest
+
+### Monitor for Errors
+
+Regularly check integration status. Failed notifications can mean:
+- Expired tokens
+- Removed channels
+- Service outages
+
+### Document for Your Team
+
+Let your team know:
+- Which integrations are active
+- What events trigger notifications
+- Where to find feedback notifications
+
+## Enterprise Features
+
+Enterprise customers get additional capabilities:
+
+- **Audit logging** for integration changes
+- **SSO-scoped integrations** for security
+- **Priority support** for integration issues
+
+## Troubleshooting
+
+### Notifications Not Sending
+
+1. Check integration status for errors
+2. Verify event mappings are configured
+3. Check the target channel/endpoint exists
+4. Review recent activity logs
+
+### Duplicate Notifications
+
+1. Check for multiple event mappings
+2. Verify you don't have duplicate integrations
+3. Review webhook retry settings
+
+### Connection Lost
+
+1. Tokens may have expired
+2. Re-authenticate the integration
+3. Check the third-party service status
+
+## Next Steps
+
+- [Slack](/integrations/slack) - Set up Slack notifications
+- [Webhooks](/integrations/webhooks) - Build custom integrations (planned)
+- [Discord](/integrations/discord) - Discord notifications (planned)

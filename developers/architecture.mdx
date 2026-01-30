@@ -1,0 +1,379 @@
+---
+title: "Architecture Overview"
+description: "Understanding Quackback's architecture to navigate the codebase and make effective contributions"
+icon: "sitemap"
+---
+
+# Architecture Overview
+
+Understanding Quackback's architecture will help you navigate the codebase and make effective contributions.
+
+## High-Level Architecture
+
+```
+┌─────────────────────────────────────────────────────────┐
+│                     Browser/Client                       │
+│                                                          │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │
+│  │  Public      │  │  Admin       │  │  Auth        │   │
+│  │  Portal      │  │  Dashboard   │  │  Pages       │   │
+│  └──────────────┘  └──────────────┘  └──────────────┘   │
+└────────────────────────────┬────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────┐
+│                  TanStack Start Server                   │
+│                                                          │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │
+│  │  Routes      │  │  Server      │  │  API         │   │
+│  │  (SSR)       │  │  Functions   │  │  Routes      │   │
+│  └──────────────┘  └──────────────┘  └──────────────┘   │
+│                             │                            │
+│  ┌──────────────┐  ┌────────┴───────┐  ┌─────────────┐  │
+│  │  Services    │  │  Auth          │  │  Events     │  │
+│  │  Layer       │  │  (Better Auth) │  │  System     │  │
+│  └──────────────┘  └────────────────┘  └─────────────┘  │
+└────────────────────────────┬────────────────────────────┘
+                             │
+                             ▼
+┌─────────────────────────────────────────────────────────┐
+│                     PostgreSQL                           │
+│                                                          │
+│  ┌──────────────┐  ┌──────────────┐  ┌──────────────┐   │
+│  │  Drizzle ORM │  │  pgvector    │  │  pg_cron     │   │
+│  └──────────────┘  └──────────────┘  └──────────────┘   │
+└─────────────────────────────────────────────────────────┘
+```
+
+## Tech Stack
+
+| Layer | Technology | Purpose |
+|-------|------------|---------|
+| Framework | TanStack Start | Full-stack React framework |
+| Routing | TanStack Router | File-based routing, type-safe |
+| Database | PostgreSQL 18+ | Primary data store |
+| ORM | Drizzle | Type-safe queries |
+| Auth | Better Auth | Authentication library |
+| Styling | Tailwind CSS v4 | Utility-first CSS |
+| Components | shadcn/ui | UI component library |
+| Validation | Zod | Runtime type validation |
+| State | TanStack Query | Server state management |
+| Runtime | Bun | JavaScript runtime |
+
+## Directory Structure
+
+### apps/web/
+
+The main application:
+
+```
+apps/web/src/
+├── routes/                    # File-based routing
+│   ├── __root.tsx             # Root layout
+│   ├── _portal/               # Public portal routes
+│   ├── admin/                 # Admin dashboard
+│   ├── auth.*/                # Portal auth
+│   ├── admin.login/           # Team auth
+│   ├── onboarding/            # Setup wizard
+│   └── api/                   # API routes
+│
+├── components/                # React components
+│   ├── admin/                 # Admin-specific
+│   ├── public/                # Portal components
+│   ├── settings/              # Settings UI
+│   └── ui/                    # shadcn/ui primitives
+│
+├── lib/                       # Business logic
+│   ├── server-functions/      # RPC endpoints
+│   ├── auth/                  # Auth configuration
+│   ├── posts/                 # Post service
+│   ├── boards/                # Board service
+│   ├── comments/              # Comment service
+│   ├── statuses/              # Status service
+│   ├── tags/                  # Tag service
+│   ├── members/               # Member service
+│   ├── users/                 # User service
+│   ├── notifications/         # Notification service
+│   ├── subscriptions/         # Subscription service
+│   ├── events/                # Event dispatch
+│   ├── hooks/                 # Integration handlers
+│   ├── tenant/                # Multi-tenancy
+│   ├── ai/                    # AI integrations
+│   ├── sentiment/             # Sentiment analysis
+│   ├── embeddings/            # Vector embeddings
+│   ├── stores/                # Zustand stores
+│   ├── db.ts                  # Database proxy (tenant-aware)
+│   └── shared/                # Utilities & errors
+│
+└── server.ts                  # Server entry point
+```
+
+### packages/
+
+Shared code:
+
+```
+packages/
+├── db/                        # Database layer
+│   ├── src/
+│   │   ├── schema/            # Drizzle table definitions
+│   │   ├── client.ts          # Connection factory
+│   │   ├── seed.ts            # Demo data seeding
+│   │   └── migrate.ts         # Migration runner
+│   └── drizzle/               # Migration SQL files
+│
+├── ids/                       # TypeID system
+│   └── src/
+│       ├── index.ts           # ID generation
+│       ├── zod.ts             # Validation helpers
+│       └── drizzle.ts         # DB column types
+│
+└── email/                     # Email service
+    └── src/
+        ├── index.ts           # Send functions
+        └── templates/         # React Email templates
+```
+
+## Key Patterns
+
+### Server Functions
+
+Type-safe RPC between client and server:
+
+```typescript
+// lib/server-functions/posts.ts
+import { createServerFn } from '@tanstack/react-start'
+import { z } from 'zod'
+
+export const createPostFn = createServerFn({ method: 'POST' })
+  .validator(z.object({
+    title: z.string().min(1),
+    content: z.string(),
+    boardId: boardIdSchema,
+  }))
+  .handler(async ({ data }) => {
+    const auth = await requireAuth()
+    return createPost(data, auth.member)
+  })
+```
+
+Usage in components:
+```typescript
+const mutation = useMutation({
+  mutationFn: createPostFn,
+})
+```
+
+### Service Layer
+
+Business logic separate from transport:
+
+```typescript
+// lib/posts/post.service.ts
+export async function createPost(
+  input: CreatePostInput,
+  author: Author
+): Promise<PostWithDetails> {
+  // Validation
+  if (!input.title?.trim()) {
+    throw new ValidationError('VALIDATION_ERROR', 'Title required')
+  }
+
+  // Business logic
+  const post = await db.insert(posts).values({
+    id: createId('post'),
+    ...input,
+    authorId: author.id,
+  }).returning()
+
+  // Side effects
+  await dispatchPostCreated(post, author)
+
+  return post
+}
+```
+
+### Database Access
+
+<Note>
+Always use the tenant-aware proxy for database access to ensure proper multi-tenancy support.
+</Note>
+
+```typescript
+// ✅ Correct - use the proxy
+import { db, posts, eq } from '@/lib/db'
+
+// ❌ Wrong - bypasses tenant context
+import { db } from '@quackback/db'
+```
+
+The proxy handles:
+- Self-hosted: Singleton connection
+- Cloud: Per-tenant database from AsyncLocalStorage
+
+### TypeIDs
+
+Branded UUIDs for type safety:
+
+```typescript
+import { createId, type PostId, type BoardId } from '@quackback/ids'
+
+// Create new ID
+const postId: PostId = createId('post')
+// => "post_01h455vb4pex5vsknk084sn02q"
+
+// Type-safe function parameters
+function getPost(id: PostId): Promise<Post> {
+  // Can't accidentally pass a BoardId here
+}
+```
+
+### Event System
+
+Fire-and-forget event dispatch:
+
+```typescript
+// lib/events/dispatch.ts
+export async function dispatchPostCreated(
+  post: Post,
+  actor: EventActor
+) {
+  await processEvent({
+    type: 'post.created',
+    data: { post },
+    actor,
+  })
+}
+
+// lib/events/process.ts
+export async function processEvent(event: AppEvent) {
+  const targets = await getHookTargets(event.type)
+
+  await Promise.allSettled(
+    targets.map(target => target.handler.run(event, target))
+  )
+}
+```
+
+### Hook Handlers
+
+Extensible integration points:
+
+```typescript
+// lib/hooks/slack/handler.ts
+export const slackHandler: HookHandler = {
+  async run(event, target, config) {
+    const message = formatSlackMessage(event)
+    await slack.chat.postMessage({
+      channel: config.channelId,
+      ...message,
+    })
+    return { success: true }
+  },
+}
+```
+
+## Route Groups
+
+### Public Portal (`_portal/`)
+
+User-facing feedback portal:
+- Board listing
+- Post detail with comments
+- Voting interface
+- Public roadmap
+
+### Admin Dashboard (`admin/`)
+
+Team management interface:
+- Feedback inbox
+- Roadmap management
+- Settings configuration
+
+### Authentication
+
+Two separate auth flows:
+- `auth.*` - Portal users (email OTP)
+- `admin.login` - Team members (email/password + OAuth)
+
+## Data Flow
+
+### Create Post Flow
+
+```
+User clicks "Submit" in portal
+        │
+        ▼
+Component calls createPostFn()
+        │
+        ▼
+Server function validates input with Zod
+        │
+        ▼
+requireAuth() checks session
+        │
+        ▼
+createPost() service function
+        │
+        ▼
+Insert into database via Drizzle
+        │
+        ▼
+dispatchPostCreated() event
+        │
+        ▼
+processEvent() runs hooks (async)
+        │
+        ├──▶ Slack notification
+        ├──▶ Email to subscribers
+        └──▶ AI sentiment analysis
+        │
+        ▼
+Return post to client
+        │
+        ▼
+React Query updates cache
+```
+
+## Multi-Tenancy
+
+### Self-Hosted Mode
+
+Single workspace per deployment:
+- `DATABASE_URL` environment variable
+- Singleton database connection
+- No tenant resolution needed
+
+### Cloud Mode
+
+Multi-tenant SaaS:
+
+```
+Request arrives
+        │
+        ▼
+Extract Host header
+        │
+        ▼
+Resolve tenant from domain
+├── Subdomain: workspace.quackback.io
+└── Custom domain: feedback.company.com
+        │
+        ▼
+Query catalog database for workspace
+        │
+        ▼
+Get Neon database connection string
+        │
+        ▼
+Store in AsyncLocalStorage context
+        │
+        ▼
+All db.* calls use tenant database
+```
+
+## Next Steps
+
+- [Server Functions](/developers/server-functions) - Deep dive into RPC patterns
+- [Database](/developers/database) - Schema and migrations
+- [Adding Features](/developers/adding-features) - Build new functionality

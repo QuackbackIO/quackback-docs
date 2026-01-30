@@ -1,0 +1,120 @@
+---
+title: "Managing Boards"
+description: "Organize feedback into categories with boards for easier management and user submissions"
+icon: "layout-grid"
+---
+
+# Managing Boards
+
+Boards organize feedback into categories, making it easier for users to submit and for your team to manage.
+
+## Overview
+
+Access board settings from **Admin → Settings → Boards**.
+
+Common board examples:
+- Feature Requests
+- Bug Reports
+- Integrations
+- Documentation
+- Mobile App
+
+## Creating a Board
+
+1. Go to **Admin → Settings → Boards**
+2. Click **"New board"**
+3. Fill in the details:
+
+| Field | Description |
+|-------|-------------|
+| Board name | Display name (e.g., "Feature Requests") |
+| Description | Optional description shown on the board page |
+| Public board | Toggle to make the board public or private |
+
+4. Click **Create board**
+
+<Note>
+The URL slug is automatically generated from the board name.
+</Note>
+
+## Board Settings
+
+When you select a board, you'll see a tabbed interface with the following sections:
+
+### General Tab
+
+Edit the board's basic information:
+- **Board name** - The display name
+- **Description** - Optional description
+
+The Danger Zone at the bottom allows you to delete the board.
+
+### Access Tab
+
+Control who can access the board with access control settings.
+
+### Import Data Tab
+
+Import posts from a CSV file into this board. See [Import & Export](/admin/import-export) for details.
+
+### Export Data Tab
+
+Download all posts from this board as CSV. See [Import & Export](/admin/import-export) for details.
+
+## Editing a Board
+
+1. Go to **Admin → Settings → Boards**
+2. Select the board from the dropdown at the top
+3. Navigate to the **General** tab
+4. Update settings
+5. Click **Save changes**
+
+## Deleting a Board
+
+1. Go to **Admin → Settings → Boards**
+2. Select the board to delete
+3. Go to the **General** tab
+4. Scroll to the Danger Zone section
+5. Click **Delete board** and confirm
+
+<Warning>
+Deleting a board also deletes all posts in that board. This cannot be undone.
+</Warning>
+
+## Import & Export
+
+Import and export functionality is available in each board's settings. See [Import & Export](/admin/import-export) for detailed instructions.
+
+## Tips
+
+### Board Organization
+
+<Tip>
+**Keep it simple** - Start with 2-3 boards. You can always add more later.
+
+**Clear names** - Use descriptive names so users know where to post.
+
+**Logical separation** - Separate by type (features vs bugs) or area (mobile vs web).
+</Tip>
+
+### Private Boards
+
+Use private boards for:
+- Internal team feedback
+- Beta feature requests
+- Enterprise customer feedback
+
+### Migration
+
+When migrating from another platform:
+
+1. Export data from the old platform
+2. Format as CSV with required columns
+3. Import into appropriate boards
+4. Verify vote counts and dates imported correctly
+
+## Next Steps
+
+- [Statuses](/admin/statuses) - Define your workflow stages
+- [Tags](/admin/tags) - Add organizational labels
+- [Roadmap](/admin/roadmap) - Show public progress

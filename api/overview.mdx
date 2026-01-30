@@ -1,0 +1,309 @@
+---
+title: "API Overview"
+description: "Learn about Quackback's APIs for integrating with your applications and automating workflows"
+icon: "code"
+---
+
+# API Overview
+
+Quackback provides APIs for integrating with your applications and automating workflows.
+
+## API Types
+
+### Server Functions (RPC)
+
+The primary API uses TanStack Server Functions—type-safe RPC endpoints:
+
+- Automatic TypeScript types
+- Request/response validation with Zod
+- Session-based authentication
+
+**Best for**: Frontend applications, internal tools
+
+### REST API Routes
+
+Traditional HTTP endpoints for specific operations:
+
+- CSV import/export
+- OAuth callbacks
+- Authentication endpoints
+
+**Best for**: Admin operations, authentication flows
+
+### Event Hooks
+
+Quackback uses an internal hook system to notify external services when events occur:
+
+- Slack notifications
+- Email notifications
+- Linear issue creation (coming soon)
+
+<Note>
+Custom outgoing webhooks are not yet implemented. Use the Slack integration for external notifications.
+</Note>
+
+## Authentication
+
+### Session-Based
+
+Most APIs use session cookies:
+
+1. User signs in via portal or admin
+2. Session cookie set automatically
+3. Subsequent requests authenticated
+
+### API Keys (Coming Soon)
+
+<Tip>
+API keys for programmatic access without user sessions are coming soon.
+</Tip>
+
+## Common Endpoints
+
+### REST API Routes
+
+| Endpoint | Method | Auth | Description |
+|----------|--------|------|-------------|
+| `/api/auth/*` | GET/POST | - | Better Auth endpoints |
+| `/api/auth/oauth/:provider` | GET | - | OAuth initiation (github, google) |
+| `/api/import` | POST | Admin | CSV import (multipart form) |
+| `/api/export` | GET | Admin | CSV export |
+| `/api/user/avatar/:userId` | GET | - | User avatar image |
+| `/api/user/profile` | GET/POST | Auth | User profile management |
+
+### Server Functions
+
+#### Public (No Auth Required)
+
+| Function | Description |
+|----------|-------------|
+| `listPublicPostsFn` | List posts with filtering and pagination |
+| `listPublicRoadmapsFn` | List public roadmaps |
+| `getPublicRoadmapPostsFn` | Get posts for a roadmap |
+| `findSimilarPostsFn` | Find similar posts (duplicate detection) |
+
+#### Authenticated (Any User)
+
+| Function | Description |
+|----------|-------------|
+| `createPublicPostFn` | Submit feedback to a board |
+| `toggleVoteFn` | Toggle vote on a post |
+| `createCommentFn` | Add a comment to a post |
+| `subscribeToPostFn` | Subscribe to post updates |
+| `getVotedPostsFn` | Get all posts user has voted on |
+
+#### Team Members (Admin/Member)
+
+| Function | Description |
+|----------|-------------|
+| `fetchInboxPostsForAdmin` | List inbox posts with advanced filters |
+| `fetchPostWithDetails` | Get post with comments and metadata |
+| `createPostFn` | Create post from admin dashboard |
+| `updatePostFn` | Update post details |
+| `changePostStatusFn` | Change post status |
+| `deletePostFn` | Soft delete a post |
+| `pinCommentFn` | Pin a comment as official response |
+
+## Request Format
+
+### Server Functions
+
+Called from React with TanStack Query:
+
+```typescript
+import { useMutation } from '@tanstack/react-query'
+import { createPostFn } from '@/lib/server-functions/posts'
+
+function CreatePostForm() {
+  const mutation = useMutation({
+    mutationFn: createPostFn,
+  })
+
+  const handleSubmit = (data) => {
+    mutation.mutate({
+      data: {
+        title: data.title,
+        content: data.content,
+        boardId: data.boardId,
+      }
+    })
+  }
+}
+```
+
+### REST Endpoints
+
+Standard HTTP requests:
+
+```bash
+# Export posts (admin only)
+curl https://feedback.example.com/api/export \
+  -H "Cookie: better-auth.session_token=..."
+
+# Import posts (admin only)
+curl -X POST https://feedback.example.com/api/import \
+  -H "Cookie: better-auth.session_token=..." \
+  -F "file=@posts.csv"
+```
+
+## Response Format
+
+### Success
+
+```json
+{
+  "id": "post_01h455vb4pex5vsknk084sn02q",
+  "title": "Feature request",
+  "status": "created"
+}
+```
+
+### Error
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Title is required"
+  }
+}
+```
+
+## Rate Limiting
+
+<Warning>
+Rate limiting is not currently implemented at the application level. For production deployments, configure rate limiting at the infrastructure level.
+</Warning>
+
+Recommended approaches:
+
+- **Nginx**: Use `limit_req_zone` and `limit_req` directives
+- **Cloudflare**: Use rate limiting rules
+- **Reverse proxy**: Most reverse proxies support rate limiting
+
+Recommended limits:
+| Endpoint Type | Suggested Limit |
+|---------------|-----------------|
+| Public read | 100/min |
+| Authenticated | 60/min |
+| Write operations | 30/min |
+
+## Error Codes
+
+The application uses domain exceptions that map to HTTP status codes:
+
+| Exception Class | HTTP Status | Use Case |
+|-----------------|-------------|----------|
+| `ValidationError` | 400 | Invalid input data, bad request |
+| `NotFoundError` | 404 | Resource not found |
+| `ForbiddenError` | 403 | Insufficient permissions |
+| `ConflictError` | 409 | Duplicate resource, already exists |
+| `InternalError` | 500 | Database errors, unexpected failures |
+
+Common error codes:
+- `VALIDATION_ERROR` - Input validation failed
+- `POST_NOT_FOUND` - Post does not exist
+- `BOARD_NOT_FOUND` - Board does not exist
+- `CANNOT_DELETE` - User lacks delete permission
+- `CANNOT_EDIT` - User lacks edit permission
+- `DUPLICATE_VOTE` - User already voted
+
+## TypeIDs
+
+All resource IDs are TypeIDs:
+
+```
+post_01h455vb4pex5vsknk084sn02q
+board_01h455vb4pex5vsknk084sn02q
+status_01h455vb4pex5vsknk084sn02q
+```
+
+Format: `{type}_{ulid}`
+
+Benefits:
+- Self-describing (prefix shows type)
+- Globally unique
+- Sortable by creation time
+
+## Pagination
+
+List endpoints support pagination:
+
+```typescript
+// Request
+{
+  page: 1,
+  limit: 20,  // max 100
+}
+
+// Response
+{
+  data: [...],
+  pagination: {
+    page: 1,
+    limit: 20,
+    total: 150,
+    hasMore: true
+  }
+}
+```
+
+## Events and Hooks
+
+Quackback dispatches events internally that trigger notifications:
+
+| Event | Description |
+|-------|-------------|
+| `post.created` | New post submitted |
+| `post.status_changed` | Post status updated |
+| `comment.created` | New comment added |
+
+These events can trigger:
+- **Slack notifications** - Post to configured channels
+- **Email notifications** - Notify subscribers
+
+Custom outgoing webhooks are planned for a future release.
+
+## SDK
+
+No official SDKs are currently available. Use the server functions directly from your TanStack Start application, or call the REST endpoints from external applications.
+
+## Best Practices
+
+### Use Server Functions
+
+For frontend integration, server functions provide:
+- Type safety
+- Automatic validation
+- Optimistic updates
+
+### Handle Errors Gracefully
+
+```typescript
+import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/shared/errors'
+
+try {
+  await createPostFn({ data })
+} catch (error) {
+  if (error instanceof ValidationError) {
+    // Show validation message
+    console.log(error.code, error.message)
+  } else if (error instanceof ForbiddenError) {
+    // Handle permission denied
+  } else {
+    // Generic error handling
+  }
+}
+```
+
+### Respect Rate Limits
+
+- Implement exponential backoff
+- Cache responses where appropriate
+- Batch operations when possible
+
+## Next Steps
+
+- [Posts API](/api/posts) - Post operations
+- [Comments API](/api/comments) - Comment operations
+- [Webhooks](/integrations/webhooks) - Event notifications

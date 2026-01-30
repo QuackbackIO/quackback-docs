@@ -1,0 +1,264 @@
+---
+title: "Single Sign-On (SSO)"
+description: "Configure OIDC-based Single Sign-On to authenticate users with your organization's identity provider"
+icon: "building"
+---
+
+# Single Sign-On (SSO)
+
+Configure Single Sign-On to allow users to authenticate with your organization's identity provider.
+
+## Overview
+
+Quackback supports SSO through OpenID Connect (OIDC), which works with most modern identity providers including Okta, Azure AD, Google Workspace, Auth0, and Keycloak.
+
+SSO can be configured for:
+
+- **Portal Users** - Let customers sign in with your corporate IdP
+- **Team Members** - Require employees to use your organization's SSO
+
+## Portal User SSO vs Team SSO
+
+| Feature | Portal SSO | Team SSO |
+|---------|-----------|----------|
+| Purpose | Customer authentication | Employee authentication |
+| Location | Admin → Settings → Portal Authentication | Admin → Settings → Security |
+| Enforcement | Always optional | Optional or required |
+| Other methods | Can coexist with email/OAuth | Can disable other methods |
+
+## Prerequisites
+
+Before configuring SSO, you need:
+
+1. **An OIDC-compatible identity provider** with:
+   - A registered application/client
+   - Client ID and client secret
+   - OIDC discovery endpoint (`.well-known/openid-configuration`)
+
+2. **Required OIDC scopes**:
+   - `openid`
+   - `email`
+   - `profile`
+
+3. **Callback URL** for your IdP configuration:
+   ```
+   https://your-domain.com/api/auth/callback/oidc
+   ```
+
+## Supported Identity Providers
+
+Quackback works with any OIDC-compliant provider:
+
+| Provider | Discovery URL Format |
+|----------|---------------------|
+| Okta | `https://your-org.okta.com` |
+| Azure AD | `https://login.microsoftonline.com/{tenant}/v2.0` |
+| Google Workspace | `https://accounts.google.com` |
+| Auth0 | `https://your-tenant.auth0.com` |
+| Keycloak | `https://keycloak.example.com/realms/{realm}` |
+| OneLogin | `https://your-org.onelogin.com/oidc/2` |
+
+## Configuration
+
+### Portal SSO Setup
+
+Allow portal users to sign in with your identity provider:
+
+1. Go to **Admin → Settings → Portal Authentication**
+2. Click the gear icon next to **Custom OpenID Connect**
+3. Configure the following fields:
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| Button Label | Text shown on login button | `Acme Corp SSO` |
+| Issuer URL | OIDC discovery base URL | `https://acme.okta.com` |
+| Client ID | Application client ID | `0oa1bcdef...` |
+| Client Secret | Application client secret | `abc123...` |
+| Email Domain | Restrict to specific domain (optional) | `acme.com` |
+
+4. Click **Test** to verify the issuer URL is valid
+5. Click **Save & Enable**
+
+The login page will now show "Continue with Acme Corp SSO" button.
+
+### Team SSO Setup
+
+Require or allow team members to use SSO:
+
+1. Go to **Admin → Settings → Security**
+2. Configure the SSO provider (same fields as Portal SSO)
+3. Choose enforcement level:
+
+| Enforcement | Behavior |
+|-------------|----------|
+| Optional | Team can use SSO or other enabled methods |
+| Required | Team must use SSO (email remains available for admin recovery) |
+
+<Warning>
+When SSO is required, other sign-in methods (GitHub, Google) are disabled for team members. Email OTP remains available as a recovery option for admins.
+</Warning>
+
+## IdP Configuration
+
+### Okta
+
+1. Create a new **Web Application** in Okta Admin Console
+2. Configure:
+   - **Sign-in redirect URI**: `https://your-domain.com/api/auth/callback/oidc`
+   - **Sign-out redirect URI**: `https://your-domain.com`
+   - **Assignments**: Assign users or groups
+3. Copy the **Client ID** and **Client Secret**
+4. Use `https://your-org.okta.com` as the Issuer URL
+
+### Azure AD
+
+1. Register an application in Azure Portal → App Registrations
+2. Configure:
+   - **Redirect URI**: `https://your-domain.com/api/auth/callback/oidc` (Web platform)
+   - **Supported account types**: Based on your requirements
+3. Create a client secret in **Certificates & secrets**
+4. Use `https://login.microsoftonline.com/{tenant-id}/v2.0` as Issuer URL
+
+### Google Workspace
+
+1. Create OAuth credentials in Google Cloud Console
+2. Configure:
+   - **Authorized redirect URIs**: `https://your-domain.com/api/auth/callback/oidc`
+   - **OAuth consent screen**: Configure for your organization
+3. Use `https://accounts.google.com` as Issuer URL
+
+### Auth0
+
+1. Create a **Regular Web Application** in Auth0 Dashboard
+2. Configure:
+   - **Allowed Callback URLs**: `https://your-domain.com/api/auth/callback/oidc`
+   - **Allowed Logout URLs**: `https://your-domain.com`
+3. Use `https://your-tenant.auth0.com` as Issuer URL
+
+## Testing SSO
+
+After configuration:
+
+1. **Test Discovery**: Click the "Test" button to verify Quackback can reach the IdP
+2. **Test Login**: Open an incognito window and try signing in with SSO
+3. **Verify User Creation**: Check that the user appears in your user list
+
+### Test Checklist
+
+- [ ] Discovery endpoint responds correctly
+- [ ] Login redirects to IdP
+- [ ] IdP authentication succeeds
+- [ ] Callback returns to Quackback
+- [ ] User is created/logged in
+- [ ] Email domain restriction works (if configured)
+
+## Email Domain Restriction
+
+Limit SSO to users with specific email domains:
+
+1. Enter the domain (without `@`) in the **Email Domain Restriction** field
+2. Only users with matching email domains can sign in
+
+Example: Setting `acme.com` only allows `user@acme.com`, not `user@gmail.com`.
+
+## Security Considerations
+
+### PKCE
+
+Quackback uses PKCE (Proof Key for Code Exchange) for all OIDC flows, providing protection against authorization code interception attacks.
+
+### Secret Storage
+
+Client secrets are encrypted at rest using AES-256-GCM before being stored in the database. The encryption key is derived from your `ENCRYPTION_KEY` or `BETTER_AUTH_SECRET` environment variable.
+
+### Session Management
+
+SSO sessions follow the same lifecycle as other authentication methods:
+- 7-day session duration
+- Sessions refresh on activity
+- Logout invalidates the session
+
+## Troubleshooting
+
+### "Provider missing required endpoints"
+
+The issuer URL doesn't have a valid OIDC discovery document.
+
+**Solutions**:
+1. Verify the issuer URL is correct
+2. Check if the IdP is accessible from your server
+3. Ensure the `.well-known/openid-configuration` endpoint is available
+
+### "Token exchange failed"
+
+The authorization code couldn't be exchanged for tokens.
+
+**Solutions**:
+1. Verify client ID and secret are correct
+2. Check the callback URL matches exactly
+3. Ensure the IdP application is active
+
+### "Missing email claim"
+
+The IdP didn't return an email address.
+
+**Solutions**:
+1. Ensure `email` scope is requested
+2. Check user profile has an email address in IdP
+3. Verify email claim is included in ID token
+
+### "Email domain mismatch"
+
+User's email doesn't match the configured domain restriction.
+
+**Solutions**:
+1. Verify the user's email domain
+2. Check domain restriction is configured correctly
+3. Remove domain restriction if not needed
+
+### "SSO not configured"
+
+Attempting to use Team SSO when it's not set up.
+
+**Solutions**:
+1. Go to Admin → Settings → Security
+2. Configure the SSO provider
+3. Enable SSO
+
+### Users can't sign in after SSO required
+
+When SSO is required but having issues:
+
+1. An admin can still sign in via email OTP
+2. Once logged in, adjust SSO settings
+3. Fix the IdP configuration
+
+## Removing SSO
+
+### Portal SSO
+
+1. Go to **Admin → Settings → Portal Authentication**
+2. Click the gear icon next to OIDC
+3. Click **Remove**
+
+### Team SSO
+
+1. Go to **Admin → Settings → Security**
+2. Disable SSO or change enforcement to optional
+3. Optionally remove the provider configuration
+
+<Note>
+Existing users who signed up via SSO can still sign in using email OTP, as accounts are linked by email address.
+</Note>
+
+## SAML Support
+
+Quackback currently supports OIDC for SSO. SAML support is planned for a future Enterprise Edition release.
+
+Most identity providers support both OIDC and SAML. If your organization requires SAML specifically, check if your IdP can expose an OIDC interface for the same users/groups.
+
+## Next Steps
+
+- [OAuth](/auth/oauth) - Configure GitHub/Google sign-in
+- [Email OTP](/auth/email-otp) - Passwordless authentication
+- [Authentication Overview](/auth/overview) - Complete auth documentation

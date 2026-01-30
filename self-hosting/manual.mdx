@@ -1,0 +1,485 @@
+---
+title: "Manual Installation"
+description: "Install Quackback without Docker using Bun and a direct PostgreSQL connection"
+icon: "terminal"
+---
+
+# Manual Installation
+
+Install Quackback without Docker using Bun and a direct PostgreSQL connection.
+
+<Note>
+This guide is for users who prefer to run Quackback directly on their server without containerization.
+</Note>
+
+## Prerequisites
+
+### Bun
+
+**Version**: 1.3.7 or higher
+
+```bash
+# Install Bun
+curl -fsSL https://bun.sh/install | bash
+
+# Verify installation
+bun --version
+```
+
+### PostgreSQL
+
+**Version**: 18 or higher (required for native `uuidv7()` support)
+
+**Required Extensions**:
+- `pgvector` - Vector similarity search (for AI features)
+- `pg_cron` - Scheduled jobs (optional)
+
+### Other Tools
+
+- Git
+- OpenSSL (for generating secrets)
+
+## Installation Steps
+
+### 1. Clone the Repository
+
+```bash
+git clone https://github.com/quackbackhq/quackback.git
+cd quackback
+```
+
+### 2. Install Dependencies
+
+```bash
+bun install
+```
+
+### 3. Configure Environment
+
+Copy the example environment file:
+
+```bash
+cp .env.example .env
+```
+
+Generate a secure auth secret:
+
+```bash
+# Generate a 32-byte secret
+openssl rand -base64 32
+```
+
+Edit `.env` with your settings:
+
+```bash
+# Required settings
+DATABASE_URL="postgresql://quackback:your_password@localhost:5432/quackback"
+ROOT_URL="https://feedback.yourcompany.com"
+BETTER_AUTH_SECRET="your-generated-secret-key-at-least-32-characters"
+BETTER_AUTH_URL="https://feedback.yourcompany.com"
+```
+
+See [Environment Variables](/reference/environment-variables) for all options.
+
+### 4. Set Up PostgreSQL
+
+#### Install PostgreSQL 18
+
+**Ubuntu/Debian**:
+
+```bash
+# Add PostgreSQL APT repository
+sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
+wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
+
+# Install PostgreSQL 18
+sudo apt update
+sudo apt install postgresql-18 postgresql-18-pgvector postgresql-18-cron
+```
+
+**macOS (Homebrew)**:
+
+```bash
+brew install postgresql@18
+brew services start postgresql@18
+
+# Install pgvector
+brew install pgvector
+```
+
+**RHEL/CentOS/Fedora**:
+
+```bash
+# Install PostgreSQL 18 repo
+sudo dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm
+
+# Install PostgreSQL and extensions
+sudo dnf install -y postgresql18-server postgresql18-contrib postgresql18-pgvector postgresql18-pg_cron
+```
+
+#### Create Database and User
+
+```bash
+# Switch to postgres user
+sudo -u postgres psql
+```
+
+```sql
+-- Create user
+CREATE USER quackback WITH PASSWORD 'your_secure_password';
+
+-- Create database
+CREATE DATABASE quackback OWNER quackback;
+
+-- Connect to database
+\c quackback
+
+-- Enable required extensions
+CREATE EXTENSION IF NOT EXISTS pgvector;
+
+-- Optional: Enable pg_cron (for scheduled jobs)
+-- Note: pg_cron must be loaded in postgresql.conf first
+CREATE EXTENSION IF NOT EXISTS pg_cron;
+
+-- Grant permissions
+GRANT ALL PRIVILEGES ON DATABASE quackback TO quackback;
+GRANT ALL ON SCHEMA public TO quackback;
+```
+
+#### Configure pg_cron (Optional)
+
+Edit `postgresql.conf`:
+
+```ini
+# Add to postgresql.conf
+shared_preload_libraries = 'pg_cron'
+cron.database_name = 'quackback'
+```
+
+Restart PostgreSQL:
+
+```bash
+sudo systemctl restart postgresql
+```
+
+### 5. Run Migrations
+
+```bash
+bun run db:migrate
+```
+
+This creates all required tables and indexes.
+
+### 6. Build the Application
+
+```bash
+bun run build
+```
+
+This creates an optimized production build in `apps/web/.output/`.
+
+### 7. Start the Server
+
+```bash
+bun run start
+```
+
+The server starts on port 3000 by default.
+
+## Process Management
+
+<Warning>
+For production, use a process manager to keep Quackback running and automatically restart on failures.
+</Warning>
+
+### systemd (Recommended)
+
+Create `/etc/systemd/system/quackback.service`:
+
+```ini
+[Unit]
+Description=Quackback Feedback Platform
+After=network.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=simple
+User=quackback
+Group=quackback
+WorkingDirectory=/opt/quackback
+Environment=NODE_ENV=production
+EnvironmentFile=/opt/quackback/.env
+ExecStart=/home/quackback/.bun/bin/bun run start
+Restart=always
+RestartSec=10
+
+# Security hardening
+NoNewPrivileges=true
+PrivateTmp=true
+ProtectSystem=strict
+ProtectHome=true
+ReadWritePaths=/opt/quackback
+
+# Logging
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=quackback
+
+[Install]
+WantedBy=multi-user.target
+```
+
+Enable and start:
+
+```bash
+# Reload systemd
+sudo systemctl daemon-reload
+
+# Enable on boot
+sudo systemctl enable quackback
+
+# Start service
+sudo systemctl start quackback
+
+# Check status
+sudo systemctl status quackback
+
+# View logs
+journalctl -u quackback -f
+```
+
+### PM2 (Alternative)
+
+```bash
+# Install PM2
+bun install -g pm2
+
+# Create ecosystem file
+cat > ecosystem.config.js << 'EOF'
+module.exports = {
+  apps: [{
+    name: 'quackback',
+    cwd: '/opt/quackback/apps/web',
+    script: '.output/server/index.mjs',
+    interpreter: 'bun',
+    env: {
+      NODE_ENV: 'production',
+      PORT: 3000
+    },
+    instances: 1,
+    autorestart: true,
+    watch: false,
+    max_memory_restart: '1G'
+  }]
+}
+EOF
+
+# Start with PM2
+pm2 start ecosystem.config.js
+
+# Save configuration
+pm2 save
+
+# Enable startup script
+pm2 startup
+```
+
+## Directory Structure
+
+Recommended production layout:
+
+```
+/opt/quackback/
+├── .env                    # Environment configuration
+├── apps/
+│   └── web/
+│       └── .output/        # Built application
+├── packages/               # Internal packages
+├── node_modules/           # Dependencies
+├── package.json
+└── bun.lock
+```
+
+## Security Considerations
+
+### File Permissions
+
+```bash
+# Create dedicated user
+sudo useradd -r -s /bin/false quackback
+
+# Set ownership
+sudo chown -R quackback:quackback /opt/quackback
+
+# Restrict .env file
+sudo chmod 600 /opt/quackback/.env
+```
+
+### Firewall
+
+```bash
+# UFW example
+sudo ufw allow 22/tcp      # SSH
+sudo ufw allow 80/tcp      # HTTP (for redirect)
+sudo ufw allow 443/tcp     # HTTPS
+sudo ufw enable
+```
+
+<Warning>
+Do NOT expose port 3000 directly. Use a reverse proxy.
+</Warning>
+
+## Updating Quackback
+
+### 1. Stop the Service
+
+```bash
+sudo systemctl stop quackback
+```
+
+### 2. Backup Database
+
+```bash
+pg_dump -Fc quackback > quackback_backup_$(date +%Y%m%d).dump
+```
+
+### 3. Pull Updates
+
+```bash
+cd /opt/quackback
+git pull origin main
+```
+
+### 4. Install Dependencies
+
+```bash
+bun install
+```
+
+### 5. Run Migrations
+
+```bash
+bun run db:migrate
+```
+
+### 6. Rebuild
+
+```bash
+bun run build
+```
+
+### 7. Restart Service
+
+```bash
+sudo systemctl start quackback
+```
+
+### Update Script
+
+<Tip>
+Save this script as `/opt/quackback/update.sh` to automate the update process.
+</Tip>
+
+```bash
+#!/bin/bash
+set -e
+
+cd /opt/quackback
+
+echo "Stopping service..."
+sudo systemctl stop quackback
+
+echo "Creating backup..."
+pg_dump -Fc quackback > /var/backups/quackback/quackback_$(date +%Y%m%d_%H%M%S).dump
+
+echo "Pulling updates..."
+git pull origin main
+
+echo "Installing dependencies..."
+bun install
+
+echo "Running migrations..."
+bun run db:migrate
+
+echo "Building..."
+bun run build
+
+echo "Starting service..."
+sudo systemctl start quackback
+
+echo "Update complete!"
+```
+
+## Health Checks
+
+### Application Health
+
+```bash
+curl http://localhost:3000/
+```
+
+### Database Connection
+
+```bash
+psql $DATABASE_URL -c "SELECT 1"
+```
+
+### Service Status
+
+```bash
+sudo systemctl status quackback
+```
+
+## Troubleshooting
+
+### Port Already in Use
+
+```bash
+# Find what's using port 3000
+sudo lsof -i :3000
+
+# Kill the process or change PORT in .env
+```
+
+### Database Connection Failed
+
+Check connection string format:
+```
+postgresql://user:password@host:port/database
+```
+
+Test connection:
+```bash
+psql "postgresql://quackback:password@localhost:5432/quackback" -c "SELECT 1"
+```
+
+### Permission Denied
+
+Ensure the quackback user owns all files:
+```bash
+sudo chown -R quackback:quackback /opt/quackback
+```
+
+### Build Fails
+
+Clear cache and reinstall:
+```bash
+rm -rf node_modules
+rm -rf apps/web/.output
+bun install
+bun run build
+```
+
+### Migrations Fail
+
+Check database user permissions:
+```sql
+GRANT ALL PRIVILEGES ON DATABASE quackback TO quackback;
+GRANT ALL ON SCHEMA public TO quackback;
+```
+
+## Next Steps
+
+- [Reverse Proxy Configuration](/self-hosting/reverse-proxy) - Set up Nginx, Caddy, or Traefik
+- [Environment Variables](/reference/environment-variables) - Configure email, OAuth, and integrations
+- [Troubleshooting](/self-hosting/troubleshooting) - Common issues and solutions

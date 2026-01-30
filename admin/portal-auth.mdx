@@ -1,0 +1,180 @@
+---
+title: "Portal Authentication"
+description: "Configure how visitors sign in to your public feedback portal"
+icon: "lock"
+---
+
+# Portal Authentication
+
+Configure which authentication methods are available to users signing in to your public feedback portal.
+
+## Overview
+
+Access Portal Authentication from **Admin → Settings → Portal Authentication**. Here you can control how your customers and users sign in to submit feedback.
+
+<Note>
+Portal Authentication controls **portal user** sign-in (customers submitting feedback). For **team member** authentication (employees managing feedback), see [Security](/admin/security).
+</Note>
+
+## Authentication Methods
+
+### Email (Magic Link)
+
+Allow users to sign in using magic link codes sent to their email.
+
+- **How it works**: User enters email → receives 6-digit code → enters code to sign in
+- **Best for**: Maximum accessibility, no third-party accounts needed
+- **Enabled by default**: Yes
+
+### GitHub
+
+Allow users to sign in using their GitHub accounts.
+
+- **How it works**: User clicks "Continue with GitHub" → authorizes access → signed in
+- **Best for**: Developer-focused products
+
+### Google
+
+Allow users to sign in using their Google accounts.
+
+- **How it works**: User clicks "Continue with Google" → authorizes access → signed in
+- **Best for**: Consumer products, business tools
+
+### Custom OpenID Connect (OIDC)
+
+Connect your own identity provider to let users sign in with existing accounts.
+
+- **Supported providers**: Okta, Auth0, Azure AD, Keycloak, and any OIDC-compliant provider
+- **Best for**: Enterprise customers requiring SSO
+
+## Configuring Sign-in Methods
+
+### Enable/Disable Methods
+
+1. Navigate to **Admin → Settings → Portal Authentication**
+2. Toggle each method on or off using the switches
+3. Changes save automatically
+
+<Warning>
+At least one authentication method must remain enabled. The last enabled method shows a lock icon and cannot be disabled.
+</Warning>
+
+## Setting Up OpenID Connect
+
+To configure a custom identity provider:
+
+1. Click the **gear icon** next to "Custom OpenID Connect"
+2. Fill in the configuration form:
+
+### Required Fields
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| Button Label | Text shown on the sign-in button | "Acme Corp SSO" |
+| Issuer URL | Your identity provider's base URL | `https://acme.okta.com` |
+| Client ID | OAuth client ID from your IdP | `0oa1234567890` |
+| Client Secret | OAuth client secret from your IdP | (hidden) |
+
+### Optional Fields
+
+| Field | Description | Example |
+|-------|-------------|---------|
+| Email Domain Restriction | Only allow users from this domain | `acme.com` |
+
+### Testing the Connection
+
+1. Enter your Issuer URL
+2. Click the **Test** button
+3. Wait for validation:
+   - ✅ Green checkmark = OIDC endpoints verified
+   - ❌ Red warning = Check your issuer URL
+
+### Saving Configuration
+
+Click **Save & Enable** to save and activate the OIDC connection.
+
+<Tip>
+Use the "Test" button to verify your issuer URL is correct before entering client credentials.
+</Tip>
+
+## Managing OIDC Configuration
+
+### Editing Configuration
+
+1. Click the gear icon next to "Custom OpenID Connect"
+2. Update the fields as needed
+3. Leave Client Secret empty to keep the existing value
+4. Click **Save Changes**
+
+### Removing Configuration
+
+1. Click the gear icon
+2. Click the **Remove** button at the bottom
+3. Confirm the removal
+
+<Warning>
+Removing OIDC configuration will immediately disable that sign-in method. Users who only have OIDC accounts won't be able to sign in until you re-configure it or they create accounts with another method.
+</Warning>
+
+## Identity Provider Setup
+
+### Okta
+
+1. Create a new "Web" application in Okta
+2. Set redirect URI to: `https://your-domain.com/api/auth/callback/oidc`
+3. Copy Client ID and Client Secret
+4. Use your Okta domain as the Issuer URL
+
+### Auth0
+
+1. Create a new "Regular Web Application" in Auth0
+2. Set callback URL to: `https://your-domain.com/api/auth/callback/oidc`
+3. Copy Client ID and Client Secret
+4. Use `https://your-tenant.auth0.com` as the Issuer URL
+
+### Azure AD
+
+1. Register a new application in Azure AD
+2. Add redirect URI: `https://your-domain.com/api/auth/callback/oidc`
+3. Create a client secret
+4. Use `https://login.microsoftonline.com/{tenant-id}/v2.0` as the Issuer URL
+
+## Best Practices
+
+### Choosing Methods
+
+<Tip>
+Consider your user base when selecting authentication methods:
+
+- **Developer products** → Enable GitHub
+- **Business products** → Enable Google
+- **Enterprise customers** → Configure OIDC
+- **Maximum accessibility** → Keep Email enabled
+</Tip>
+
+### Security Recommendations
+
+1. **Enable multiple methods** - Provides fallback if one method has issues
+2. **Use OIDC for enterprise** - Allows customers to use their corporate credentials
+3. **Domain restrictions** - Use email domain restriction for OIDC to limit access
+
+### User Experience
+
+- Fewer options = simpler sign-in experience
+- More options = greater accessibility
+- Find the right balance for your users
+
+## Access Control
+
+Only **Admins** can modify portal authentication settings.
+
+| Role | Can View | Can Modify |
+|------|----------|------------|
+| Admin | Yes | Yes |
+| Member | No | No |
+
+## Next Steps
+
+- [Security](/admin/security) - Configure team member authentication
+- [SSO](/auth/sso) - Learn more about enterprise SSO
+- [OAuth](/auth/oauth) - OAuth provider setup details

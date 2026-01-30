@@ -1,0 +1,1162 @@
+---
+title: "Adding Features"
+description: "Step-by-step guide to adding new features to Quackback, from database schema to UI components"
+icon: "plus"
+---
+
+# Adding Features
+
+This guide walks you through adding new features to Quackback, from database schema to UI components. Follow these patterns to maintain consistency with the existing codebase.
+
+## Planning a Feature
+
+Before writing code, understand where each piece goes:
+
+| Layer | Location | Purpose |
+|-------|----------|---------|
+| Schema | `packages/db/src/schema/` | Database tables and relations |
+| Service | `apps/web/src/lib/{feature}/` | Business logic and validation |
+| Server Functions | `apps/web/src/lib/server-functions/` | API endpoints (RPC) |
+| Queries | `apps/web/src/lib/queries/` | TanStack Query factories |
+| Hooks | `apps/web/src/lib/hooks/` | React hooks for mutations |
+| Components | `apps/web/src/components/` | UI components |
+| Routes | `apps/web/src/routes/` | Page components with loaders |
+
+### Naming Conventions
+
+- **Files**: kebab-case (`user-profile.tsx`)
+- **Components**: PascalCase (`UserProfile`)
+- **Functions**: camelCase (`getUserProfile`)
+- **Database**: snake_case (`post_tags`)
+- **TypeIDs**: lowercase singular prefix (`post_01h455vb...`)
+
+## Database Changes
+
+### Adding a New Table
+
+1. Create or edit a schema file in `packages/db/src/schema/`:
+
+```typescript
+// packages/db/src/schema/reactions.ts
+import {
+  pgTable,
+  text,
+  timestamp,
+  index,
+  uniqueIndex,
+} from 'drizzle-orm/pg-core'
+import { relations } from 'drizzle-orm'
+import { typeIdWithDefault, typeIdColumn } from '@quackback/ids/drizzle'
+import { posts } from './posts'
+import { member } from './auth'
+
+export const reactions = pgTable(
+  'reactions',
+  {
+    // Primary key with auto-generated TypeID
+    id: typeIdWithDefault('reaction')('id').primaryKey(),
+
+    // Foreign keys using TypeID columns
+    postId: typeIdColumn('post')('post_id')
+      .notNull()
+      .references(() => posts.id, { onDelete: 'cascade' }),
+
+    memberId: typeIdColumn('member')('member_id')
+      .notNull()
+      .references(() => member.id, { onDelete: 'cascade' }),
+
+    emoji: text('emoji').notNull(),
+
+    // Timestamps
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    // Indexes for query performance
+    index('reactions_post_id_idx').on(table.postId),
+    index('reactions_member_id_idx').on(table.memberId),
+
+    // Unique constraint: one reaction per member per post per emoji
+    uniqueIndex('reactions_unique_idx').on(
+      table.postId,
+      table.memberId,
+      table.emoji
+    ),
+  ]
+)
+
+// Define relations for Drizzle query builder
+export const reactionsRelations = relations(reactions, ({ one }) => ({
+  post: one(posts, {
+    fields: [reactions.postId],
+    references: [posts.id],
+  }),
+  member: one(member, {
+    fields: [reactions.memberId],
+    references: [member.id],
+  }),
+}))
+```
+
+2. Export from the schema index:
+
+```typescript
+// packages/db/src/schema/index.ts
+export * from './reactions'
+```
+
+3. Add the TypeID prefix (if new entity type):
+
+```typescript
+// packages/ids/src/prefixes.ts
+export const ID_PREFIXES = {
+  // ... existing prefixes
+  reaction: 'reaction',
+} as const
+```
+
+### Generating Migrations
+
+After modifying schema files:
+
+```bash
+# Generate migration from schema changes
+bun run db:generate
+
+# Review the generated SQL in packages/db/drizzle/
+# Then apply it
+bun run db:migrate
+```
+
+### Migration Best Practices
+
+- Migrations should be **idempotent** (safe to run multiple times)
+- Use `IF NOT EXISTS` / `IF EXISTS` for safety
+- For data migrations, handle NULL values gracefully
+- Add indexes after data is populated for better performance
+
+Example migration structure:
+
+```sql
+-- packages/db/drizzle/0014_add_reactions.sql
+
+-- Step 1: Create table
+CREATE TABLE IF NOT EXISTS "reactions" (
+  "id" uuid PRIMARY KEY,
+  "post_id" uuid NOT NULL REFERENCES "posts"("id") ON DELETE CASCADE,
+  "member_id" uuid NOT NULL REFERENCES "member"("id") ON DELETE CASCADE,
+  "emoji" text NOT NULL,
+  "created_at" timestamptz DEFAULT NOW() NOT NULL
+);
+
+-- Step 2: Add indexes
+CREATE INDEX IF NOT EXISTS "reactions_post_id_idx"
+  ON "reactions" USING btree ("post_id");
+CREATE INDEX IF NOT EXISTS "reactions_member_id_idx"
+  ON "reactions" USING btree ("member_id");
+CREATE UNIQUE INDEX IF NOT EXISTS "reactions_unique_idx"
+  ON "reactions" USING btree ("post_id", "member_id", "emoji");
+```
+
+## Service Layer
+
+Services contain business logic, validation, and database operations. They throw typed errors that map to HTTP status codes.
+
+### Creating a Service
+
+```typescript
+// apps/web/src/lib/reactions/reaction.service.ts
+
+import { db, reactions, posts, eq, and } from '@/lib/db'
+import { toUuid, type PostId, type MemberId } from '@quackback/ids'
+import { NotFoundError, ValidationError, ConflictError } from '@/lib/shared/errors'
+import type { CreateReactionInput, ReactionResult } from './reaction.types'
+
+/**
+ * Add a reaction to a post
+ */
+export async function addReaction(
+  input: CreateReactionInput,
+  actor: { memberId: MemberId }
+): Promise<ReactionResult> {
+  // Validate emoji
+  const validEmojis = ['👍', '❤️', '🎉', '🤔', '👀']
+  if (!validEmojis.includes(input.emoji)) {
+    throw new ValidationError(
+      'INVALID_EMOJI',
+      `Emoji must be one of: ${validEmojis.join(', ')}`
+    )
+  }
+
+  // Verify post exists
+  const post = await db.query.posts.findFirst({
+    where: eq(posts.id, input.postId),
+  })
+  if (!post) {
+    throw new NotFoundError(
+      'POST_NOT_FOUND',
+      `Post with ID ${input.postId} not found`
+    )
+  }
+
+  // Check for existing reaction
+  const existing = await db.query.reactions.findFirst({
+    where: and(
+      eq(reactions.postId, input.postId),
+      eq(reactions.memberId, actor.memberId),
+      eq(reactions.emoji, input.emoji)
+    ),
+  })
+  if (existing) {
+    throw new ConflictError(
+      'REACTION_EXISTS',
+      'You have already reacted with this emoji'
+    )
+  }
+
+  // Create reaction
+  const [reaction] = await db
+    .insert(reactions)
+    .values({
+      postId: input.postId,
+      memberId: actor.memberId,
+      emoji: input.emoji,
+    })
+    .returning()
+
+  return reaction
+}
+
+/**
+ * Remove a reaction from a post
+ */
+export async function removeReaction(
+  postId: PostId,
+  emoji: string,
+  actor: { memberId: MemberId }
+): Promise<void> {
+  const result = await db
+    .delete(reactions)
+    .where(
+      and(
+        eq(reactions.postId, postId),
+        eq(reactions.memberId, actor.memberId),
+        eq(reactions.emoji, emoji)
+      )
+    )
+    .returning()
+
+  if (result.length === 0) {
+    throw new NotFoundError(
+      'REACTION_NOT_FOUND',
+      'Reaction not found'
+    )
+  }
+}
+```
+
+### Error Types
+
+Use the appropriate error class based on the HTTP status code:
+
+```typescript
+// apps/web/src/lib/shared/errors.ts
+
+// 404 - Resource not found
+throw new NotFoundError('POST_NOT_FOUND', 'Post not found')
+
+// 400 - Validation/bad request
+throw new ValidationError('INVALID_INPUT', 'Title is required')
+
+// 403 - Forbidden/authorization
+throw new ForbiddenError('ACCESS_DENIED', 'Admin access required')
+
+// 409 - Conflict (duplicate, already exists)
+throw new ConflictError('DUPLICATE_ENTRY', 'Entry already exists')
+
+// 500 - Internal error
+throw new InternalError('DATABASE_ERROR', 'Database operation failed')
+```
+
+### Types File
+
+Define types in a separate file:
+
+```typescript
+// apps/web/src/lib/reactions/reaction.types.ts
+
+import type { PostId, MemberId } from '@quackback/ids'
+
+export interface CreateReactionInput {
+  postId: PostId
+  emoji: string
+}
+
+export interface ReactionResult {
+  id: string
+  postId: PostId
+  memberId: MemberId
+  emoji: string
+  createdAt: Date
+}
+```
+
+## Server Functions
+
+Server functions provide the API layer using TanStack Start's `createServerFn`. They handle validation, authentication, and call service functions.
+
+### Creating Server Functions
+
+```typescript
+// apps/web/src/lib/server-functions/reactions.ts
+
+import { z } from 'zod'
+import { createServerFn } from '@tanstack/react-start'
+import type { PostId } from '@quackback/ids'
+import { requireAuth, getOptionalAuth } from './auth-helpers'
+import {
+  addReaction,
+  removeReaction,
+  getReactionsForPost,
+} from '@/lib/reactions/reaction.service'
+
+// ============================================
+// Schemas
+// ============================================
+
+const addReactionSchema = z.object({
+  postId: z.string(),
+  emoji: z.string().min(1).max(10),
+})
+
+const removeReactionSchema = z.object({
+  postId: z.string(),
+  emoji: z.string(),
+})
+
+const getReactionsSchema = z.object({
+  postId: z.string(),
+})
+
+// ============================================
+// Type Exports
+// ============================================
+
+export type AddReactionInput = z.infer<typeof addReactionSchema>
+export type RemoveReactionInput = z.infer<typeof removeReactionSchema>
+
+// ============================================
+// Server Functions
+// ============================================
+
+/**
+ * Add a reaction to a post (requires authentication)
+ */
+export const addReactionFn = createServerFn({ method: 'POST' })
+  .validator(addReactionSchema)
+  .handler(async ({ data }) => {
+    // Require any authenticated user
+    const auth = await requireAuth()
+
+    const result = await addReaction(
+      {
+        postId: data.postId as PostId,
+        emoji: data.emoji,
+      },
+      { memberId: auth.member.id }
+    )
+
+    return {
+      ...result,
+      createdAt: result.createdAt.toISOString(),
+    }
+  })
+
+/**
+ * Remove a reaction from a post
+ */
+export const removeReactionFn = createServerFn({ method: 'POST' })
+  .validator(removeReactionSchema)
+  .handler(async ({ data }) => {
+    const auth = await requireAuth()
+
+    await removeReaction(
+      data.postId as PostId,
+      data.emoji,
+      { memberId: auth.member.id }
+    )
+
+    return { success: true }
+  })
+
+/**
+ * Get reactions for a post (public, but shows user's reactions if logged in)
+ */
+export const getReactionsFn = createServerFn({ method: 'GET' })
+  .validator(getReactionsSchema)
+  .handler(async ({ data }) => {
+    const auth = await getOptionalAuth()
+
+    const reactions = await getReactionsForPost(
+      data.postId as PostId,
+      auth?.member.id
+    )
+
+    return reactions
+  })
+```
+
+### Authentication Patterns
+
+```typescript
+// Require team member (admin or member role)
+const auth = await requireAuth({ roles: ['admin', 'member'] })
+
+// Require admin only
+const auth = await requireAuth({ roles: ['admin'] })
+
+// Any authenticated user (including portal users)
+const auth = await requireAuth()
+
+// Optional auth (returns null if not logged in)
+const auth = await getOptionalAuth()
+
+// Access auth context
+auth.user.id      // UserId
+auth.user.email   // string
+auth.user.name    // string
+auth.member.id    // MemberId
+auth.member.role  // 'admin' | 'member' | 'user'
+auth.settings.id  // WorkspaceId
+```
+
+## Query Factories
+
+Use TanStack Query factories for consistent caching:
+
+```typescript
+// apps/web/src/lib/queries/reactions.ts
+
+import { queryOptions } from '@tanstack/react-query'
+import type { PostId } from '@quackback/ids'
+import { getReactionsFn } from '@/lib/server-functions/reactions'
+
+export const reactionQueries = {
+  /**
+   * Get reactions for a post
+   */
+  forPost: (postId: PostId) =>
+    queryOptions({
+      queryKey: ['reactions', postId],
+      queryFn: () => getReactionsFn({ data: { postId } }),
+      staleTime: 30 * 1000, // 30 seconds
+    }),
+}
+```
+
+## React Hooks
+
+Create mutation hooks with optimistic updates:
+
+```typescript
+// apps/web/src/lib/hooks/use-reactions.ts
+
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { addReactionFn, removeReactionFn } from '@/lib/server-functions/reactions'
+import type { PostId } from '@quackback/ids'
+
+export const reactionKeys = {
+  forPost: (postId: PostId) => ['reactions', postId] as const,
+}
+
+export function useAddReaction() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: addReactionFn,
+    onSuccess: (_data, variables) => {
+      // Invalidate reactions for this post
+      queryClient.invalidateQueries({
+        queryKey: reactionKeys.forPost(variables.data.postId as PostId),
+      })
+    },
+  })
+}
+
+export function useRemoveReaction() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: removeReactionFn,
+    onSuccess: (_data, variables) => {
+      queryClient.invalidateQueries({
+        queryKey: reactionKeys.forPost(variables.data.postId as PostId),
+      })
+    },
+  })
+}
+```
+
+## UI Components
+
+### Component Structure
+
+Components are organized by feature area:
+
+```
+apps/web/src/components/
+  admin/                    # Admin dashboard components
+    feedback/               # Inbox, post detail
+    settings/               # Settings pages
+    users/                  # User management
+  public/                   # Portal components
+    feedback/               # Public feedback views
+    post-detail/            # Post detail page
+  ui/                       # Shared UI primitives (shadcn/ui)
+  settings/                 # User settings
+  notifications/            # Notification components
+```
+
+### Client vs Server Components
+
+- Use **Server Components** by default (no directive needed)
+- Add `'use client'` only when you need:
+  - React hooks (`useState`, `useEffect`)
+  - Event handlers
+  - Browser APIs
+
+```typescript
+// Server Component (default) - can fetch data directly
+export function PostList({ boardId }: { boardId: BoardId }) {
+  // This runs on the server
+  return <div>...</div>
+}
+
+// Client Component - for interactivity
+'use client'
+
+import { useState } from 'react'
+
+export function ReactionPicker({ postId }: { postId: PostId }) {
+  const [isOpen, setIsOpen] = useState(false)
+
+  return (
+    <button onClick={() => setIsOpen(true)}>
+      Add reaction
+    </button>
+  )
+}
+```
+
+### Using shadcn/ui Components
+
+Import from `@/components/ui/`:
+
+```typescript
+'use client'
+
+import { Button } from '@/components/ui/button'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import { Input } from '@/components/ui/input'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+```
+
+### Form Example with Validation
+
+```typescript
+'use client'
+
+import { useState } from 'react'
+import { useForm } from 'react-hook-form'
+import { standardSchemaResolver } from '@hookform/resolvers/standard-schema'
+import { z } from 'zod'
+import { Button } from '@/components/ui/button'
+import { Input } from '@/components/ui/input'
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog'
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from '@/components/ui/form'
+import { useCreateBoard } from '@/lib/hooks/use-board-actions'
+
+const createBoardSchema = z.object({
+  name: z.string().min(1, 'Board name is required').max(100),
+  description: z.string().max(500).optional(),
+})
+
+type FormData = z.infer<typeof createBoardSchema>
+
+export function CreateBoardDialog() {
+  const [open, setOpen] = useState(false)
+  const mutation = useCreateBoard()
+
+  const form = useForm<FormData>({
+    resolver: standardSchemaResolver(createBoardSchema),
+    defaultValues: {
+      name: '',
+      description: '',
+    },
+  })
+
+  function onSubmit(data: FormData) {
+    mutation.mutate(
+      { data },
+      {
+        onSuccess: () => {
+          setOpen(false)
+          form.reset()
+        },
+      }
+    )
+  }
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button>Create Board</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader>
+          <DialogTitle>Create new board</DialogTitle>
+        </DialogHeader>
+        <Form {...form}>
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+            {mutation.isError && (
+              <div className="text-sm text-destructive">
+                {mutation.error?.message}
+              </div>
+            )}
+
+            <FormField
+              control={form.control}
+              name="name"
+              render={({ field }) => (
+                <FormItem>
+                  <FormLabel>Board name</FormLabel>
+                  <FormControl>
+                    <Input placeholder="Feature Requests" {...field} />
+                  </FormControl>
+                  <FormMessage />
+                </FormItem>
+              )}
+            />
+
+            <Button type="submit" disabled={mutation.isPending}>
+              {mutation.isPending ? 'Creating...' : 'Create'}
+            </Button>
+          </form>
+        </Form>
+      </DialogContent>
+    </Dialog>
+  )
+}
+```
+
+## Routes
+
+TanStack Router uses file-based routing. Routes are in `apps/web/src/routes/`.
+
+### Route Groups
+
+| Directory | Purpose |
+|-----------|---------|
+| `_portal/` | Public feedback portal |
+| `admin/` | Admin dashboard |
+| `auth.*` | Portal user auth |
+| `admin.login/signup` | Team member auth |
+| `api/` | API routes |
+
+### Creating a Route
+
+```typescript
+// apps/web/src/routes/admin/reactions.tsx
+
+import { createFileRoute } from '@tanstack/react-router'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { reactionQueries } from '@/lib/queries/reactions'
+import { ReactionsList } from '@/components/admin/reactions/reactions-list'
+
+export const Route = createFileRoute('/admin/reactions')({
+  // Loader runs on server, prefetches data
+  loader: async ({ context }) => {
+    const { queryClient } = context
+
+    // Prefetch data for instant page load
+    await queryClient.ensureQueryData(reactionQueries.all())
+
+    return {}
+  },
+
+  // Component renders with prefetched data
+  component: ReactionsPage,
+})
+
+function ReactionsPage() {
+  // Data is already cached from loader
+  const { data: reactions } = useSuspenseQuery(reactionQueries.all())
+
+  return (
+    <div className="space-y-6">
+      <h1 className="text-xl font-semibold">Reactions</h1>
+      <ReactionsList reactions={reactions} />
+    </div>
+  )
+}
+```
+
+### Route with Parameters
+
+```typescript
+// apps/web/src/routes/admin/posts.$postId.tsx
+
+import { createFileRoute } from '@tanstack/react-router'
+import { ensureTypeId, type PostId } from '@quackback/ids'
+import { adminQueries } from '@/lib/queries/admin'
+
+export const Route = createFileRoute('/admin/posts/$postId')({
+  loader: async ({ params, context }) => {
+    const { postId } = params
+    const { queryClient } = context
+
+    // Validate TypeID format
+    let validatedPostId: PostId
+    try {
+      validatedPostId = ensureTypeId(postId, 'post')
+    } catch {
+      throw new Error('Invalid post ID format')
+    }
+
+    await queryClient.ensureQueryData(
+      adminQueries.postDetail(validatedPostId)
+    )
+
+    return { postId: validatedPostId }
+  },
+
+  component: PostDetailPage,
+})
+```
+
+### Route with Search Params
+
+```typescript
+// apps/web/src/routes/admin/settings.boards.index.tsx
+
+import { createFileRoute } from '@tanstack/react-router'
+import { z } from 'zod'
+
+const searchSchema = z.object({
+  board: z.string().optional(),
+  tab: z.enum(['general', 'access', 'import', 'export']).optional(),
+})
+
+export const Route = createFileRoute('/admin/settings/boards/')({
+  validateSearch: searchSchema,
+
+  loader: async ({ context }) => {
+    // ...
+  },
+
+  component: BoardsSettingsPage,
+})
+
+function BoardsSettingsPage() {
+  const { board, tab } = Route.useSearch()
+  // ...
+}
+```
+
+## Complete Example: Adding a "Bookmarks" Feature
+
+Let's walk through adding a complete feature - allowing users to bookmark posts.
+
+### 1. Add TypeID Prefix
+
+```typescript
+// packages/ids/src/prefixes.ts
+export const ID_PREFIXES = {
+  // ... existing
+  bookmark: 'bookmark',
+} as const
+```
+
+### 2. Create Database Schema
+
+```typescript
+// packages/db/src/schema/bookmarks.ts
+import { pgTable, timestamp, uniqueIndex, index } from 'drizzle-orm/pg-core'
+import { relations } from 'drizzle-orm'
+import { typeIdWithDefault, typeIdColumn } from '@quackback/ids/drizzle'
+import { posts } from './posts'
+import { member } from './auth'
+
+export const bookmarks = pgTable(
+  'bookmarks',
+  {
+    id: typeIdWithDefault('bookmark')('id').primaryKey(),
+    postId: typeIdColumn('post')('post_id')
+      .notNull()
+      .references(() => posts.id, { onDelete: 'cascade' }),
+    memberId: typeIdColumn('member')('member_id')
+      .notNull()
+      .references(() => member.id, { onDelete: 'cascade' }),
+    createdAt: timestamp('created_at', { withTimezone: true })
+      .defaultNow()
+      .notNull(),
+  },
+  (table) => [
+    uniqueIndex('bookmarks_unique_idx').on(table.postId, table.memberId),
+    index('bookmarks_member_id_idx').on(table.memberId),
+    index('bookmarks_created_at_idx').on(table.memberId, table.createdAt),
+  ]
+)
+
+export const bookmarksRelations = relations(bookmarks, ({ one }) => ({
+  post: one(posts, {
+    fields: [bookmarks.postId],
+    references: [posts.id],
+  }),
+}))
+```
+
+### 3. Export Schema and Generate Migration
+
+```typescript
+// packages/db/src/schema/index.ts
+export * from './bookmarks'
+```
+
+```bash
+bun run db:generate
+bun run db:migrate
+```
+
+### 4. Create Service Layer
+
+```typescript
+// apps/web/src/lib/bookmarks/bookmark.service.ts
+import { db, bookmarks, posts, eq, and, desc } from '@/lib/db'
+import type { PostId, MemberId, BookmarkId } from '@quackback/ids'
+import { NotFoundError, ConflictError } from '@/lib/shared/errors'
+
+export async function addBookmark(
+  postId: PostId,
+  memberId: MemberId
+): Promise<{ id: BookmarkId }> {
+  // Verify post exists
+  const post = await db.query.posts.findFirst({
+    where: eq(posts.id, postId),
+  })
+  if (!post) {
+    throw new NotFoundError('POST_NOT_FOUND', 'Post not found')
+  }
+
+  // Check if already bookmarked
+  const existing = await db.query.bookmarks.findFirst({
+    where: and(
+      eq(bookmarks.postId, postId),
+      eq(bookmarks.memberId, memberId)
+    ),
+  })
+  if (existing) {
+    throw new ConflictError('ALREADY_BOOKMARKED', 'Post already bookmarked')
+  }
+
+  const [bookmark] = await db
+    .insert(bookmarks)
+    .values({ postId, memberId })
+    .returning()
+
+  return { id: bookmark.id }
+}
+
+export async function removeBookmark(
+  postId: PostId,
+  memberId: MemberId
+): Promise<void> {
+  const result = await db
+    .delete(bookmarks)
+    .where(
+      and(eq(bookmarks.postId, postId), eq(bookmarks.memberId, memberId))
+    )
+    .returning()
+
+  if (result.length === 0) {
+    throw new NotFoundError('BOOKMARK_NOT_FOUND', 'Bookmark not found')
+  }
+}
+
+export async function listBookmarks(memberId: MemberId) {
+  return db.query.bookmarks.findMany({
+    where: eq(bookmarks.memberId, memberId),
+    with: {
+      post: {
+        with: { board: true },
+      },
+    },
+    orderBy: desc(bookmarks.createdAt),
+  })
+}
+
+export async function isBookmarked(
+  postId: PostId,
+  memberId: MemberId
+): Promise<boolean> {
+  const bookmark = await db.query.bookmarks.findFirst({
+    where: and(
+      eq(bookmarks.postId, postId),
+      eq(bookmarks.memberId, memberId)
+    ),
+  })
+  return !!bookmark
+}
+```
+
+### 5. Create Server Functions
+
+```typescript
+// apps/web/src/lib/server-functions/bookmarks.ts
+import { z } from 'zod'
+import { createServerFn } from '@tanstack/react-start'
+import type { PostId } from '@quackback/ids'
+import { requireAuth } from './auth-helpers'
+import {
+  addBookmark,
+  removeBookmark,
+  listBookmarks,
+  isBookmarked,
+} from '@/lib/bookmarks/bookmark.service'
+
+const postIdSchema = z.object({ postId: z.string() })
+
+export const addBookmarkFn = createServerFn({ method: 'POST' })
+  .validator(postIdSchema)
+  .handler(async ({ data }) => {
+    const auth = await requireAuth()
+    return addBookmark(data.postId as PostId, auth.member.id)
+  })
+
+export const removeBookmarkFn = createServerFn({ method: 'POST' })
+  .validator(postIdSchema)
+  .handler(async ({ data }) => {
+    const auth = await requireAuth()
+    await removeBookmark(data.postId as PostId, auth.member.id)
+    return { success: true }
+  })
+
+export const listBookmarksFn = createServerFn({ method: 'GET' })
+  .handler(async () => {
+    const auth = await requireAuth()
+    const bookmarks = await listBookmarks(auth.member.id)
+    return bookmarks.map((b) => ({
+      ...b,
+      createdAt: b.createdAt.toISOString(),
+    }))
+  })
+
+export const isBookmarkedFn = createServerFn({ method: 'GET' })
+  .validator(postIdSchema)
+  .handler(async ({ data }) => {
+    const auth = await requireAuth()
+    return { bookmarked: await isBookmarked(data.postId as PostId, auth.member.id) }
+  })
+```
+
+### 6. Create React Hook
+
+```typescript
+// apps/web/src/lib/hooks/use-bookmarks.ts
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+import type { PostId } from '@quackback/ids'
+import {
+  addBookmarkFn,
+  removeBookmarkFn,
+  listBookmarksFn,
+  isBookmarkedFn,
+} from '@/lib/server-functions/bookmarks'
+
+export const bookmarkKeys = {
+  all: ['bookmarks'] as const,
+  list: () => [...bookmarkKeys.all, 'list'] as const,
+  status: (postId: PostId) => [...bookmarkKeys.all, 'status', postId] as const,
+}
+
+export function useBookmarks() {
+  return useQuery({
+    queryKey: bookmarkKeys.list(),
+    queryFn: () => listBookmarksFn(),
+  })
+}
+
+export function useBookmarkStatus(postId: PostId) {
+  return useQuery({
+    queryKey: bookmarkKeys.status(postId),
+    queryFn: () => isBookmarkedFn({ data: { postId } }),
+  })
+}
+
+export function useToggleBookmark() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: async ({
+      postId,
+      isCurrentlyBookmarked,
+    }: {
+      postId: PostId
+      isCurrentlyBookmarked: boolean
+    }) => {
+      if (isCurrentlyBookmarked) {
+        return removeBookmarkFn({ data: { postId } })
+      }
+      return addBookmarkFn({ data: { postId } })
+    },
+    onSuccess: (_data, { postId }) => {
+      queryClient.invalidateQueries({ queryKey: bookmarkKeys.status(postId) })
+      queryClient.invalidateQueries({ queryKey: bookmarkKeys.list() })
+    },
+  })
+}
+```
+
+### 7. Create UI Component
+
+```typescript
+// apps/web/src/components/public/bookmark-button.tsx
+'use client'
+
+import { BookmarkIcon } from '@heroicons/react/24/outline'
+import { BookmarkIcon as BookmarkSolidIcon } from '@heroicons/react/24/solid'
+import { Button } from '@/components/ui/button'
+import { useBookmarkStatus, useToggleBookmark } from '@/lib/hooks/use-bookmarks'
+import type { PostId } from '@quackback/ids'
+
+interface BookmarkButtonProps {
+  postId: PostId
+}
+
+export function BookmarkButton({ postId }: BookmarkButtonProps) {
+  const { data, isLoading } = useBookmarkStatus(postId)
+  const toggleMutation = useToggleBookmark()
+
+  const isBookmarked = data?.bookmarked ?? false
+
+  function handleClick() {
+    toggleMutation.mutate({
+      postId,
+      isCurrentlyBookmarked: isBookmarked,
+    })
+  }
+
+  return (
+    <Button
+      variant="ghost"
+      size="sm"
+      onClick={handleClick}
+      disabled={isLoading || toggleMutation.isPending}
+    >
+      {isBookmarked ? (
+        <BookmarkSolidIcon className="h-5 w-5 text-primary" />
+      ) : (
+        <BookmarkIcon className="h-5 w-5" />
+      )}
+      <span className="ml-1">
+        {isBookmarked ? 'Saved' : 'Save'}
+      </span>
+    </Button>
+  )
+}
+```
+
+### 8. Add Route for Bookmarks Page
+
+```typescript
+// apps/web/src/routes/_portal/bookmarks.tsx
+import { createFileRoute } from '@tanstack/react-router'
+import { useSuspenseQuery } from '@tanstack/react-query'
+import { queryOptions } from '@tanstack/react-query'
+import { listBookmarksFn } from '@/lib/server-functions/bookmarks'
+import { PostCard } from '@/components/public/post-card'
+
+const bookmarksQuery = queryOptions({
+  queryKey: ['bookmarks', 'list'],
+  queryFn: () => listBookmarksFn(),
+})
+
+export const Route = createFileRoute('/_portal/bookmarks')({
+  loader: async ({ context }) => {
+    await context.queryClient.ensureQueryData(bookmarksQuery)
+    return {}
+  },
+  component: BookmarksPage,
+})
+
+function BookmarksPage() {
+  const { data: bookmarks } = useSuspenseQuery(bookmarksQuery)
+
+  if (bookmarks.length === 0) {
+    return (
+      <div className="text-center py-12">
+        <h2 className="text-lg font-medium">No bookmarks yet</h2>
+        <p className="text-muted-foreground mt-1">
+          Save posts to find them easily later
+        </p>
+      </div>
+    )
+  }
+
+  return (
+    <div className="space-y-4">
+      <h1 className="text-xl font-semibold">Saved Posts</h1>
+      <div className="space-y-3">
+        {bookmarks.map((bookmark) => (
+          <PostCard key={bookmark.id} post={bookmark.post} />
+        ))}
+      </div>
+    </div>
+  )
+}
+```
+
+## Summary
+
+When adding a feature to Quackback:
+
+1. **Plan**: Identify which layers need changes
+2. **Schema**: Add tables in `packages/db/src/schema/`
+3. **TypeID**: Add prefix in `packages/ids/src/prefixes.ts`
+4. **Migrate**: Run `bun run db:generate && bun run db:migrate`
+5. **Service**: Add business logic in `apps/web/src/lib/{feature}/`
+6. **Server Functions**: Add API in `apps/web/src/lib/server-functions/`
+7. **Hooks**: Add React hooks in `apps/web/src/lib/hooks/`
+8. **Components**: Build UI in `apps/web/src/components/`
+9. **Routes**: Add pages in `apps/web/src/routes/`
+10. **Test**: Run `bun run test` and `bun run typecheck`
+
+Follow existing patterns in the codebase and maintain consistency with naming conventions.

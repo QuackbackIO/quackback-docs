@@ -1,0 +1,466 @@
+---
+title: "Server Functions"
+description: "Learn how to implement backend logic using type-safe RPC endpoints in Quackback"
+icon: "server"
+---
+
+# Server Functions
+
+Server functions are the primary way to implement backend logic in Quackback. They provide type-safe RPC (Remote Procedure Call) endpoints that can be called from both server and client code.
+
+## Overview
+
+Quackback uses [TanStack Start's server functions](https://tanstack.com/start/latest/docs/framework/react/start/server-functions) to create backend endpoints. Server functions are:
+
+- **Type-safe**: Input and output types are inferred and enforced at compile time
+- **Co-located**: Define backend logic alongside the components that use it
+- **Validated**: Built-in support for Zod schema validation
+- **Secure**: Authentication and authorization checks are easy to implement
+
+## Creating a Server Function
+
+Server functions are located in `apps/web/src/lib/server-functions/`. Each file typically groups related operations (e.g., `posts.ts`, `boards.ts`, `comments.ts`).
+
+### Basic Structure
+
+```typescript
+import { z } from 'zod'
+import { createServerFn } from '@tanstack/react-start'
+import { requireAuth } from './auth-helpers'
+
+// 1. Define the input schema with Zod
+const createPostSchema = z.object({
+  title: z.string().min(1, 'Title is required').max(200),
+  content: z.string().min(1, 'Description is required').max(10000),
+  boardId: z.string(),
+})
+
+// 2. Export the type for use in components
+export type CreatePostInput = z.infer<typeof createPostSchema>
+
+// 3. Create the server function
+export const createPostFn = createServerFn({ method: 'POST' })
+  .inputValidator(createPostSchema)
+  .handler(async ({ data }) => {
+    // 4. Check authentication
+    const auth = await requireAuth({ roles: ['admin', 'member'] })
+
+    // 5. Implement business logic
+    const result = await createPost(data, auth.member)
+
+    // 6. Return the result
+    return result
+  })
+```
+
+### GET vs POST Methods
+
+Use `GET` for read operations and `POST` for write operations:
+
+```typescript
+// Read operation - GET method
+export const fetchBoards = createServerFn({ method: 'GET' })
+  .handler(async () => {
+    await requireAuth({ roles: ['admin', 'member'] })
+    return await listBoards()
+  })
+
+// Write operation - POST method
+export const deleteBoardFn = createServerFn({ method: 'POST' })
+  .inputValidator(deleteBoardSchema)
+  .handler(async ({ data }) => {
+    await requireAuth({ roles: ['admin', 'member'] })
+    await deleteBoard(data.id as BoardId)
+    return { id: data.id }
+  })
+```
+
+## Validation with Zod
+
+All server function inputs should be validated using Zod schemas. This provides:
+
+- Runtime validation of incoming data
+- Type inference for TypeScript
+- Automatic error messages for invalid input
+
+### Schema Patterns
+
+```typescript
+// Simple schema
+const getBoardSchema = z.object({
+  id: z.string(),
+})
+
+// Schema with validation rules
+const createBoardSchema = z.object({
+  name: z
+    .string()
+    .min(1, 'Board name is required')
+    .max(100, 'Board name must be 100 characters or less'),
+  description: z.string().max(500).optional(),
+  isPublic: z.boolean().default(true),
+})
+
+// Schema with complex types
+const listPostsSchema = z.object({
+  boardIds: z.array(z.string()).optional(),
+  statusIds: z.array(z.string()).optional(),
+  search: z.string().optional(),
+  sort: z.enum(['newest', 'oldest', 'votes']).optional().default('newest'),
+  page: z.number().int().min(1).optional().default(1),
+  limit: z.number().int().min(1).max(100).optional().default(20),
+})
+
+// Schema with nullable fields
+const updatePostSchema = z.object({
+  id: z.string(),
+  title: z.string().min(1).max(200).optional(),
+  content: z.string().max(10000).optional(),
+  ownerId: z.string().nullable().optional(),
+})
+```
+
+### Using inputValidator
+
+The `inputValidator` method validates input before the handler runs:
+
+```typescript
+export const updateBoardFn = createServerFn({ method: 'POST' })
+  .inputValidator(updateBoardSchema)
+  .handler(async ({ data }) => {
+    // data is fully typed and validated
+    // TypeScript knows data.id is string, data.name is string | undefined, etc.
+  })
+```
+
+## Authentication with requireAuth
+
+The `requireAuth` helper in `auth-helpers.ts` handles authentication and authorization:
+
+### Requiring Any Team Member
+
+```typescript
+// Require authentication (any role)
+const auth = await requireAuth()
+```
+
+### Requiring Specific Roles
+
+```typescript
+// Require admin or member role
+const auth = await requireAuth({ roles: ['admin', 'member'] })
+
+// Require admin only
+const auth = await requireAuth({ roles: ['admin'] })
+
+// Allow all authenticated users including portal users
+const auth = await requireAuth({ roles: ['admin', 'member', 'user'] })
+```
+
+### AuthContext Structure
+
+The `requireAuth` function returns an `AuthContext` object:
+
+```typescript
+interface AuthContext {
+  settings: {
+    id: WorkspaceId
+    slug: string
+    name: string
+  }
+  user: {
+    id: UserId
+    email: string
+    name: string
+    image: string | null
+  }
+  member: {
+    id: MemberId
+    role: Role  // 'admin' | 'member' | 'user'
+  }
+}
+```
+
+### Optional Authentication
+
+For public endpoints that behave differently for logged-in users, use `getOptionalAuth`:
+
+```typescript
+import { getOptionalAuth, hasSessionCookie } from './auth-helpers'
+
+export const getCommentPermissionsFn = createServerFn({ method: 'GET' })
+  .inputValidator(getCommentPermissionsSchema)
+  .handler(async ({ data }) => {
+    // Early bailout: no session cookie = no permissions
+    if (!hasSessionCookie()) {
+      return { canEdit: false, canDelete: false }
+    }
+
+    const ctx = await getOptionalAuth()
+    if (!ctx?.member) {
+      return { canEdit: false, canDelete: false }
+    }
+
+    // Check permissions for authenticated user
+    return await checkPermissions(data.commentId, ctx.member)
+  })
+```
+
+## Error Handling
+
+Server functions use typed domain exceptions for error handling. Import these from `@/lib/shared/errors`:
+
+```typescript
+import { NotFoundError, ValidationError, ForbiddenError } from '@/lib/shared/errors'
+
+export async function getPost(id: PostId) {
+  const post = await db.query.posts.findFirst({
+    where: eq(posts.id, id),
+  })
+
+  if (!post) {
+    throw new NotFoundError('POST_NOT_FOUND', 'Post not found')
+  }
+
+  return post
+}
+
+export async function deletePost(id: PostId, actor: { role: Role }) {
+  if (actor.role !== 'admin') {
+    throw new ForbiddenError('NOT_ALLOWED', 'Only admins can delete posts')
+  }
+
+  await db.delete(posts).where(eq(posts.id, id))
+}
+```
+
+### Error Classes
+
+| Class | HTTP Status | Use Case |
+|-------|-------------|----------|
+| `NotFoundError` | 404 | Resource not found |
+| `ValidationError` | 400 | Invalid input data |
+| `ForbiddenError` | 403 | Permission denied |
+| `ConflictError` | 409 | Duplicate resource, already exists |
+| `InternalError` | 500 | Database or unexpected errors |
+
+### Logging Errors
+
+Add logging to track errors in production:
+
+```typescript
+export const createPostFn = createServerFn({ method: 'POST' })
+  .inputValidator(createPostSchema)
+  .handler(async ({ data }) => {
+    console.log(`[fn:posts] createPostFn: boardId=${data.boardId}`)
+    try {
+      const auth = await requireAuth({ roles: ['admin', 'member'] })
+      const result = await createPost(data, auth.member)
+      console.log(`[fn:posts] createPostFn: id=${result.id}`)
+      return result
+    } catch (error) {
+      console.error(`[fn:posts] createPostFn failed:`, error)
+      throw error
+    }
+  })
+```
+
+## Client-Side Usage
+
+Server functions are called from React components using TanStack Query for data fetching and caching.
+
+### Queries (Reading Data)
+
+```typescript
+import { useQuery } from '@tanstack/react-query'
+import { fetchBoards } from '@/lib/server-functions/boards'
+
+export function useBoardsQuery() {
+  return useQuery({
+    queryKey: ['boards'],
+    queryFn: () => fetchBoards(),
+    staleTime: 30 * 1000, // Cache for 30 seconds
+  })
+}
+```
+
+### Mutations (Writing Data)
+
+```typescript
+import { useMutation, useQueryClient } from '@tanstack/react-query'
+import { createBoardFn } from '@/lib/server-functions/boards'
+
+export function useCreateBoard() {
+  const queryClient = useQueryClient()
+
+  return useMutation({
+    mutationFn: (input: CreateBoardInput) => createBoardFn({ data: input }),
+    onSuccess: () => {
+      // Invalidate cache to refetch boards
+      queryClient.invalidateQueries({ queryKey: ['boards'] })
+    },
+  })
+}
+```
+
+### Using in Components
+
+```typescript
+function BoardList() {
+  const { data: boards, isLoading } = useBoardsQuery()
+  const createBoard = useCreateBoard()
+
+  if (isLoading) return <div>Loading...</div>
+
+  return (
+    <div>
+      {boards?.map((board) => (
+        <BoardCard key={board.id} board={board} />
+      ))}
+      <button
+        onClick={() => createBoard.mutate({ name: 'New Board' })}
+        disabled={createBoard.isPending}
+      >
+        {createBoard.isPending ? 'Creating...' : 'Create Board'}
+      </button>
+    </div>
+  )
+}
+```
+
+### Query Hook Patterns
+
+Quackback organizes query/mutation hooks in `apps/web/src/lib/hooks/`. Here's a typical pattern:
+
+```typescript
+// apps/web/src/lib/hooks/use-post-actions.ts
+
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
+
+// Query key factory for consistent cache invalidation
+export const postActionKeys = {
+  all: ['post-actions'] as const,
+  permissions: () => [...postActionKeys.all, 'permissions'] as const,
+  permission: (postId: PostId) => [...postActionKeys.permissions(), postId] as const,
+}
+
+// Query hook
+export function usePostPermissions({ postId, enabled = true }) {
+  return useQuery({
+    queryKey: postActionKeys.permission(postId),
+    queryFn: async () => {
+      try {
+        return await getPostPermissionsFn({ data: { postId } })
+      } catch {
+        return { canEdit: false, canDelete: false }
+      }
+    },
+    enabled,
+    staleTime: 30 * 1000,
+  })
+}
+
+// Mutation hook
+export function usePostActions({ postId, boardSlug, onEditSuccess, onDeleteSuccess }) {
+  const queryClient = useQueryClient()
+  const navigate = useNavigate()
+
+  const editMutation = useMutation({
+    mutationFn: (input: EditPostInput) =>
+      userEditPostFn({ data: { postId, ...input } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: postActionKeys.permission(postId) })
+      onEditSuccess?.()
+    },
+  })
+
+  const deleteMutation = useMutation({
+    mutationFn: () => userDeletePostFn({ data: { postId } }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['portal', 'posts'] })
+      navigate({ to: '/', search: { board: boardSlug } })
+      onDeleteSuccess?.()
+    },
+  })
+
+  return {
+    editPost: editMutation.mutate,
+    deletePost: deleteMutation.mutate,
+    isEditing: editMutation.isPending,
+    isDeleting: deleteMutation.isPending,
+    editError: editMutation.error,
+    deleteError: deleteMutation.error,
+  }
+}
+```
+
+## Date Serialization
+
+When returning dates from server functions, serialize them to ISO strings. This ensures consistent behavior across different database drivers:
+
+```typescript
+function toIsoString(value: Date | string): string {
+  if (typeof value === 'string') {
+    return value // Already an ISO string (Neon HTTP driver)
+  }
+  return value.toISOString()
+}
+
+function toIsoStringOrNull(value: Date | string | null | undefined): string | null {
+  if (value == null) return null
+  return toIsoString(value)
+}
+
+// Use in handler
+export const fetchPostFn = createServerFn({ method: 'GET' })
+  .inputValidator(getPostSchema)
+  .handler(async ({ data }) => {
+    const post = await getPost(data.id as PostId)
+    return {
+      ...post,
+      createdAt: toIsoString(post.createdAt),
+      updatedAt: toIsoString(post.updatedAt),
+      deletedAt: toIsoStringOrNull(post.deletedAt),
+    }
+  })
+```
+
+## File Organization
+
+Server functions are organized by domain in `apps/web/src/lib/server-functions/`:
+
+```
+server-functions/
+  auth.ts           # Authentication functions
+  auth-helpers.ts   # requireAuth, getOptionalAuth helpers
+  boards.ts         # Board CRUD operations
+  posts.ts          # Post CRUD operations (admin)
+  public-posts.ts   # Post operations (public portal)
+  comments.ts       # Comment operations
+  statuses.ts       # Status management
+  tags.ts           # Tag management
+  settings.ts       # Workspace settings
+  workspace.ts      # Workspace utilities
+  notifications.ts  # Notification operations
+  subscriptions.ts  # Post subscription operations
+  integrations.ts   # Integration management
+  roadmaps.ts       # Roadmap operations
+  user.ts           # User profile operations
+```
+
+## Best Practices
+
+1. **Always validate input** - Use Zod schemas for all server function inputs
+2. **Check authentication first** - Call `requireAuth()` at the start of handlers that need auth
+3. **Use appropriate HTTP methods** - GET for reads, POST for writes
+4. **Log operations** - Add console.log statements for debugging
+5. **Handle errors gracefully** - Wrap handlers in try/catch when needed
+6. **Serialize dates** - Convert Date objects to ISO strings for responses
+7. **Export types** - Export input types for use in components
+8. **Keep handlers thin** - Delegate complex logic to service functions in `@/lib/{feature}/`
+
+## Related Documentation
+
+- [Architecture Overview](./architecture.md) - System architecture and design patterns
+- [Database](./database.md) - Database schema and Drizzle ORM usage
+- [Testing](./testing.md) - Testing server functions and E2E tests

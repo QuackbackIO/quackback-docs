@@ -1,0 +1,415 @@
+---
+title: "Troubleshooting"
+description: "Common issues and solutions for self-hosted Quackback deployments"
+icon: "wrench"
+---
+
+# Troubleshooting
+
+Common issues and solutions for self-hosted Quackback deployments.
+
+## Application Won't Start
+
+### "Database connection failed"
+
+**Symptoms**: Application fails to start with connection errors.
+
+**Solutions**:
+
+1. **Verify PostgreSQL is running**
+   ```bash
+   docker compose ps
+   # or
+   systemctl status postgresql
+   ```
+
+2. **Test connection**
+   ```bash
+   psql "$DATABASE_URL" -c "SELECT 1"
+   ```
+
+3. **Check connection string format**
+   ```
+   postgresql://user:password@host:5432/database
+   ```
+
+4. **For Docker networking**
+   - Use container name, not `localhost`
+   - Ensure containers are on same network
+
+### "Missing environment variable"
+
+**Symptoms**: Startup error about missing configuration.
+
+**Solutions**:
+
+1. **Check required variables**
+   ```bash
+   # Must be set:
+   DATABASE_URL
+   BETTER_AUTH_SECRET
+   BETTER_AUTH_URL
+   ROOT_URL
+   ```
+
+2. **Verify .env is loaded**
+   ```bash
+   docker compose config  # Shows resolved values
+   ```
+
+3. **Check for typos**
+   - Variable names are case-sensitive
+   - No spaces around `=`
+
+### "Port already in use"
+
+**Symptoms**: Bind error on startup.
+
+**Solutions**:
+
+```bash
+# Find process using port 3000
+lsof -i :3000
+
+# Kill it
+kill -9 <PID>
+
+# Or use different port
+PORT=8080 bun run start
+```
+
+## Database Issues
+
+### "Migration failed"
+
+**Symptoms**: Database migrations don't complete.
+
+**Solutions**:
+
+1. **Check migration status**
+   ```bash
+   bun run db:migrate 2>&1 | head -50
+   ```
+
+2. **Ensure database user has permissions**
+   ```sql
+   GRANT ALL PRIVILEGES ON DATABASE quackback TO your_user;
+   GRANT ALL PRIVILEGES ON SCHEMA public TO your_user;
+   ```
+
+3. **Reset and retry** (development only)
+   ```bash
+   bun run db:reset
+   bun run db:migrate
+   ```
+
+<Warning>
+Only use `db:reset` in development environments. This will delete all data.
+</Warning>
+
+### "Function uuidv7 does not exist"
+
+**Symptoms**: Queries fail with function error.
+
+**Cause**: PostgreSQL version too old.
+
+**Solution**: Upgrade to PostgreSQL 18+.
+
+<Info>
+Quackback requires PostgreSQL 18 or higher for native `uuidv7()` support used in ID generation.
+</Info>
+
+### "Extension pgvector not found"
+
+**Symptoms**: Vector-related queries fail.
+
+**Solutions**:
+
+1. **Install extension**
+   ```sql
+   CREATE EXTENSION IF NOT EXISTS vector;
+   ```
+
+2. **Use pgvector image for Docker**
+   ```yaml
+   services:
+     postgres:
+       image: pgvector/pgvector:pg18
+   ```
+
+## Authentication Problems
+
+### "Invalid session" after login
+
+**Symptoms**: Users get logged out immediately or can't stay logged in.
+
+**Solutions**:
+
+1. **Check BETTER_AUTH_URL**
+   - Must match exact domain users access
+   - Include protocol: `https://feedback.example.com`
+
+2. **Check cookies**
+   - Cookies require HTTPS in production
+   - Verify domain settings
+
+3. **Clear browser data**
+   - Delete cookies for the domain
+   - Try incognito mode
+
+### OTP codes not received
+
+**Symptoms**: Users don't receive magic link emails.
+
+**Solutions**:
+
+1. **Check console** (development)
+   - OTP codes print to console if no email configured
+
+<Note>
+In development mode without email configuration, OTP codes are printed to the server console for easy testing.
+</Note>
+
+2. **Verify email configuration**
+   ```bash
+   # Check SMTP settings
+   EMAIL_SMTP_HOST
+   EMAIL_SMTP_PORT
+   EMAIL_SMTP_USER
+   EMAIL_SMTP_PASS
+   ```
+
+3. **Check spam folder**
+
+4. **Test email delivery**
+   ```bash
+   # Many SMTP providers have test tools
+   swaks --to test@example.com --server smtp.example.com
+   ```
+
+### OAuth redirect errors
+
+**Symptoms**: "Redirect URI mismatch" or similar OAuth errors.
+
+**Solutions**:
+
+1. **Verify callback URL**
+   ```
+   https://your-domain.com/api/auth/callback/github
+   ```
+
+2. **Check for trailing slashes**
+   - Must match exactly in provider settings
+
+3. **Verify client ID/secret**
+   - Re-copy from provider dashboard
+   - Check for whitespace
+
+## Performance Issues
+
+### Slow page loads
+
+**Symptoms**: Pages take several seconds to load.
+
+**Solutions**:
+
+1. **Check database performance**
+   ```sql
+   -- Find slow queries
+   SELECT query, calls, mean_time
+   FROM pg_stat_statements
+   ORDER BY mean_time DESC
+   LIMIT 10;
+   ```
+
+2. **Add database indexes**
+   - Check for missing indexes on filtered columns
+
+3. **Increase resources**
+   - More RAM for PostgreSQL
+   - More CPU for application
+
+### High memory usage
+
+**Symptoms**: Application or database using excessive memory.
+
+**Solutions**:
+
+1. **Check for memory leaks**
+   ```bash
+   # Monitor over time
+   docker stats
+   ```
+
+2. **Tune PostgreSQL**
+   ```ini
+   shared_buffers = 256MB  # ~25% of RAM
+   work_mem = 16MB
+   ```
+
+3. **Restart periodically**
+   - Set up health checks and auto-restart
+
+## Integration Issues
+
+### Slack notifications not sending
+
+**Symptoms**: Connected but no messages appear.
+
+**Solutions**:
+
+1. **Check integration status**
+   - Admin → Settings → Integrations → Slack
+   - Look for error messages
+
+2. **Verify channel access**
+   - App must be invited to private channels
+   - Channel may have been deleted
+
+3. **Check event mappings**
+   - Ensure events are configured
+   - Verify correct channel selected
+
+4. **Reconnect integration**
+   - Click "Reconnect"
+   - Re-authorize in Slack
+
+### Webhook deliveries failing
+
+**Symptoms**: Webhooks show failed status.
+
+**Solutions**:
+
+1. **Check endpoint availability**
+   ```bash
+   curl -X POST https://your-endpoint.com/webhook \
+     -H "Content-Type: application/json" \
+     -d '{"test": true}'
+   ```
+
+2. **Verify HTTPS**
+   - Webhooks require HTTPS endpoints
+   - Check certificate validity
+
+3. **Check response codes**
+   - Endpoint must return 2xx
+   - 4xx errors don't retry (except 429)
+
+## Docker Issues
+
+### Container keeps restarting
+
+**Symptoms**: Container in restart loop.
+
+**Solutions**:
+
+1. **Check logs**
+   ```bash
+   docker compose logs app --tail 100
+   ```
+
+2. **Check health**
+   ```bash
+   docker compose ps
+   ```
+
+3. **Verify environment**
+   ```bash
+   docker compose config
+   ```
+
+### Database volume issues
+
+**Symptoms**: Data not persisting or permission errors.
+
+**Solutions**:
+
+1. **Check volume mount**
+   ```yaml
+   volumes:
+     - postgres_data:/var/lib/postgresql/data
+   ```
+
+2. **Fix permissions**
+   ```bash
+   sudo chown -R 999:999 /path/to/volume
+   ```
+
+### Out of disk space
+
+**Symptoms**: Write errors, container failures.
+
+**Solutions**:
+
+1. **Clean up Docker**
+   ```bash
+   docker system prune -a
+   ```
+
+2. **Check disk usage**
+   ```bash
+   df -h
+   docker system df
+   ```
+
+<Warning>
+`docker system prune -a` removes all unused images, containers, and networks. Use with caution in production.
+</Warning>
+
+## Getting Help
+
+### Collect Diagnostic Info
+
+Before asking for help, gather:
+
+1. **Error messages** (exact text)
+2. **Logs**
+   ```bash
+   docker compose logs app --tail 200 > app-logs.txt
+   ```
+3. **Environment** (redact secrets)
+4. **Steps to reproduce**
+
+### Support Channels
+
+- [GitHub Issues](https://github.com/quackbackhq/quackback/issues)
+- [GitHub Discussions](https://github.com/quackbackhq/quackback/discussions)
+
+### Issue Template
+
+<Tip>
+Use this template when reporting issues to help maintainers understand and resolve your problem faster.
+</Tip>
+
+```markdown
+**Environment**
+- Quackback version:
+- Deployment method: Docker / Bun
+- PostgreSQL version:
+- OS:
+
+**Problem**
+[Describe the issue]
+
+**Steps to Reproduce**
+1.
+2.
+3.
+
+**Expected Behavior**
+[What should happen]
+
+**Actual Behavior**
+[What actually happens]
+
+**Logs**
+```
+[Relevant log output]
+```
+```
+
+## Next Steps
+
+- [Docker Deployment](/self-hosting/docker) - Standard setup
+- [Configuration](/reference/environment-variables) - All options
+- [Requirements](/self-hosting/requirements) - System requirements

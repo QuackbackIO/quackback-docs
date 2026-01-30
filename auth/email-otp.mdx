@@ -1,0 +1,206 @@
+---
+title: "Email OTP Authentication"
+description: "Configure passwordless email-based one-time password (OTP) authentication for secure, user-friendly sign-in"
+icon: "envelope"
+---
+
+# Email OTP Authentication
+
+Quackback uses email-based one-time password (OTP) codes as the primary passwordless authentication method. This approach is secure, user-friendly, and requires no password management.
+
+## How It Works
+
+1. **User enters email** - On the login or signup page, the user enters their email address
+2. **Code sent** - A 6-digit verification code is sent to their email
+3. **User enters code** - The user enters the code within 10 minutes
+4. **Session created** - Upon verification, a session is created and the user is logged in
+
+The email OTP system is powered by [Better Auth's emailOTP plugin](https://www.better-auth.com/docs/plugins/email-otp).
+
+## Configuration
+
+### Required Environment Variables
+
+```bash
+# Auth configuration (required)
+BETTER_AUTH_SECRET="your-32-character-secret"  # Generate with: openssl rand -base64 32
+BETTER_AUTH_URL="https://feedback.yourcompany.com"
+```
+
+### Email Delivery Options
+
+Without email configuration, OTP codes are logged to the console (useful for development). For production, configure one of the following:
+
+#### Option 1: SMTP (Recommended for Self-Hosted)
+
+```bash
+EMAIL_SMTP_HOST="smtp.sendgrid.net"
+EMAIL_SMTP_PORT="587"
+EMAIL_SMTP_USER="apikey"
+EMAIL_SMTP_PASS="your-api-key"
+EMAIL_FROM="Quackback <noreply@yourdomain.com>"
+
+# For implicit TLS (port 465), uncomment:
+# EMAIL_SMTP_SECURE="true"
+```
+
+Common SMTP providers:
+
+| Provider | Host | Port | Notes |
+|----------|------|------|-------|
+| Gmail | smtp.gmail.com | 587 | Use [App Password](https://support.google.com/accounts/answer/185833) |
+| SendGrid | smtp.sendgrid.net | 587 | Use API key as password |
+| Amazon SES | email-smtp.{region}.amazonaws.com | 587 | IAM credentials |
+| Mailgun | smtp.mailgun.org | 587 | Domain API key |
+| Postmark | smtp.postmarkapp.com | 587 | Server API token |
+
+#### Option 2: Resend API
+
+```bash
+EMAIL_RESEND_API_KEY="re_xxxxxxxx"
+EMAIL_FROM="Quackback <noreply@yourdomain.com>"
+```
+
+Get your API key at [resend.com/api-keys](https://resend.com/api-keys).
+
+### Priority Order
+
+The email system uses this priority:
+
+1. **SMTP** - If `EMAIL_SMTP_HOST` is set
+2. **Resend** - If `EMAIL_RESEND_API_KEY` is set
+3. **Console** - Logs OTP to server console (development only)
+
+## User Flow
+
+### Portal Users (Feedback Submitters)
+
+```
+┌─────────────────┐     ┌──────────────────┐     ┌─────────────────┐
+│  Enter Email    │────▶│  Receive Code    │────▶│  Enter Code     │
+│                 │     │  (6 digits)      │     │                 │
+└─────────────────┘     └──────────────────┘     └─────────────────┘
+                                                         │
+                                                         ▼
+                                                 ┌─────────────────┐
+                                                 │  Logged In      │
+                                                 │  Session: 7 days│
+                                                 └─────────────────┘
+```
+
+### Code Specifications
+
+| Property | Value |
+|----------|-------|
+| Code length | 6 digits |
+| Expiration | 10 minutes |
+| Resend cooldown | 60 seconds |
+| Session duration | 7 days |
+
+## Email Template
+
+The sign-in code email uses a clean, branded template:
+
+- **Subject**: "Your Quackback sign-in code is XXXXXX"
+- **Preview text**: "Your sign-in code is XXXXXX"
+- **Content**: Clear instructions with the code prominently displayed
+- **Footer**: Security notice about ignoring unexpected emails
+
+The template is built with [React Email](https://react.email) components located at:
+`packages/email/src/templates/signin-code.tsx`
+
+## Admin Configuration
+
+Administrators can enable or disable email OTP for portal users:
+
+1. Navigate to **Admin > Settings > Authentication**
+2. Find the **Email** toggle under Portal Authentication
+3. Enable or disable as needed
+
+<Note>
+At least one authentication method must remain enabled.
+</Note>
+
+## Troubleshooting
+
+### OTP Code Not Received
+
+1. **Check spam/junk folder** - Email providers may filter transactional emails
+2. **Verify email configuration** - Ensure SMTP or Resend is properly configured
+3. **Check server logs** - In development, codes are logged to console:
+   ```
+   ┌────────────────────────────────────────────────────────────
+   │ [DEV] Sign-in Code Email
+   ├────────────────────────────────────────────────────────────
+   │ To: user@example.com
+   │ Code: 123456
+   └────────────────────────────────────────────────────────────
+   ```
+4. **Verify EMAIL_FROM** - Ensure the sender address is verified with your email provider
+
+### Invalid Code Errors
+
+1. **Code expired** - Codes are valid for 10 minutes only
+2. **Typo in code** - Verify the 6-digit code matches exactly
+3. **Code already used** - Each code can only be used once
+
+### Rate Limiting
+
+To prevent abuse, OTP requests are rate-limited:
+
+- **3 requests per minute** per email address
+- **Cooldown**: 60 seconds between resend attempts
+
+If rate limited, wait and try again.
+
+### SMTP Connection Issues
+
+```bash
+# Test SMTP connectivity
+openssl s_client -connect smtp.provider.com:587 -starttls smtp
+
+# Common issues:
+# - Firewall blocking port 587 or 465
+# - Invalid credentials
+# - IP not whitelisted with provider
+```
+
+### Resend API Issues
+
+1. **Verify API key** - Ensure `EMAIL_RESEND_API_KEY` is correct
+2. **Check domain verification** - The sending domain must be verified in Resend
+3. **Review Resend dashboard** - Check for delivery failures or bounces
+
+## Security Considerations
+
+### Best Practices
+
+- **Use HTTPS** - Always serve your Quackback instance over HTTPS
+- **Verify sender domain** - Set up SPF, DKIM, and DMARC records
+- **Monitor for abuse** - Watch for unusual sign-in patterns
+- **Keep secrets secure** - Never commit `BETTER_AUTH_SECRET` to version control
+
+### Why OTP Over Passwords
+
+1. **No password storage** - Eliminates risk of password database breaches
+2. **No password fatigue** - Users don't need to remember another password
+3. **Automatic verification** - Email ownership is verified on each login
+4. **Resistant to phishing** - Codes are short-lived and single-use
+
+## Development Mode
+
+During development, if no email provider is configured:
+
+1. OTP codes are printed to the server console
+2. Look for the formatted log output with the code
+3. Copy the code and enter it in the verification form
+
+<Tip>
+This allows testing the full authentication flow without email configuration.
+</Tip>
+
+## Related Documentation
+
+- [OAuth Providers](/auth/oauth) - Social login with GitHub, Google, Microsoft
+- [SSO](/auth/sso) - Enterprise Single Sign-On
+- [Authentication Overview](/auth/overview) - General auth architecture

@@ -1,0 +1,221 @@
+---
+title: "Webhooks"
+description: "Send Quackback events to any HTTP endpoint for custom integrations"
+icon: "webhook"
+---
+
+# Webhooks
+
+<Warning>
+**Status: Planned**
+
+Webhooks are on our roadmap but not yet implemented. This documentation describes the planned functionality. Subscribe to our changelog or GitHub repository for updates.
+</Warning>
+
+Send Quackback events to any HTTP endpoint for custom integrations.
+
+## Overview
+
+Webhooks will allow you to:
+- Integrate with tools Quackback doesn't directly support
+- Build custom notification systems
+- Trigger automation workflows
+- Sync data with external systems
+
+## Planned Features
+
+### Event Types
+
+Webhooks will support the same events as other integrations:
+
+- `post.created` - New post submitted
+- `post.status_changed` - Post status updated
+- `comment.created` - New comment added
+
+### Payload Format (Planned)
+
+Webhooks will send JSON payloads:
+
+#### post.created
+
+```json
+{
+  "event": "post.created",
+  "timestamp": "2024-01-15T10:30:00Z",
+  "data": {
+    "post": {
+      "id": "post_01h455vb4pex5vsknk084sn02q",
+      "title": "Add dark mode support",
+      "content": "It would be great to have...",
+      "boardId": "board_01h455vb4pex5vsknk084sn02q",
+      "boardSlug": "feature-requests",
+      "authorEmail": "jane@example.com",
+      "voteCount": 1
+    }
+  }
+}
+```
+
+#### post.status_changed
+
+```json
+{
+  "event": "post.status_changed",
+  "timestamp": "2024-01-16T14:00:00Z",
+  "data": {
+    "post": {
+      "id": "post_01h455vb4pex5vsknk084sn02q",
+      "title": "Add dark mode support",
+      "boardSlug": "feature-requests"
+    },
+    "previousStatus": "Under Review",
+    "newStatus": "Planned"
+  }
+}
+```
+
+#### comment.created
+
+```json
+{
+  "event": "comment.created",
+  "timestamp": "2024-01-17T09:15:00Z",
+  "data": {
+    "comment": {
+      "id": "comment_01h455vb4pex5vsknk084sn02q",
+      "content": "Great idea! We've added this to our roadmap.",
+      "authorEmail": "product@example.com"
+    },
+    "post": {
+      "id": "post_01h455vb4pex5vsknk084sn02q",
+      "title": "Add dark mode support",
+      "boardSlug": "feature-requests"
+    }
+  }
+}
+```
+
+### Planned Request Headers
+
+Each webhook request will include:
+
+| Header | Description |
+|--------|-------------|
+| `Content-Type` | `application/json` |
+| `X-Quackback-Event` | Event type (e.g., `post.created`) |
+| `X-Signature` | HMAC-SHA256 signature for verification |
+
+### Signature Verification (Planned)
+
+Verify webhook authenticity by checking the signature:
+
+```javascript
+const crypto = require('crypto');
+
+function verifySignature(payload, signature, secret) {
+  const expected = crypto
+    .createHmac('sha256', secret)
+    .update(payload)
+    .digest('hex');
+
+  return `sha256=${expected}` === signature;
+}
+
+// In your handler
+app.post('/webhook', (req, res) => {
+  const signature = req.headers['x-signature'];
+  const payload = JSON.stringify(req.body);
+
+  if (!verifySignature(payload, signature, WEBHOOK_SECRET)) {
+    return res.status(401).send('Invalid signature');
+  }
+
+  // Process the webhook
+  console.log('Event:', req.body.event);
+  res.status(200).send('OK');
+});
+```
+
+## Use Cases
+
+### Zapier Integration
+
+Send events to Zapier for automation:
+
+1. Create a Zap with "Webhooks by Zapier" trigger
+2. Copy the Zapier webhook URL
+3. Add it as a Quackback webhook
+4. Map fields in Zapier to actions
+
+### Custom Slack Bot
+
+Build a custom Slack bot with more control:
+
+```javascript
+app.post('/webhook', async (req, res) => {
+  const { event, data } = req.body;
+
+  if (event === 'post.created') {
+    await slack.chat.postMessage({
+      channel: '#feedback',
+      text: `New feedback: ${data.post.title}`,
+      blocks: [
+        {
+          type: 'section',
+          text: { type: 'mrkdwn', text: `*${data.post.title}*\n${data.post.content}` }
+        }
+      ]
+    });
+  }
+
+  res.sendStatus(200);
+});
+```
+
+### Data Warehouse Sync
+
+Log events to your data warehouse:
+
+```javascript
+app.post('/webhook', async (req, res) => {
+  const { event, timestamp, data } = req.body;
+
+  await bigquery.insert({
+    dataset: 'feedback',
+    table: 'events',
+    rows: [{
+      event_type: event,
+      event_time: timestamp,
+      post_id: data.post?.id,
+      post_title: data.post?.title,
+      raw_payload: JSON.stringify(data)
+    }]
+  });
+
+  res.sendStatus(200);
+});
+```
+
+## Environment Variables
+
+<Note>
+When webhooks are implemented, no additional environment variables will be required. Webhook secrets will be generated and stored per-webhook in the database.
+</Note>
+
+## Security Best Practices
+
+<Warning>
+Always follow these security best practices when implementing webhooks:
+</Warning>
+
+1. **Always verify signatures** - Don't trust unverified requests
+2. **Use HTTPS** - Never use HTTP endpoints
+3. **Validate timestamps** - Reject old requests (>5 minutes)
+4. **Limit IP access** - Whitelist Quackback IPs if possible
+5. **Rotate secrets** - Periodically regenerate webhook secrets
+
+## Next Steps
+
+- [Integrations Overview](/integrations/overview) - All integrations
+- [Slack](/integrations/slack) - Direct Slack integration (available now)
+- [API Reference](/api/overview) - Full API documentation

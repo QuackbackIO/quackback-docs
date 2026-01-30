@@ -1,0 +1,241 @@
+---
+title: "Contributing"
+description: "Guidelines for contributing to Quackback including code style, testing, and pull request process"
+icon: "code-pull-request"
+---
+
+# Contributing
+
+Thank you for your interest in contributing to Quackback! This guide will help you get started.
+
+## Ways to Contribute
+
+- **Bug reports** - Found a bug? Open an issue
+- **Feature requests** - Have an idea? Start a discussion
+- **Code contributions** - Fix bugs or add features
+- **Documentation** - Improve guides and API docs
+- **Translations** - Help localize the platform
+
+## Getting Started
+
+### 1. Fork the Repository
+
+Click "Fork" on GitHub to create your own copy.
+
+### 2. Clone Your Fork
+
+```bash
+git clone https://github.com/YOUR_USERNAME/quackback.git
+cd quackback
+```
+
+### 3. Set Up Development Environment
+
+```bash
+bun run setup
+bun run dev
+```
+
+See [Development Setup](/developers/setup) for detailed instructions.
+
+### 4. Create a Branch
+
+```bash
+git checkout -b feature/your-feature-name
+# or
+git checkout -b fix/issue-description
+```
+
+## Making Changes
+
+### Code Style
+
+We use:
+- **ESLint** for code linting
+- **Prettier** for formatting
+- **TypeScript** for type safety
+
+Run checks before committing:
+
+```bash
+bun run lint
+```
+
+For type checking (in apps/web):
+```bash
+cd apps/web && bun run typecheck
+```
+
+### Naming Conventions
+
+| Type | Convention | Example |
+|------|------------|---------|
+| Files | kebab-case | `user-profile.tsx` |
+| Components | PascalCase | `UserProfile` |
+| Functions | camelCase | `getUserProfile` |
+| Database | snake_case | `post_tags` |
+
+### Component Guidelines
+
+- Use React Server Components by default
+- Add `'use client'` only when needed (hooks, browser APIs)
+- Keep components focused and small
+- Extract complex logic to hooks or utilities
+
+### Database Changes
+
+When modifying the schema:
+
+1. Edit files in `packages/db/src/schema/`
+2. Generate migration: `bun run db:generate`
+3. Test migration: `bun run db:migrate`
+4. Verify with Drizzle Studio: `bun run db:studio`
+
+## Testing
+
+### Run Tests
+
+```bash
+# Unit tests
+bun run test
+
+# E2E tests
+bun run test:e2e
+
+# Specific test file
+bun run test path/to/test.ts
+```
+
+### Writing Tests
+
+Unit tests go next to the code:
+```
+lib/posts/
+├── post.service.ts
+└── post.service.test.ts
+```
+
+E2E tests are in `apps/web/e2e/`.
+
+### Test Coverage
+
+Aim for meaningful test coverage:
+- Critical business logic
+- Edge cases
+- Error handling
+
+## Submitting Changes
+
+### 1. Commit Your Changes
+
+Write clear commit messages:
+
+```bash
+# Good
+git commit -m "fix: prevent duplicate votes on same post"
+git commit -m "feat: add CSV export for posts"
+
+# Bad
+git commit -m "fixed stuff"
+git commit -m "wip"
+```
+
+Follow conventional commits:
+- `feat:` - New feature
+- `fix:` - Bug fix
+- `docs:` - Documentation
+- `refactor:` - Code refactoring
+- `test:` - Adding tests
+- `chore:` - Maintenance
+
+### 2. Push to Your Fork
+
+```bash
+git push origin feature/your-feature-name
+```
+
+### 3. Create a Pull Request
+
+1. Go to the main Quackback repository
+2. Click "Compare & pull request"
+3. Fill in the PR template:
+   - Description of changes
+   - Related issues
+   - Screenshots (if UI changes)
+   - Testing done
+
+### PR Guidelines
+
+- Keep PRs focused on a single change
+- Include tests for new functionality
+- Update documentation if needed
+- Respond to review feedback promptly
+
+## Review Process
+
+1. **Automated checks** - CI runs tests and linting
+2. **Code review** - Maintainers review your code
+3. **Feedback** - Address any requested changes
+4. **Merge** - Once approved, your PR is merged
+
+### What Reviewers Look For
+
+- Code quality and readability
+- Test coverage
+- Performance implications
+- Security considerations
+- Documentation updates
+
+## Contributor License Agreement
+
+By contributing, you agree that your contributions will be licensed under the project's AGPL-3.0 license.
+
+For substantial contributions, you may be asked to sign a CLA (Contributor License Agreement).
+
+## Community Guidelines
+
+### Be Respectful
+
+- Treat everyone with respect
+- Be constructive in feedback
+- Welcome newcomers
+- Assume good intentions
+
+### Communication
+
+- **GitHub Issues** - Bug reports and feature requests
+- **GitHub Discussions** - Questions and ideas
+- **Pull Requests** - Code contributions
+
+### Getting Help
+
+Stuck on something?
+
+1. Check existing documentation
+2. Search closed issues and PRs
+3. Ask in GitHub Discussions
+4. Open an issue with details
+
+## License
+
+Quackback is dual-licensed:
+
+- **Core (AGPL-3.0)** - Open source, copyleft
+- **Enterprise (Proprietary)** - Additional features
+
+Contributions to the core go under AGPL-3.0.
+
+## Recognition
+
+Contributors are recognized in:
+- CONTRIBUTORS file
+- Release notes for significant contributions
+- Project documentation
+
+Thank you for contributing to Quackback!
+
+## Next Steps
+
+- [Development Setup](/developers/setup) - Get your environment ready
+- [Architecture](/developers/architecture) - Understand the codebase
+- [Adding Features](/developers/adding-features) - Build something new

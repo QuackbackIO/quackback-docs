@@ -1,0 +1,297 @@
+---
+title: "Development Setup"
+description: "Set up your local development environment for contributing to Quackback"
+icon: "wrench"
+---
+
+# Development Setup
+
+Set up your local development environment for contributing to Quackback.
+
+## Prerequisites
+
+| Requirement | Version | Purpose |
+|-------------|---------|---------|
+| Bun | 1.3.7+ | Runtime and package manager |
+| Docker | 20.10+ | PostgreSQL 18 database |
+| Git | 2.30+ | Version control |
+| Node.js | 20+ | Optional, for some tooling |
+
+### Install Bun
+
+```bash
+# macOS/Linux
+curl -fsSL https://bun.sh/install | bash
+
+# Windows (WSL)
+curl -fsSL https://bun.sh/install | bash
+```
+
+### Install Docker
+
+- **macOS**: [Docker Desktop for Mac](https://docs.docker.com/desktop/install/mac-install/)
+- **Linux**: [Docker Engine](https://docs.docker.com/engine/install/)
+- **Windows**: [Docker Desktop with WSL 2](https://docs.docker.com/desktop/install/windows-install/)
+
+## Quick Setup
+
+The fastest way to get started:
+
+```bash
+# Clone the repository
+git clone https://github.com/quackbackhq/quackback.git
+cd quackback
+
+# Run automated setup
+bun run setup
+```
+
+The setup script:
+1. Checks for Bun and Docker
+2. Installs dependencies
+3. Creates `.env` from template
+4. Generates auth secret
+5. Starts PostgreSQL container
+6. Runs database migrations
+
+## Manual Setup
+
+If you prefer manual setup:
+
+### 1. Install Dependencies
+
+```bash
+bun install
+```
+
+### 2. Configure Environment
+
+```bash
+cp .env.example .env
+```
+
+Generate a secret:
+```bash
+openssl rand -base64 32
+```
+
+Edit `.env`:
+```bash
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/quackback"
+BETTER_AUTH_SECRET="your-generated-secret-here"
+BETTER_AUTH_URL="http://localhost:3000"
+ROOT_URL="http://localhost:3000"
+```
+
+### 3. Start PostgreSQL
+
+```bash
+docker compose up -d postgres
+```
+
+Wait for it to be healthy:
+```bash
+docker compose ps  # Should show "healthy"
+```
+
+### 4. Run Migrations
+
+```bash
+bun run db:migrate
+```
+
+### 5. Seed Demo Data (Optional)
+
+```bash
+bun run db:seed
+```
+
+This creates a demo workspace with sample data.
+
+## Start Development Server
+
+```bash
+bun run dev
+```
+
+Open [http://localhost:3000](http://localhost:3000).
+
+### Demo Login
+
+<Tip>
+If you ran the seed, you can log in with `demo@example.com`. The OTP code appears in the console output.
+</Tip>
+
+## Project Structure
+
+```
+quackback/
+├── apps/web/                 # Main TanStack Start application
+│   ├── src/
+│   │   ├── routes/           # File-based routing
+│   │   ├── components/       # React components
+│   │   ├── lib/              # Business logic & utilities
+│   │   └── server.ts         # Server entry point
+│   ├── e2e/                  # Playwright E2E tests
+│   └── public/               # Static assets
+│
+├── packages/                 # Shared packages
+│   ├── db/                   # Database schema & migrations
+│   ├── ids/                  # TypeID system
+│   └── email/                # Email service & templates
+│
+├── ee/                       # Enterprise Edition (proprietary)
+│   └── packages/
+│
+├── deploy/                   # Deployment configurations
+├── scripts/                  # Utility scripts
+└── docker-compose.yml        # Local development services
+```
+
+## Common Commands
+
+```bash
+# Development
+bun run dev              # Start dev server (self-hosted mode)
+bun run dev:cloud        # Start in cloud multi-tenant mode
+bun run build            # Production build
+
+# Database
+bun run db:generate      # Generate migration from schema changes
+bun run db:migrate       # Run pending migrations
+bun run db:studio        # Open Drizzle Studio (DB GUI)
+bun run db:seed          # Seed demo data
+bun run db:reset         # Reset database (destructive!)
+
+# Code Quality
+bun run lint             # ESLint + Prettier check
+
+# Testing
+bun run test             # Run Vitest tests
+bun run test <file>      # Run single test file
+bun run test:e2e         # Playwright E2E tests
+bun run test:e2e:ui      # E2E with interactive UI
+```
+
+## IDE Setup
+
+### VS Code
+
+Recommended extensions:
+- ESLint
+- Prettier
+- Tailwind CSS IntelliSense
+- TypeScript Vue Plugin (Volar)
+
+Settings (`.vscode/settings.json`):
+```json
+{
+  "editor.formatOnSave": true,
+  "editor.defaultFormatter": "esbenp.prettier-vscode",
+  "editor.codeActionsOnSave": {
+    "source.fixAll.eslint": true
+  }
+}
+```
+
+### Other IDEs
+
+The project uses:
+- ESLint for linting
+- Prettier for formatting
+- TypeScript for type checking
+
+Configure your IDE to use these tools.
+
+## Database Management
+
+### Drizzle Studio
+
+Visual database browser:
+
+```bash
+bun run db:studio
+```
+
+Opens at [https://local.drizzle.studio](https://local.drizzle.studio).
+
+### Direct Access
+
+Connect via psql:
+
+```bash
+docker compose exec postgres psql -U postgres quackback
+```
+
+Or use any PostgreSQL client with:
+- Host: `localhost`
+- Port: `5432`
+- User: `postgres`
+- Password: `password`
+- Database: `quackback`
+
+### Reset Database
+
+Wipe everything and start fresh:
+
+```bash
+bun run db:reset
+```
+
+<Warning>
+This command destroys all data in the database.
+</Warning>
+
+## Troubleshooting
+
+### Port Already in Use
+
+```bash
+# Find process on port 3000
+lsof -i :3000
+
+# Kill it
+kill -9 <PID>
+
+# Or use a different port
+PORT=3001 bun run dev
+```
+
+### Database Connection Failed
+
+```bash
+# Check if PostgreSQL is running
+docker compose ps
+
+# Restart it
+docker compose restart postgres
+
+# Check logs
+docker compose logs postgres
+```
+
+### Migrations Failed
+
+```bash
+# See detailed error
+bun run db:migrate 2>&1
+
+# Reset and retry
+bun run db:reset
+bun run db:migrate
+```
+
+### Dependencies Issues
+
+```bash
+# Clear and reinstall
+rm -rf node_modules bun.lockb
+bun install
+```
+
+## Next Steps
+
+- [Architecture](/developers/architecture) - Understand the system design
+- [Server Functions](/developers/server-functions) - API development patterns
+- [Testing](/developers/testing) - Write and run tests
+- [Contributing](/developers/contributing) - Contribution guidelines

@@ -1,65 +1,92 @@
 # Quackback Documentation
 
-This repository contains the documentation for [Quackback](https://github.com/QuackbackIO/quackback), the open-source customer feedback platform.
+Welcome to the Quackback documentation. Quackback is an open-source customer feedback platform for collecting, organizing, and acting on user feedback.
 
-## Structure
+## Documentation Structure
 
-```
-docs/
-├── index.mdx              # Documentation home
-├── getting-started.mdx    # Getting started guide
-├── self-hosting.mdx       # Self-hosting guide
-└── [section]/             # Additional sections
-    └── [page].mdx
-```
+### Getting Started
+- [Introduction](getting-started/introduction.mdx) - What is Quackback
+- [Quick Start](getting-started/quick-start.mdx) - Deploy in 5 minutes
+- [Core Concepts](getting-started/concepts.mdx) - Boards, posts, statuses, and more
 
-## Writing Documentation
+### Self-Hosting
+- [Requirements](self-hosting/requirements.mdx) - System requirements
+- [Docker Deployment](self-hosting/docker.mdx) - Recommended deployment method
+- [Manual Installation](self-hosting/manual.mdx) - Install without Docker
+- [Reverse Proxy](self-hosting/reverse-proxy.mdx) - Nginx, Caddy, Traefik configuration
+- [Troubleshooting](self-hosting/troubleshooting.mdx) - Common issues and solutions
 
-Each documentation page is an MDX file with frontmatter:
+### User Guide
+- [Submitting Feedback](users/submitting-feedback.mdx) - How to share ideas
+- [Voting](users/voting.mdx) - Supporting ideas you care about
+- [Comments](users/comments.mdx) - Joining the discussion
+- [Notifications](users/notifications.mdx) - Managing alerts
+- [Account Settings](users/account.mdx) - Profile and preferences
 
-```mdx
----
-title: "Page Title"
-description: "A brief description for SEO and search"
-order: 1
----
+### Admin Guide
+- [Managing Feedback](admin/inbox.mdx) - Feedback inbox and workflow
+- [Boards](admin/boards.mdx) - Organizing feedback categories
+- [Statuses](admin/statuses.mdx) - Workflow stages
+- [Tags](admin/tags.mdx) - Additional categorization
+- [Roadmap](admin/roadmap.mdx) - Public progress tracking
+- [Portal Users](admin/users.mdx) - Managing portal user accounts
+- [Notifications](admin/notifications.mdx) - Admin notification settings
+- [Team](admin/team.mdx) - Team member management
+- [Security](admin/security.mdx) - Team authentication settings
+- [Portal Authentication](admin/portal-auth.mdx) - Portal user sign-in options
+- [Branding](admin/branding.mdx) - Customization
+- [Import & Export](admin/import-export.mdx) - Data migration
 
-# Page Title
+### Authentication
+- [Overview](auth/overview.mdx) - Auth methods and configuration
+- [Email OTP](auth/email-otp.mdx) - Magic link authentication
+- [OAuth](auth/oauth.mdx) - GitHub, Google setup
+- [SSO](auth/sso.mdx) - Enterprise SSO/OIDC
 
-Your content here...
-```
+### Integrations
+- [Overview](integrations/overview.mdx) - How integrations work
+- [Slack](integrations/slack.mdx) - Slack notifications
+- [Webhooks](integrations/webhooks.mdx) - Custom integrations (planned)
+- [Discord](integrations/discord.mdx) - Discord integration (planned)
+- [Linear](integrations/linear.mdx) - Linear integration (planned)
 
-### Frontmatter Fields
+### API Reference
+- [Overview](api/overview.mdx) - API introduction
+- [Posts API](api/posts.mdx) - Post operations
+- [Comments API](api/comments.mdx) - Comment operations
 
-| Field | Required | Description |
-|-------|----------|-------------|
-| `title` | Yes | Page title displayed in sidebar and browser |
-| `description` | Yes | Meta description for SEO |
-| `order` | No | Sort order within section (default: 99) |
+### Developer Guide
+- [Development Setup](developers/setup.mdx) - Local environment
+- [Architecture](developers/architecture.mdx) - System design
+- [Server Functions](developers/server-functions.mdx) - RPC patterns
+- [Database](developers/database.mdx) - Schema and queries
+- [Adding Features](developers/adding-features.mdx) - Feature development guide
+- [Testing](developers/testing.mdx) - Vitest and Playwright
+- [Contributing](developers/contributing.mdx) - How to contribute
 
-### Components
+### Reference
+- [Environment Variables](reference/environment-variables.mdx) - Configuration options
+- [CLI Commands](reference/cli.mdx) - Command reference
+- [Database Schema](reference/database-schema.mdx) - Tables and relationships
 
-You can use custom components in your MDX:
+## Quick Links
 
-```mdx
-<Callout type="info" title="Note">
-  This is an informational callout.
-</Callout>
+| I want to... | Go to... |
+|--------------|----------|
+| Deploy Quackback | [Quick Start](getting-started/quick-start.mdx) |
+| Understand the product | [Introduction](getting-started/introduction.mdx) |
+| Configure settings | [Environment Variables](reference/environment-variables.mdx) |
+| Set up Slack | [Slack Integration](integrations/slack.mdx) |
+| Build a feature | [Adding Features](developers/adding-features.mdx) |
+| Contribute code | [Contributing](developers/contributing.mdx) |
+| Fix a problem | [Troubleshooting](self-hosting/troubleshooting.mdx) |
 
-<Callout type="warning" title="Warning">
-  This is a warning callout.
-</Callout>
-```
+## Support
 
-Callout types: `info`, `warning`, `error`, `success`
-
-## Contributing
-
-1. Fork this repository
-2. Create a new branch for your changes
-3. Make your edits to the MDX files
-4. Submit a pull request
+- [GitHub Issues](https://github.com/quackbackio/quackback/issues) - Bug reports
+- [GitHub Discussions](https://github.com/quackbackio/quackback/discussions) - Questions and ideas
 
 ## License
 
-MIT License - see [Quackback](https://github.com/QuackbackIO/quackback) for details.
+- Core: AGPL-3.0 (open source)
+- Enterprise: Proprietary (SSO, SCIM, Audit)

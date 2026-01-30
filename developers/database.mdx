@@ -1,0 +1,436 @@
+---
+title: "Database Guide"
+description: "Learn about the database layer including PostgreSQL, Drizzle ORM, and TypeIDs"
+icon: "database"
+---
+
+# Database Guide
+
+Understanding the database layer is essential for contributing to Quackback.
+
+## Overview
+
+Quackback uses:
+- **PostgreSQL 18+** as the database
+- **Drizzle ORM** for type-safe queries
+- **TypeIDs** for branded identifiers
+- **pgvector** for semantic search
+- **pg_cron** for scheduled jobs
+
+## Schema Location
+
+Database schema is defined in `packages/db/src/schema/`:
+
+```
+packages/db/src/schema/
+├── index.ts              # Barrel export
+├── auth.ts               # Users, sessions, members, workspaces
+├── posts.ts              # Posts, comments, votes, tags
+├── boards.ts             # Boards
+├── statuses.ts           # Post statuses
+├── integrations.ts       # Integration configs, webhooks
+├── notifications.ts      # Notifications, subscriptions
+├── sentiment.ts          # AI sentiment data
+└── changelog.ts          # Changelog entries
+```
+
+## Core Tables
+
+### Users & Authentication
+
+```typescript
+// users - Portal users
+users: {
+  id: UserId,
+  email: string,
+  name: string | null,
+  image: string | null,
+  createdAt: timestamp,
+}
+
+// members - Team members (admins, staff)
+members: {
+  id: MemberId,
+  userId: UserId,
+  workspaceId: WorkspaceId,
+  role: 'admin' | 'member',
+  createdAt: timestamp,
+}
+```
+
+### Posts & Feedback
+
+```typescript
+// posts - User feedback
+posts: {
+  id: PostId,
+  title: string,
+  content: string | null,
+  contentJson: jsonb | null,      // Tiptap rich text
+  boardId: BoardId,
+  statusId: StatusId,
+  authorId: UserId | null,
+  authorMemberId: MemberId | null,
+  voteCount: integer,
+  commentCount: integer,
+  searchVector: tsvector,          // Full-text search
+  createdAt: timestamp,
+  updatedAt: timestamp,
+  deletedAt: timestamp | null,
+}
+
+// votes
+votes: {
+  id: VoteId,
+  postId: PostId,
+  userId: UserId,
+  createdAt: timestamp,
+}
+
+// comments
+comments: {
+  id: CommentId,
+  postId: PostId,
+  parentId: CommentId | null,      // Nested comments
+  content: string,
+  authorId: UserId | null,
+  authorMemberId: MemberId | null,
+  isPinned: boolean,               // Official response
+  createdAt: timestamp,
+  deletedAt: timestamp | null,
+}
+```
+
+### Organization
+
+```typescript
+// boards
+boards: {
+  id: BoardId,
+  name: string,
+  slug: string,
+  description: string | null,
+  isPublic: boolean,
+  createdAt: timestamp,
+}
+
+// statuses
+statuses: {
+  id: StatusId,
+  name: string,
+  slug: string,
+  color: string,
+  showOnRoadmap: boolean,
+  order: integer,
+}
+
+// tags
+tags: {
+  id: TagId,
+  name: string,
+  color: string,
+}
+
+// post_tags (junction table)
+postTags: {
+  postId: PostId,
+  tagId: TagId,
+}
+```
+
+## Database Access
+
+### Importing
+
+<Note>
+Always import from the app's db module to ensure proper tenant context handling.
+</Note>
+
+```typescript
+// ✅ Correct
+import { db, posts, eq, and, desc } from '@/lib/db'
+
+// ❌ Wrong - bypasses tenant context
+import { db } from '@quackback/db'
+```
+
+### Basic Queries
+
+```typescript
+// Select with conditions
+const post = await db.query.posts.findFirst({
+  where: eq(posts.id, postId),
+})
+
+// Select with relations
+const postWithBoard = await db.query.posts.findFirst({
+  where: eq(posts.id, postId),
+  with: {
+    board: true,
+    status: true,
+    tags: true,
+  },
+})
+
+// List with filtering
+const feedbackPosts = await db.query.posts.findMany({
+  where: and(
+    eq(posts.boardId, boardId),
+    eq(posts.statusId, statusId),
+    isNull(posts.deletedAt),
+  ),
+  orderBy: desc(posts.createdAt),
+  limit: 20,
+})
+```
+
+### Insert
+
+```typescript
+import { createId } from '@quackback/ids'
+
+const [newPost] = await db.insert(posts).values({
+  id: createId('post'),
+  title: input.title,
+  content: input.content,
+  boardId: input.boardId,
+  statusId: defaultStatusId,
+  authorId: user.id,
+}).returning()
+```
+
+### Update
+
+```typescript
+await db.update(posts)
+  .set({
+    statusId: newStatusId,
+    updatedAt: new Date(),
+  })
+  .where(eq(posts.id, postId))
+```
+
+### Delete (Soft Delete)
+
+```typescript
+// Soft delete - preserve data
+await db.update(posts)
+  .set({ deletedAt: new Date() })
+  .where(eq(posts.id, postId))
+
+// Hard delete - remove permanently
+await db.delete(votes)
+  .where(eq(votes.postId, postId))
+```
+
+## TypeIDs
+
+All entities use branded TypeIDs:
+
+```typescript
+import { createId, type PostId } from '@quackback/ids'
+
+// Generate new ID
+const id: PostId = createId('post')
+// => "post_01h455vb4pex5vsknk084sn02q"
+
+// Column definition in schema
+import { typeId } from '@quackback/ids/drizzle'
+
+export const posts = pgTable('posts', {
+  id: typeId('post').primaryKey(),
+  boardId: typeId('board').references(() => boards.id),
+})
+```
+
+Benefits:
+- Type safety (can't mix PostId with BoardId)
+- Self-describing (prefix shows entity type)
+- Sortable (timestamp-based UUIDs)
+
+## Migrations
+
+### Generate Migration
+
+After changing schema files:
+
+```bash
+bun run db:generate
+```
+
+Creates a migration in `packages/db/drizzle/`.
+
+### Run Migrations
+
+```bash
+bun run db:migrate
+```
+
+Migrations run automatically on deployment.
+
+### Migration Best Practices
+
+1. **One change per migration** - Easier to debug
+2. **Test rollback** - Ensure reversibility
+3. **Non-breaking changes** - Add columns as nullable first
+4. **Data migrations** - Handle existing data carefully
+
+## Full-Text Search
+
+Posts support full-text search via `tsvector`:
+
+```typescript
+// Schema includes search vector
+export const posts = pgTable('posts', {
+  // ...
+  searchVector: tsvector('search_vector'),
+})
+
+// Search query
+const results = await db.query.posts.findMany({
+  where: sql`search_vector @@ plainto_tsquery(${searchTerm})`,
+})
+```
+
+The search vector is updated automatically via database trigger.
+
+## Vector Search (pgvector)
+
+Semantic search using embeddings:
+
+```typescript
+// Store embedding
+await db.update(postEmbeddings)
+  .set({ embedding: vector })
+  .where(eq(postEmbeddings.postId, postId))
+
+// Find similar posts
+const similar = await db.execute(sql`
+  SELECT id, title, 1 - (embedding <=> ${queryVector}) as similarity
+  FROM post_embeddings
+  ORDER BY embedding <=> ${queryVector}
+  LIMIT 5
+`)
+```
+
+## Transactions
+
+For atomic operations:
+
+```typescript
+await db.transaction(async (tx) => {
+  // All operations use `tx` instead of `db`
+  await tx.insert(posts).values(postData)
+  await tx.insert(postTags).values(tagData)
+
+  // If any fails, all are rolled back
+})
+```
+
+## Relations
+
+Define relations in schema:
+
+```typescript
+export const postsRelations = relations(posts, ({ one, many }) => ({
+  board: one(boards, {
+    fields: [posts.boardId],
+    references: [boards.id],
+  }),
+  status: one(statuses, {
+    fields: [posts.statusId],
+    references: [statuses.id],
+  }),
+  comments: many(comments),
+  votes: many(votes),
+  tags: many(postTags),
+}))
+```
+
+Query with relations:
+
+```typescript
+const post = await db.query.posts.findFirst({
+  where: eq(posts.id, postId),
+  with: {
+    board: true,
+    status: true,
+    comments: {
+      where: isNull(comments.deletedAt),
+      orderBy: desc(comments.createdAt),
+    },
+  },
+})
+```
+
+## Drizzle Studio
+
+Visual database browser:
+
+```bash
+bun run db:studio
+```
+
+Features:
+- Browse tables
+- Edit data
+- Run queries
+- View relations
+
+## Seeding
+
+Demo data for development:
+
+```bash
+bun run db:seed
+```
+
+Seed file: `packages/db/src/seed.ts`
+
+Creates:
+- Demo workspace
+- Sample boards and statuses
+- Example posts and comments
+- Demo user accounts
+
+## Best Practices
+
+### Query Optimization
+
+```typescript
+// ✅ Select only needed columns
+const titles = await db
+  .select({ id: posts.id, title: posts.title })
+  .from(posts)
+
+// ❌ Avoid selecting everything
+const allData = await db.select().from(posts)
+```
+
+### Indexes
+
+Add indexes for frequently queried columns:
+
+```typescript
+export const postsStatusIdx = index('posts_status_idx')
+  .on(posts.statusId)
+
+export const postsCreatedIdx = index('posts_created_idx')
+  .on(posts.createdAt)
+```
+
+### Soft Deletes
+
+Always check for `deletedAt`:
+
+```typescript
+const activePosts = await db.query.posts.findMany({
+  where: isNull(posts.deletedAt),
+})
+```
+
+## Next Steps
+
+- [Architecture](/developers/architecture) - System overview
+- [Server Functions](/developers/server-functions) - API patterns
+- [Adding Features](/developers/adding-features) - Build new functionality

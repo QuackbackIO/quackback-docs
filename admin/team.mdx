@@ -1,0 +1,164 @@
+---
+title: "Team Management"
+description: "Invite and manage team members with different roles to help manage feedback"
+icon: "users"
+---
+
+# Team Management
+
+Invite team members to help manage feedback and engage with users.
+
+## Overview
+
+Access team settings from **Admin → Settings → Team Members**.
+
+## Roles
+
+Quackback has two team member roles:
+
+| Role | Capabilities |
+|------|--------------|
+| **Admin** | Full access to all settings, team management, integrations |
+| **Member** | Manage feedback, respond to posts, update statuses |
+
+### Role Comparison
+
+| Capability | Member | Admin |
+|------------|:------:|:-----:|
+| View admin dashboard | ✓ | ✓ |
+| Manage posts & comments | ✓ | ✓ |
+| Change post statuses | ✓ | ✓ |
+| Add tags to posts | ✓ | ✓ |
+| Pin official responses | ✓ | ✓ |
+| Manage boards | | ✓ |
+| Manage statuses & tags | | ✓ |
+| Workspace settings | | ✓ |
+| Branding & customization | | ✓ |
+| Team management | | ✓ |
+| Integrations | | ✓ |
+| Import/export data | | ✓ |
+
+## Inviting Team Members
+
+1. Go to **Admin → Settings → Team Members**
+2. Click **"Invite member"**
+3. Enter their email address
+4. Select a role (Admin or Member)
+5. Click **Send invite**
+
+The invitee receives an email with a link to join your workspace.
+
+### Pending Invitations
+
+Pending invitations are shown at the top of the Team Members page. From there you can:
+- View who has been invited
+- Resend invitations
+- Cancel pending invitations
+
+## Managing Members
+
+### View Team Members
+
+The team page shows:
+- Member name and email
+- Role badge (Admin/Member)
+
+The member count is displayed at the top of the list.
+
+### Change Role
+
+1. Find the member in the list
+2. Click the **...** menu button on the right
+3. Select **Change role** or the appropriate option
+4. Confirm the change
+
+Changes take effect immediately.
+
+### Remove Member
+
+1. Find the member in the list
+2. Click the **...** menu button
+3. Select **Remove**
+4. Confirm removal
+
+Removed members:
+- Lose access to the admin dashboard
+- Can still access the public portal
+- Their comments and activity history remain
+
+<Warning>
+You cannot remove yourself or the last admin.
+</Warning>
+
+## Authentication
+
+### Email Authentication
+
+By default, team members sign in with email OTP (magic link).
+
+### OAuth
+
+If configured, team members can sign in with:
+- GitHub
+- Google
+- Microsoft
+
+See [OAuth Setup](/auth/oauth) for configuration.
+
+### SSO (Enterprise)
+
+Enterprise customers can configure SAML SSO:
+- Single Sign-On with your identity provider
+- Automatic user provisioning
+- Centralized access control
+
+See [SSO Setup](/auth/sso) for configuration.
+
+## Best Practices
+
+### Start Small
+
+<Tip>
+Begin with a small team of admins. Add members as your feedback volume grows.
+</Tip>
+
+### Clear Ownership
+
+Assign specific team members to monitor certain boards or topics.
+
+### Regular Reviews
+
+Periodically review team access:
+- Remove members who no longer need access
+- Audit admin permissions
+- Check for unused invitations
+
+### Use Member Role Appropriately
+
+<Note>
+Only grant Admin access to those who need it. Members can handle most day-to-day feedback management.
+</Note>
+
+## Team Activity
+
+Track what your team is doing:
+
+- **Post updates** - Who changed statuses
+- **Comments** - Official responses from team
+- **Settings changes** - Configuration updates (Admin only)
+
+Activity is logged for accountability and audit purposes.
+
+## Transferring Ownership
+
+To transfer workspace ownership:
+
+1. Ensure the new owner is an Admin
+2. Contact support for ownership transfer
+3. Verify the transfer via email
+
+## Next Steps
+
+- [Branding](/admin/branding) - Customize your workspace appearance
+- [Security](/admin/security) - Configure authentication options
+- [Integrations](/integrations/overview) - Connect external tools

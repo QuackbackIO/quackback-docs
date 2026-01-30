@@ -1,0 +1,132 @@
+---
+title: "Quick Start"
+description: "Get Quackback running in under 5 minutes using Docker for local development or production deployment."
+icon: "rocket"
+---
+
+# Quick Start
+
+Get Quackback running in under 5 minutes using Docker.
+
+## Prerequisites
+
+- Docker and Docker Compose installed
+- A domain or subdomain (for production)
+
+## One-Command Setup
+
+```bash
+# Clone the repository
+git clone https://github.com/quackbackhq/quackback.git
+cd quackback
+
+# Copy environment template
+cp .env.example .env
+
+# Start everything
+docker compose up -d
+```
+
+Quackback is now running at [http://localhost:3000](http://localhost:3000).
+
+## First-Time Setup
+
+1. **Open the app** - Navigate to `http://localhost:3000`
+2. **Create your workspace** - Follow the onboarding wizard
+3. **Sign in** - Use `demo@example.com` (check the console for the OTP code in development)
+
+<Tip>
+In development mode, OTP codes are printed to the console instead of being sent via email. Watch your terminal output for the login code.
+</Tip>
+
+## Environment Configuration
+
+Edit `.env` with your settings:
+
+```bash
+# Required
+DATABASE_URL="postgresql://postgres:postgres@localhost:5432/quackback"
+BETTER_AUTH_SECRET="your-32-character-secret-key-here"
+BETTER_AUTH_URL="http://localhost:3000"
+ROOT_URL="http://localhost:3000"
+
+# Email (optional - emails print to console if not configured)
+EMAIL_SMTP_HOST="smtp.example.com"
+EMAIL_SMTP_PORT="587"
+EMAIL_SMTP_USER="your-smtp-user"
+EMAIL_SMTP_PASS="your-smtp-password"
+```
+
+Generate a secure secret:
+
+```bash
+openssl rand -base64 32
+```
+
+<Warning>
+Never commit your `.env` file to version control. The `BETTER_AUTH_SECRET` should be a strong, unique value in production.
+</Warning>
+
+## What's Next?
+
+### Configure for Production
+
+For production deployments, you'll need to:
+
+1. Set up a proper domain with HTTPS
+2. Configure email delivery (SMTP or Resend)
+3. Set strong secrets
+4. Use a managed PostgreSQL database
+
+See the [Docker Deployment Guide](/self-hosting/docker) for complete instructions.
+
+### Explore the Platform
+
+- **Create a board** - Go to Admin → Settings → Boards
+- **Invite your team** - Go to Admin → Settings → Team
+- **Customize branding** - Go to Admin → Settings → Branding
+- **Connect Slack** - Go to Admin → Settings → Integrations
+
+### Import Existing Feedback
+
+Migrating from another platform? Quackback supports CSV import:
+
+1. Go to Admin → Settings → Boards
+2. Select a board
+3. Click "Import from CSV"
+
+See [Import & Export](/admin/import-export) for format details.
+
+## Troubleshooting
+
+### Port 3000 already in use
+
+```bash
+# Find and kill the process
+lsof -i :3000
+kill -9 <PID>
+```
+
+### Database connection failed
+
+Ensure PostgreSQL is running:
+
+```bash
+docker compose ps
+# Should show postgres container as "healthy"
+```
+
+<Note>
+If the database container shows as "unhealthy", try running `docker compose down -v` to remove volumes and then `docker compose up -d` to start fresh.
+</Note>
+
+### Emails not sending
+
+<Info>
+In development, emails are printed to the console. For production, configure SMTP or Resend in your `.env` file.
+</Info>
+
+## Getting Help
+
+- [GitHub Issues](https://github.com/quackbackhq/quackback/issues) - Bug reports and feature requests
+- [GitHub Discussions](https://github.com/quackbackhq/quackback/discussions) - Questions and community support

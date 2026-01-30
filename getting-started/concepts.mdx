@@ -1,0 +1,168 @@
+---
+title: "Core Concepts"
+description: "Understand the key concepts in Quackback including workspaces, boards, posts, statuses, and user roles."
+icon: "lightbulb"
+---
+
+# Core Concepts
+
+Understanding the key concepts in Quackback will help you make the most of the platform.
+
+## Workspaces
+
+A **workspace** is your Quackback instance. It contains all your boards, posts, team members, and settings.
+
+- Self-hosted deployments have one workspace per instance
+- Each workspace has its own subdomain or custom domain
+
+## Boards
+
+**Boards** organize feedback into categories. Common examples:
+
+- Feature Requests
+- Bug Reports
+- Integrations
+- Documentation
+
+Each board can be configured independently:
+
+| Setting | Description |
+|---------|-------------|
+| **Name** | Display name for the board |
+| **Slug** | URL-friendly identifier (`/b/feature-requests`) |
+| **Visibility** | Public or private |
+| **Access Control** | Restrict by email domain (optional) |
+
+## Posts
+
+A **post** is a single piece of feedback. Posts belong to a board and have:
+
+- **Title** - Brief summary of the feedback
+- **Content** - Detailed description (rich text with formatting)
+- **Status** - Current state in your workflow
+- **Tags** - Labels for additional categorization
+- **Votes** - Number of users who support this idea
+- **Comments** - Discussion thread
+
+### Post Lifecycle
+
+```
+Submitted → Under Review → Planned → In Progress → Shipped
+    │
+    └──→ Declined
+```
+
+## Statuses
+
+**Statuses** represent the lifecycle stages of feedback. Default statuses include:
+
+| Status | Description | On Roadmap |
+|--------|-------------|------------|
+| Under Review | New feedback being evaluated | No |
+| Planned | Approved and scheduled | Yes |
+| In Progress | Currently being worked on | Yes |
+| Shipped | Released to users | Yes |
+| Declined | Won't be implemented | No |
+
+<Tip>
+You can create custom statuses to match your workflow. Go to Admin → Settings → Statuses to configure them.
+</Tip>
+
+## Tags
+
+**Tags** provide additional categorization within boards. Unlike statuses, posts can have multiple tags.
+
+Examples:
+- `mobile`, `web`, `api`
+- `high-priority`, `quick-win`
+- `enterprise`, `free-tier`
+
+## Roadmaps
+
+A **roadmap** is a public view of your planned work. It displays posts grouped by status in a kanban-style layout.
+
+Users can:
+- See what's planned, in progress, and shipped
+- Vote on upcoming features
+- Subscribe to updates
+
+## Voting
+
+**Voting** lets users express interest in feedback. Each user gets one vote per post.
+
+Votes help you:
+- Prioritize based on demand
+- Identify popular requests
+- Make data-driven decisions
+
+## Comments
+
+**Comments** enable discussion on posts. Features include:
+
+- **Threaded replies** - Nested conversations
+- **Official responses** - Pinned team replies
+- **Reactions** - Emoji reactions on comments
+- **Rich text** - Formatting support
+
+## Users vs. Members
+
+Quackback has two types of accounts:
+
+### Portal Users
+- Sign up through the public portal
+- Submit feedback, vote, and comment
+- Manage notification preferences
+- Authenticate via email OTP or OAuth
+
+### Team Members
+- Invited by workspace admins
+- Access the admin dashboard
+- Manage feedback, settings, and integrations
+- Have roles: **Admin** or **Member**
+
+<Note>
+Team members can also interact with the public portal like regular users, in addition to having admin access.
+</Note>
+
+| Capability | Portal User | Member | Admin |
+|------------|:-----------:|:------:|:-----:|
+| Submit feedback | ✓ | ✓ | ✓ |
+| Vote & comment | ✓ | ✓ | ✓ |
+| View admin dashboard | | ✓ | ✓ |
+| Manage feedback | | ✓ | ✓ |
+| Change statuses | | ✓ | ✓ |
+| Workspace settings | | | ✓ |
+| Team management | | | ✓ |
+| Integrations | | | ✓ |
+
+## Integrations
+
+**Integrations** connect Quackback to external tools:
+
+- **Slack** - Post notifications to channels
+- **Webhooks** - Send events to any URL
+- **Linear** - Sync with issue tracking (coming soon)
+
+Integrations are configured with **event mappings** that define which events trigger notifications.
+
+## Subscriptions & Notifications
+
+Users can **subscribe** to posts to receive updates:
+
+- Status changes
+- New comments
+- Official responses
+
+Notifications are delivered via:
+- In-app notification center
+- Email (if configured)
+
+<Info>
+Users are automatically subscribed to posts they create or vote on. They can manage their notification preferences in their account settings.
+</Info>
+
+## Next Steps
+
+- [Quick Start](/getting-started/quick-start) - Get Quackback running
+- [Admin Guide](/admin/inbox) - Learn to manage feedback
+- [Self-Hosting](/self-hosting/docker) - Production deployment

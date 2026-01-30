@@ -1,0 +1,238 @@
+---
+title: "System Requirements"
+description: "Hardware, software, and infrastructure requirements for self-hosting Quackback"
+icon: "server"
+---
+
+# System Requirements
+
+Hardware, software, and infrastructure requirements for self-hosting Quackback.
+
+## Minimum Requirements
+
+| Resource | Minimum | Recommended |
+|----------|---------|-------------|
+| CPU | 1 core | 2+ cores |
+| RAM | 1 GB | 2+ GB |
+| Storage | 10 GB | 20+ GB |
+| PostgreSQL | 18+ | 18+ |
+
+## Software Requirements
+
+### PostgreSQL
+
+**Version**: 18 or higher (required)
+
+**Required Extensions**:
+- `pgvector` - Vector similarity search
+- `pg_cron` - Scheduled jobs (optional)
+
+<Info>
+Quackback uses native `uuidv7()` for ID generation, which requires PostgreSQL 18+.
+</Info>
+
+### Docker (Recommended)
+
+| Component | Version |
+|-----------|---------|
+| Docker Engine | 20.10+ |
+| Docker Compose | v2+ |
+
+### Bun (Alternative)
+
+If running without Docker:
+
+| Component | Version |
+|-----------|---------|
+| Bun | 1.3.7+ |
+
+## Network Requirements
+
+### Ports
+
+| Port | Purpose | Required |
+|------|---------|----------|
+| 3000 | Application (default) | Yes |
+| 5432 | PostgreSQL | Internal only |
+| 443 | HTTPS (via proxy) | Production |
+| 80 | HTTP redirect | Optional |
+
+### Domains
+
+You'll need:
+- A domain or subdomain (e.g., `feedback.yourcompany.com`)
+- SSL certificate (Let's Encrypt works great)
+
+### Outbound Connections
+
+Quackback needs to reach:
+- Email provider (SMTP or Resend API)
+- OAuth providers (GitHub, Google, etc.)
+- Integration services (Slack, etc.)
+
+## Database Requirements
+
+### PostgreSQL Configuration
+
+Recommended settings for production:
+
+```ini
+# Memory
+shared_buffers = 256MB
+work_mem = 16MB
+maintenance_work_mem = 128MB
+
+# Connections
+max_connections = 100
+
+# WAL
+wal_level = replica
+```
+
+### Storage
+
+Estimate storage needs:
+
+| Data | Size Estimate |
+|------|---------------|
+| 1,000 posts | ~50 MB |
+| 10,000 posts | ~500 MB |
+| 100,000 posts | ~5 GB |
+
+Add headroom for:
+- Attachments (if enabled)
+- Vector embeddings (for AI features)
+- Logs and backups
+
+### Backups
+
+<Warning>
+Plan for regular backups to prevent data loss. Point-in-time recovery is recommended for production deployments.
+</Warning>
+
+- Daily full backups
+- Point-in-time recovery (recommended)
+- Off-site backup storage
+
+## Cloud Provider Options
+
+### AWS
+
+| Service | Use |
+|---------|-----|
+| EC2 | Application server |
+| RDS | Managed PostgreSQL |
+| ElastiCache | Optional caching |
+| ALB | Load balancing |
+
+Minimum instance: `t3.small`
+
+### Google Cloud
+
+| Service | Use |
+|---------|-----|
+| Compute Engine | Application server |
+| Cloud SQL | Managed PostgreSQL |
+| Cloud Load Balancing | Load balancing |
+
+Minimum machine: `e2-small`
+
+### DigitalOcean
+
+| Service | Use |
+|---------|-----|
+| Droplet | Application server |
+| Managed Database | PostgreSQL |
+| Load Balancer | Optional |
+
+Minimum droplet: 2GB RAM
+
+### Railway / Render / Fly.io
+
+All support Quackback with managed databases.
+
+## VPS Providers
+
+Budget-friendly options:
+
+| Provider | Minimum Plan |
+|----------|--------------|
+| Hetzner | CX21 (2GB RAM) |
+| Vultr | 2GB plan |
+| Linode | Nanode 2GB |
+| DigitalOcean | Basic 2GB |
+
+## Security Requirements
+
+### TLS/SSL
+
+- Required for production
+- Use Let's Encrypt (free) or commercial cert
+- Minimum TLS 1.2
+
+### Firewall
+
+Allow only:
+- 443 (HTTPS)
+- 80 (HTTP, redirect to HTTPS)
+- 22 (SSH, restricted IPs)
+
+Block:
+- Direct database access
+- Application port from public
+
+### Secrets
+
+<Warning>
+Securely manage all secrets including `BETTER_AUTH_SECRET`, database credentials, OAuth client secrets, and integration tokens. Use environment variables or a secrets management solution.
+</Warning>
+
+## Scaling Considerations
+
+### Single Server
+
+Suitable for:
+- Up to 10,000 users
+- Moderate traffic
+
+### Horizontal Scaling
+
+For higher loads:
+- Multiple application instances
+- Load balancer
+- Shared PostgreSQL
+- Session storage (database-backed)
+
+### Database Scaling
+
+Options:
+- Vertical scaling (bigger instance)
+- Read replicas (for read-heavy loads)
+- Connection pooling (PgBouncer)
+
+## Monitoring Recommendations
+
+### Application
+
+- Health check endpoint
+- Error tracking (Sentry, etc.)
+- Request latency
+
+### Database
+
+- Connection count
+- Query performance
+- Disk usage
+
+### Infrastructure
+
+- CPU utilization
+- Memory usage
+- Disk I/O
+- Network throughput
+
+## Next Steps
+
+- [Docker Deployment](/self-hosting/docker) - Quick start with Docker
+- [Manual Installation](/self-hosting/manual) - Install with Bun
+- [Configuration](/reference/environment-variables) - Environment variables
