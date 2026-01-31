@@ -1,82 +1,92 @@
 ---
 title: "Managing Statuses"
-description: "Customize workflow statuses to match how your team processes feedback"
+description: "Keep users in the loop with statuses that show what's happening with their feedback."
 icon: "circle-dot"
 ---
 
 # Managing Statuses
 
-Statuses represent the stages of your feedback workflow. Customize them to match how your team works.
+Keep users in the loop. Statuses show what's happening with their feedback, from "Under Review" all the way to "Shipped".
 
-## Overview
+When you change a status, subscribers get notified automatically. It's the easiest way to close the feedback loop without sending individual emails.
 
-Access status settings from **Admin → Settings → Statuses**. The page is titled "Public Statuses" and lets you customize which statuses are available for feedback posts.
+## Default Statuses
 
-## Status Categories
-
-Statuses are organized into three categories:
+Quackback comes with five statuses organized into three categories:
 
 ### Active
-Statuses for posts that are being worked on or need attention. These represent different stages of progress before completion.
+
+Statuses for posts that need attention or are being worked on:
+
+| Status | What it means |
+|--------|---------------|
+| Under Review | New feedback being evaluated |
+| Planned | Approved and scheduled |
+| In Progress | Currently being worked on |
 
 ### Complete
-Final statuses for posts that have been successfully addressed. Completed posts are deprioritized when suggesting similar posts.
+
+For posts that have been successfully addressed:
+
+| Status | What it means |
+|--------|---------------|
+| Shipped | Released to users |
 
 ### Closed
-Statuses for posts that won't be implemented. Use these for declined requests, duplicates, or items out of scope.
+
+For posts that won't be implemented:
+
+| Status | What it means |
+|--------|---------------|
+| Declined | Won't be implemented |
+
+<Tip>
+Completed posts are deprioritized when suggesting similar posts to new users so old shipped features don't clog up the suggestions.
+</Tip>
 
 ## Creating a Status
 
+Your workflow isn't one-size-fits-all. Create custom statuses like "In Design", "In Beta", or "Blocked".
+
 1. Go to **Admin → Settings → Statuses**
 2. Find the category you want to add a status to
-3. Click **"Add new status"** at the bottom of that category
+3. Click **"Add new status"** at the bottom
 4. Fill in the details:
 
-| Field | Description |
-|-------|-------------|
+| Field | What it does |
+|-------|--------------|
 | Name | Display name (e.g., "In Beta") |
 | Slug | API identifier (auto-generated from name) |
-| Color | Status badge color (select from palette) |
+| Color | Status badge color |
 
 5. Click **Create status**
 
-## Status Properties
+## Show on Roadmap
 
-### Name
-
-The display name shown everywhere the status appears. Keep it short and clear.
-
-Examples: `Planned`, `In Progress`, `Shipped`, `Won't Do`
-
-### Color
-
-Click the color dot next to a status to open the color picker. Choose from a palette of colors that visually represents the status.
-
-### Show on Roadmap
-
-Use the toggle switch next to each status to control whether posts with that status appear on the public roadmap.
+Use the toggle next to each status to control whether posts with that status appear on the public roadmap.
 
 <Note>
 You must select exactly 3 statuses to show on the roadmap. The counter at the top shows how many are currently selected.
 </Note>
+
+Most teams show: **Planned → In Progress → Shipped**
+
+## Reordering Statuses
+
+The order affects dropdown menus and roadmap columns.
+
+1. Go to **Admin → Settings → Statuses**
+2. Drag statuses using the grip handle on the left
+3. Click **Save changes**
 
 ## Editing a Status
 
 1. Go to **Admin → Settings → Statuses**
 2. Click the color dot to change the color
 3. Use the toggle to change roadmap visibility
-4. Click **Save changes** at the bottom when done
+4. Click **Save changes**
 
 All posts with this status will reflect the changes immediately.
-
-## Reordering Statuses
-
-The status order affects dropdown menu order and roadmap column order.
-
-To reorder:
-1. Go to **Admin → Settings → Statuses**
-2. Drag statuses using the grip handle on the left
-3. Click **Save changes** to apply
 
 ## Deleting a Status
 
@@ -88,7 +98,30 @@ To reorder:
 You cannot delete the default status (marked with a lock icon). Each category must have at least one status.
 </Warning>
 
-## Status Workflows
+## Communicating Status Changes
+
+When you update a status, add a comment so users know why. Here are templates you can use:
+
+**Moving to Planned:**
+> "Great news! We've added this to our roadmap. Thanks for the suggestion. We'll keep you posted as we make progress."
+
+**Moving to In Progress:**
+> "We're actively working on this now. Stay tuned for updates!"
+
+**Moving to Shipped:**
+> "This is now live! Thanks for suggesting it. Let us know how it works for you."
+
+**Moving to Declined:**
+> "After reviewing, we've decided to go a different direction. [Brief reason]. We really appreciate you taking the time to share this idea."
+
+**Reverting to Under Review:**
+> "We're putting this back under review. Priorities shifted, but we haven't forgotten about it."
+
+<Tip>
+Switching status back and forth? That's fine. Priorities change. Just add a quick comment explaining why so users don't get confused.
+</Tip>
+
+## Example Workflows
 
 ### Simple Workflow
 
@@ -98,7 +131,7 @@ Under Review → Planned → In Progress → Shipped
    Declined
 ```
 
-### Detailed Workflow
+### Detailed Workflow (with custom statuses)
 
 ```
 Under Review → Planned → In Design → In Development → In Beta → Shipped
@@ -114,20 +147,20 @@ Under Review → Planned → In Progress → Blocked → In Progress → Shipped
    Declined
 ```
 
-## Tips
+## Best Practices
 
 ### Keep It Simple
 
 <Tip>
-Start with the default statuses. Add more only when you have a clear need.
+Start with the default statuses. Add custom ones only when you feel limited.
 
 Too many statuses:
-- Confuse users
-- Create maintenance overhead
+- Confuse users trying to understand progress
+- Create maintenance overhead for your team
 - Make the roadmap harder to read
 </Tip>
 
-### Clear Naming
+### Use Clear Names
 
 Use action-oriented names that describe the current state:
 - "In Progress" not "Development"
@@ -141,22 +174,14 @@ Only show meaningful statuses on the roadmap. Users don't need to see:
 - Declined items
 - Duplicates
 
-### Status Descriptions
-
-Add descriptions to help team members use statuses consistently:
-
-> **Planned**: Approved for development. Will be scheduled in the next quarter.
-
-> **In Progress**: Currently being worked on by the team.
-
 ## Notifications
 
 When a post's status changes:
-- Subscribed users receive email notifications
-- Integrations (Slack, etc.) are triggered if configured
+- Subscribed users receive email notifications (if email is configured)
+- Integrations (Slack, etc.) are triggered if you've set up event mappings
 
 ## Next Steps
 
-- [Feedback](/admin/inbox) - Use statuses to manage feedback
 - [Roadmap](/admin/roadmap) - Display status-based roadmaps
-- [Integrations](/integrations/overview) - Notify on status changes
+- [Inbox](/admin/inbox) - Manage feedback and change statuses
+- [Integrations](/integrations/overview) - Get notified on status changes

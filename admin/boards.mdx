@@ -1,23 +1,25 @@
 ---
 title: "Managing Boards"
-description: "Organize feedback into categories with boards for easier management and user submissions"
+description: "Organize feedback into categories so users know where to post and your team can focus."
 icon: "layout-grid"
 ---
 
 # Managing Boards
 
-Boards organize feedback into categories, making it easier for users to submit and for your team to manage.
+Keep feature requests separate from bug reports. Boards let you organize feedback the way that makes sense for your product.
 
-## Overview
+## Why Use Multiple Boards?
 
-Access board settings from **Admin → Settings → Boards**.
+Without boards, everything piles up in one place. Your team wastes time sorting through noise, and users don't know where to post.
 
-Common board examples:
-- Feature Requests
-- Bug Reports
-- Integrations
-- Documentation
-- Mobile App
+Common board setups:
+- **Feature Requests** + **Bug Reports** - Simple and effective
+- **Feature Requests** + **Bug Reports** + **Integrations** - When you have lots of integration requests
+- **Mobile** + **Web** + **API** - Separate by platform
+
+<Tip>
+Start with just 2-3 boards. You can always add more later, but too many boards confuse users about where to post.
+</Tip>
 
 ## Creating a Board
 
@@ -25,21 +27,21 @@ Common board examples:
 2. Click **"New board"**
 3. Fill in the details:
 
-| Field | Description |
-|-------|-------------|
+| Field | What it does |
+|-------|--------------|
 | Board name | Display name (e.g., "Feature Requests") |
-| Description | Optional description shown on the board page |
-| Public board | Toggle to make the board public or private |
+| Description | Optional text shown on the board page |
+| Public board | Toggle to make it visible to everyone |
 
 4. Click **Create board**
 
 <Note>
-The URL slug is automatically generated from the board name.
+The URL slug is automatically generated from the board name. For example, "Feature Requests" becomes `/b/feature-requests`.
 </Note>
 
 ## Board Settings
 
-When you select a board, you'll see a tabbed interface with the following sections:
+Select a board to see its settings. You'll find tabs for:
 
 ### General Tab
 
@@ -47,24 +49,27 @@ Edit the board's basic information:
 - **Board name** - The display name
 - **Description** - Optional description
 
-The Danger Zone at the bottom allows you to delete the board.
+The Danger Zone at the bottom lets you delete the board.
 
 ### Access Tab
 
-Control who can access the board with access control settings.
+Control who can access the board. Options include:
+- Public to everyone
+- Only authenticated users
+- Specific email domains
 
 ### Import Data Tab
 
-Import posts from a CSV file into this board. See [Import & Export](/admin/import-export) for details.
+Import posts from a CSV file into this board. See [Import & Export](/admin/import-export) for format details.
 
 ### Export Data Tab
 
-Download all posts from this board as CSV. See [Import & Export](/admin/import-export) for details.
+Download all posts from this board as CSV.
 
 ## Editing a Board
 
 1. Go to **Admin → Settings → Boards**
-2. Select the board from the dropdown at the top
+2. Select the board from the dropdown
 3. Navigate to the **General** tab
 4. Update settings
 5. Click **Save changes**
@@ -72,46 +77,36 @@ Download all posts from this board as CSV. See [Import & Export](/admin/import-e
 ## Deleting a Board
 
 1. Go to **Admin → Settings → Boards**
-2. Select the board to delete
+2. Select the board
 3. Go to the **General** tab
-4. Scroll to the Danger Zone section
+4. Scroll to the Danger Zone
 5. Click **Delete board** and confirm
 
 <Warning>
 Deleting a board also deletes all posts in that board. This cannot be undone.
 </Warning>
 
-## Import & Export
-
-Import and export functionality is available in each board's settings. See [Import & Export](/admin/import-export) for detailed instructions.
-
-## Tips
-
-### Board Organization
-
-<Tip>
-**Keep it simple** - Start with 2-3 boards. You can always add more later.
-
-**Clear names** - Use descriptive names so users know where to post.
-
-**Logical separation** - Separate by type (features vs bugs) or area (mobile vs web).
-</Tip>
-
-### Private Boards
+## Need to Keep Feedback Internal?
 
 Use private boards for:
 - Internal team feedback
 - Beta feature requests
 - Enterprise customer feedback
 
-### Migration
+Private boards are only visible to team members (and users you explicitly grant access).
 
-When migrating from another platform:
+## Migrating from Another Platform?
 
-1. Export data from the old platform
-2. Format as CSV with required columns
-3. Import into appropriate boards
+If you're moving from Canny, Nolt, or another tool:
+
+1. Export data from the old platform as CSV
+2. Format to match Quackback's import format
+3. Go to **Admin → Settings → Boards** → select board → **Import Data**
 4. Verify vote counts and dates imported correctly
+
+<Tip>
+Import into a test board first to verify everything looks right, then delete and re-import to the real board.
+</Tip>
 
 ## Next Steps
 

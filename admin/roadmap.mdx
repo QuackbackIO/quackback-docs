@@ -1,123 +1,101 @@
 ---
 title: "Roadmap Management"
-description: "Share your product roadmap publicly to show users what you're working on and what's planned"
+description: "Show users what you're building with a public roadmap they can follow and vote on."
 icon: "map"
 ---
 
 # Roadmap Management
 
-The roadmap gives users visibility into what you're working on and what's planned.
-
-## Overview
-
-Access the roadmap from **Admin → Roadmap** in the sidebar. The public roadmap is accessible from the public portal.
+Show users what you're building. A public roadmap builds trust. Users can see what's planned, in progress, and shipped, and follow updates on features they care about.
 
 ## How It Works
 
-The roadmap displays posts grouped by status in a kanban-style layout with three columns representing the statuses you've marked as "Show on Roadmap" in your status settings.
+The roadmap displays posts grouped by status in a kanban-style layout. Each column represents a status you've marked as "Show on Roadmap" in your status settings.
+
+Users can:
+- See what's coming next
+- Vote on planned features
+- Subscribe to get notified when items ship
 
 <Note>
-Only posts that have been added to a roadmap appear here.
+Only posts you've explicitly added to a roadmap appear here. Not everything needs to be public. You control what's visible.
 </Note>
 
-## Multiple Roadmaps
+## Creating a Roadmap
 
-You can create multiple roadmaps for different purposes. The sidebar on the left shows all your roadmaps.
-
-### Creating a Roadmap
+You can have multiple roadmaps for different purposes (e.g., "Product Roadmap", "API Roadmap").
 
 1. Go to **Admin → Roadmap**
-2. Click the **+** button in the Roadmaps sidebar header
+2. Click the **+** button in the sidebar
 3. Fill in the details:
    - **Name** - Display name (e.g., "Product Roadmap")
    - **Description** - Optional description
    - **Public** - Toggle visibility to users
 4. Click **Create**
 
-### Editing a Roadmap
+## Adding Posts to the Roadmap
 
-1. Hover over a roadmap in the sidebar
-2. Click the **...** menu button
-3. Select **Edit**
-4. Update the name, description, or visibility
-5. Click **Save**
-
-### Deleting a Roadmap
-
-1. Hover over a roadmap in the sidebar
-2. Click the **...** menu button
-3. Select **Delete**
-4. Confirm deletion
-
-<Note>
-Deleting a roadmap removes posts from that roadmap but does not delete the posts themselves.
-</Note>
-
-## Adding Posts to Roadmap
-
-### From the Post Detail Page
+### From a Post's Detail Page
 
 1. Open a post in **Admin → Feedback**
-2. In the Properties panel, find the Roadmaps section
+2. In the Properties panel, find the **Roadmaps** section
 3. Click **"Add"**
-4. Select the roadmap to add the post to
+4. Select which roadmap to add the post to
 
-### Managing the Roadmap View
+### Using Drag and Drop
 
-Posts are displayed in columns based on their status. Drag posts between columns to change their status:
+Once posts are on a roadmap, you can drag them between columns to change their status:
 
 1. Click and hold a post card
 2. Drag to the target status column
-3. Release to update the status
+3. Release to update
 
-The post's status is automatically updated.
+The post's status updates automatically.
 
-### Removing from Roadmap
+<Tip>
+This is the fastest way to update multiple posts at once. Great for sprint planning sessions!
+</Tip>
 
-To remove a post from a roadmap:
+## Removing a Post from Roadmap
 
 1. Open the post in the detail page
-2. In the Roadmaps section, click the X on the roadmap badge
+2. In the Roadmaps section, click the **X** on the roadmap badge
 
-## Roadmap Settings
+The post stays in Quackback. It's just not shown on the roadmap anymore.
 
-### Visible Statuses
+## Roadmap Visibility
 
-Control which statuses appear as columns on all roadmaps:
+Each roadmap can be public or private:
+
+| Setting | Who can see it |
+|---------|----------------|
+| **Public** | Everyone visiting your portal |
+| **Private** | Only team members (indicated by lock icon) |
+
+<Tip>
+Use a private roadmap for internal planning, then move items to your public roadmap when you're ready to announce them.
+</Tip>
+
+## Configuring Columns
+
+The roadmap columns are determined by which statuses have "Show on Roadmap" enabled.
 
 1. Go to **Admin → Settings → Statuses**
 2. Use the toggle next to each status to enable/disable roadmap visibility
-3. You must select exactly 3 statuses for the roadmap
+3. You must select exactly 3 statuses
 4. Click **Save changes**
 
-### Roadmap Visibility
+Most teams use: **Planned → In Progress → Shipped**
 
-Each roadmap can be set to public or private:
+## What Users See
 
-| Setting | Description |
-|---------|-------------|
-| **Public** | Visible to all visitors on the portal |
-| **Private** | Only visible to team members (indicated by lock icon) |
-
-## Public Roadmap
-
-### User Experience
-
-Visitors can:
-- View planned and in-progress items
-- Vote on roadmap items
-- Subscribe to updates
-- See what's recently shipped
-
-### What Users See
-
-The public roadmap shows:
+On your public roadmap, users can see:
 - Post title
 - Vote count
 - Status badge
 - Brief description preview
 
-Users do NOT see:
+Users do **NOT** see:
 - Internal notes
 - Team comments
 - Assignment details
@@ -133,73 +111,67 @@ An outdated roadmap undermines trust. Regularly:
 - Remove items that won't happen
 </Warning>
 
-### Meaningful Items Only
+### Show Meaningful Items Only
 
-Don't clutter the roadmap with minor tasks. Show items users care about:
+Don't clutter the roadmap with minor tasks. Focus on:
 - Major features
-- Popular requests
+- Popular requests (high vote count)
 - Significant improvements
 
-### Set Expectations
+### Avoid Specific Dates
 
 <Tip>
-Avoid specific dates unless certain. Instead use:
+Unless you're certain, avoid committing to dates. Instead use:
 - "Planned" for committed items
-- "Exploring" for ideas under consideration
 - Quarterly goals rather than specific dates
+- "Exploring" for ideas still under consideration
 </Tip>
 
 ### Celebrate Shipped
 
-Keep shipped items visible temporarily so users see progress:
-- Show last 10-20 shipped items
+Keep recently shipped items visible temporarily:
+- Users see progress happening
+- Builds confidence in your team
 - Archive old shipped items periodically
-- Highlight major releases
 
 ### Communicate Changes
 
-When plans change:
+When plans change (and they will):
 - Update the roadmap promptly
-- Add comments explaining changes
+- Add comments to affected posts explaining why
 - Notify subscribers of significant shifts
 
-## Roadmap Analytics
+## Editing a Roadmap
 
-Track engagement:
+1. Hover over a roadmap in the sidebar
+2. Click the **...** menu button
+3. Select **Edit**
+4. Update name, description, or visibility
+5. Click **Save**
 
-| Metric | Description |
-|--------|-------------|
-| Views | Roadmap page visits |
-| Votes | Votes on roadmap items |
-| Subscriptions | Users following items |
+## Deleting a Roadmap
 
-Use these insights to understand what users care about most.
+1. Hover over a roadmap in the sidebar
+2. Click the **...** menu button
+3. Select **Delete**
+4. Confirm deletion
 
-## Tips
+<Note>
+Deleting a roadmap removes posts from that roadmap but does not delete the posts themselves. They're still in your feedback inbox.
+</Note>
 
-### Organize by Theme
+## Link from Your Product
 
-Group related items in the same column position:
-- Authentication features together
-- Mobile improvements grouped
-- Performance items clustered
+Drive engagement by linking to your roadmap from your app:
 
-### Use Tags for Categorization
-
-Apply tags to roadmap posts for filtering:
-- `mobile`, `web`, `api`
-- `enterprise`, `free-tier`
-- `high-impact`, `quick-win`
-
-### Link from Your Product
-
-Add a "Roadmap" link in your app to drive engagement:
 - Footer links
 - Help menu
 - Feature request buttons
 
+This turns your roadmap into a living communication channel with users.
+
 ## Next Steps
 
 - [Statuses](/admin/statuses) - Configure which statuses appear on roadmaps
-- [Feedback](/admin/inbox) - Manage feedback and add posts to roadmaps
-- [Integrations](/integrations/overview) - Notify on status changes
+- [Inbox](/admin/inbox) - Manage feedback and add posts to roadmaps
+- [Integrations](/integrations/overview) - Get notified on status changes

@@ -1,19 +1,25 @@
 ---
 title: "Introduction"
-description: "Learn about Quackback, the open-source customer feedback platform for collecting, organizing, and acting on user feedback."
+description: "Collect, organize, and act on user feedback with Quackback, the open-source feedback platform you can self-host."
 icon: "book-open"
 ---
 
 # Introduction
 
-Quackback is an open-source customer feedback platform that helps you collect, organize, and act on user feedback. Build public feedback boards, roadmaps, and changelogs to keep your users informed and engaged.
+Stop losing feedback across emails, Slack, and support tickets.
+
+Quackback brings user requests, votes, and discussions into one place so you can see what users actually want and show them what you're building.
+
+And it's open source. Run it on your own servers, own your data, and customize everything.
 
 ## Why Quackback?
 
-Traditional feedback collection is fragmented—scattered across emails, support tickets, social media, and spreadsheets. Quackback centralizes everything in one place, giving your team a single source of truth for what users want.
+Feedback is everywhere: support tickets, emails, tweets, Slack messages, spreadsheets. Your team wastes time hunting for it, and good ideas slip through the cracks.
+
+Quackback gives you a single source of truth. Users submit feedback through a clean portal. Your team triages it in one place. Everyone sees what's planned and what's shipped.
 
 **For your users:**
-- Submit feedback through a clean, branded portal
+- Submit feedback through a branded portal
 - Vote on ideas they care about
 - Track progress on the public roadmap
 - Get notified when their requests ship
@@ -27,29 +33,42 @@ Traditional feedback collection is fragmented—scattered across emails, support
 ## Key Features
 
 ### Feedback Boards
-Create multiple boards for different types of feedback—feature requests, bug reports, integrations, or anything else. Each board can be public or private.
+
+Keep feature requests separate from bug reports. Create boards for different types of feedback. Each can be public or private.
+
+<Tip>
+Start with 2-3 boards (like "Feature Requests" and "Bug Reports"). You can always add more later.
+</Tip>
 
 ### Voting & Prioritization
-Let users vote on what matters most. Sort by popularity, trending, or recency to understand demand.
+
+Let users vote on what matters most. Sort by popularity, trending, or recency to see what's in demand.
 
 ### Custom Statuses
-Define your own workflow statuses (Planned, In Progress, Shipped) and track feedback through your process.
+
+Your workflow isn't one-size-fits-all. Create statuses like "In Design", "In Beta", or "Blocked" to match how your team actually works.
 
 ### Public Roadmap
-Share your plans with a public roadmap. Users can see what's coming and follow updates on features they voted for.
+
+Show users what's coming. They can see what's planned, in progress, and shipped, and follow updates on features they voted for.
 
 ### Integrations
+
 Connect Quackback to your existing tools:
-- **Slack** - Get notified about new feedback in your channels
-- **Webhooks** - Send events to any HTTP endpoint
-- **Linear** - Sync feedback to your issue tracker (coming soon)
+
+| Integration | What it does |
+|-------------|--------------|
+| **Slack** | Get notified about new feedback in your channels |
+| **Webhooks** | Send events to any HTTP endpoint |
+| **Linear** | Sync feedback to your issue tracker (coming soon) |
 
 ### Self-Hosted
-Run Quackback on your own infrastructure. Your data stays with you.
 
-## Architecture
+Run Quackback on your own infrastructure. Your data stays with you. No third-party access, no vendor lock-in.
 
-Quackback is built with modern technologies:
+## How It's Built
+
+Quackback uses modern technologies:
 
 | Layer | Technology |
 |-------|------------|
@@ -62,9 +81,11 @@ Quackback is built with modern technologies:
 ## Editions
 
 ### Community Edition (AGPL-3.0)
+
 The full-featured open-source version. Free forever.
 
 ### Enterprise Edition
+
 Additional features for larger organizations:
 - SAML/SSO authentication
 - SCIM user provisioning
@@ -74,6 +95,6 @@ Contact sales@quackback.io for licensing.
 
 ## Next Steps
 
-- [Quick Start](/getting-started/quick-start) - Deploy Quackback in 5 minutes
-- [Concepts](/getting-started/concepts) - Understand the core concepts
-- [Self-Hosting Guide](/self-hosting/docker) - Production deployment options
+- [Quick Start](/getting-started/quick-start) - Get Quackback running in 5 minutes
+- [Core Concepts](/getting-started/concepts) - Understand boards, posts, and statuses
+- [Self-Hosting Guide](/self-hosting/docker) - Deploy on your own infrastructure
