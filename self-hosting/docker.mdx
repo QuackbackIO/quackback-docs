@@ -21,7 +21,7 @@ Deploy Quackback using Docker for the simplest production setup.
 
 ```bash
 # Clone the repository
-git clone https://github.com/quackbackhq/quackback.git
+git clone https://github.com/quackbackio/quackback.git
 cd quackback
 
 # Configure environment
@@ -42,7 +42,7 @@ docker run -d \
   -e BETTER_AUTH_SECRET="your-32-char-secret" \
   -e BETTER_AUTH_URL="https://feedback.yourcompany.com" \
   -e ROOT_URL="https://feedback.yourcompany.com" \
-  ghcr.io/quackbackhq/quackback:latest
+  ghcr.io/quackbackio/quackback:latest
 ```
 
 ## Configuration
@@ -160,7 +160,7 @@ For managed databases (AWS RDS, Supabase, Neon, etc.):
 ```bash
 docker run --rm \
   -e DATABASE_URL="your-external-db-url" \
-  ghcr.io/quackbackhq/quackback:latest \
+  ghcr.io/quackbackio/quackback:latest \
   bun run db:migrate
 ```
 
