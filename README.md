@@ -40,18 +40,17 @@ Welcome to the Quackback documentation. Quackback is an open-source customer fee
 ### Authentication
 - [Overview](auth/overview.mdx) - Auth methods and configuration
 - [Email OTP](auth/email-otp.mdx) - Magic link authentication
-- [OAuth](auth/oauth.mdx) - GitHub, Google setup
-- [SSO](auth/sso.mdx) - Enterprise SSO/OIDC
+- [OAuth](auth/oauth.mdx) - GitHub, Google, Microsoft setup
 
 ### Integrations
 - [Overview](integrations/overview.mdx) - How integrations work
 - [Slack](integrations/slack.mdx) - Slack notifications
-- [Webhooks](integrations/webhooks.mdx) - Custom integrations (planned)
-- [Discord](integrations/discord.mdx) - Discord integration (planned)
-- [Linear](integrations/linear.mdx) - Linear integration (planned)
+- [Webhooks](integrations/webhooks.mdx) - Send events to any HTTP endpoint
+- [Discord](integrations/discord.mdx) - Discord integration (community)
+- [Linear](integrations/linear.mdx) - Linear integration (community)
 
 ### API Reference
-- [Overview](api/overview.mdx) - API introduction
+- [Overview](api/overview.mdx) - REST API v1 documentation
 - [Posts API](api/posts.mdx) - Post operations
 - [Comments API](api/comments.mdx) - Comment operations
 
@@ -76,7 +75,9 @@ Welcome to the Quackback documentation. Quackback is an open-source customer fee
 | Deploy Quackback | [Quick Start](getting-started/quick-start.mdx) |
 | Understand the product | [Introduction](getting-started/introduction.mdx) |
 | Configure settings | [Environment Variables](reference/environment-variables.mdx) |
+| Use the REST API | [API Overview](api/overview.mdx) |
 | Set up Slack | [Slack Integration](integrations/slack.mdx) |
+| Set up webhooks | [Webhooks](integrations/webhooks.mdx) |
 | Build a feature | [Adding Features](developers/adding-features.mdx) |
 | Contribute code | [Contributing](developers/contributing.mdx) |
 | Fix a problem | [Troubleshooting](self-hosting/troubleshooting.mdx) |
@@ -88,5 +89,4 @@ Welcome to the Quackback documentation. Quackback is an open-source customer fee
 
 ## License
 
-- Core: AGPL-3.0 (open source)
-- Enterprise: Proprietary (SSO, SCIM, Audit)
+AGPL-3.0 — See [LICENSE](https://github.com/quackbackio/quackback/blob/main/LICENSE) for details.

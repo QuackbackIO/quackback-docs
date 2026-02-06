@@ -23,8 +23,8 @@ The email OTP system is powered by [Better Auth's emailOTP plugin](https://www.b
 
 ```bash
 # Auth configuration (required)
-BETTER_AUTH_SECRET="your-32-character-secret"  # Generate with: openssl rand -base64 32
-BETTER_AUTH_URL="https://feedback.yourcompany.com"
+SECRET_KEY="your-32-character-secret"  # Generate with: openssl rand -base64 32
+BASE_URL="https://feedback.yourcompany.com"
 ```
 
 ### Email Delivery Options
@@ -178,7 +178,7 @@ openssl s_client -connect smtp.provider.com:587 -starttls smtp
 - **Use HTTPS** - Always serve your Quackback instance over HTTPS
 - **Verify sender domain** - Set up SPF, DKIM, and DMARC records
 - **Monitor for abuse** - Watch for unusual sign-in patterns
-- **Keep secrets secure** - Never commit `BETTER_AUTH_SECRET` to version control
+- **Keep secrets secure** - Never commit `SECRET_KEY` to version control
 
 ### Why OTP Over Passwords
 
@@ -202,5 +202,5 @@ This allows testing the full authentication flow without email configuration.
 ## Related Documentation
 
 - [OAuth Providers](/auth/oauth) - Social login with GitHub, Google, Microsoft
-- [SSO](/auth/sso) - Enterprise Single Sign-On
+- [SSO](/auth/sso) - OIDC Single Sign-On
 - [Authentication Overview](/auth/overview) - General auth architecture

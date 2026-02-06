@@ -207,9 +207,7 @@ import { db, posts, eq } from '@/lib/db'
 import { db } from '@quackback/db'
 ```
 
-The proxy handles:
-- Self-hosted: Singleton connection
-- Cloud: Per-tenant database from AsyncLocalStorage
+The proxy handles singleton connection initialization with lazy loading.
 
 ### TypeIDs
 
@@ -335,42 +333,12 @@ Return post to client
 React Query updates cache
 ```
 
-## Multi-Tenancy
+## Deployment
 
-### Self-Hosted Mode
-
-Single workspace per deployment:
+Quackback runs as a single workspace per deployment:
 - `DATABASE_URL` environment variable
 - Singleton database connection
 - No tenant resolution needed
-
-### Cloud Mode
-
-Multi-tenant SaaS:
-
-```
-Request arrives
-        │
-        ▼
-Extract Host header
-        │
-        ▼
-Resolve tenant from domain
-├── Subdomain: workspace.quackback.io
-└── Custom domain: feedback.company.com
-        │
-        ▼
-Query catalog database for workspace
-        │
-        ▼
-Get Neon database connection string
-        │
-        ▼
-Store in AsyncLocalStorage context
-        │
-        ▼
-All db.* calls use tenant database
-```
 
 ## Next Steps
 

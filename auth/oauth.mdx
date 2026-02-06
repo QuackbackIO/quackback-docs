@@ -278,7 +278,7 @@ Quackback uses popup windows for OAuth. If blocked:
 **Microsoft:**
 - Verify tenant ID matches your configuration
 - Check if admin consent is required
-- Review enterprise application policies
+- Review application policies
 
 ### "Unable to get email from provider"
 
@@ -296,8 +296,8 @@ Some providers don't return email by default:
 
 If you see CORS errors in the browser console:
 
-1. Verify `ROOT_URL` matches your actual domain
-2. Check `BETTER_AUTH_URL` is correctly set
+1. Verify `BASE_URL` matches your actual domain
+2. Check `BASE_URL` is correctly set
 3. Ensure your reverse proxy passes the correct headers
 
 ## Security Best Practices
@@ -346,9 +346,9 @@ MICROSOFT_CLIENT_SECRET=""
 MICROSOFT_TENANT_ID="common"
 
 # Required for all OAuth
-BETTER_AUTH_SECRET=""
-BETTER_AUTH_URL=""
-ROOT_URL=""
+SECRET_KEY=""
+BASE_URL=""
+BASE_URL=""
 ```
 
 ## Testing OAuth Locally
@@ -370,5 +370,5 @@ ROOT_URL=""
 ## Related Documentation
 
 - [Email OTP](/auth/email-otp) - Magic code authentication
-- [SSO](/auth/sso) - Enterprise SAML/OIDC for teams
+- [SSO](/auth/sso) - OIDC Single Sign-On for teams
 - [Authentication Overview](/auth/overview) - General auth concepts

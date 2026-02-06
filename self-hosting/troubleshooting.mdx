@@ -47,9 +47,9 @@ Common issues and solutions for self-hosted Quackback deployments.
    ```bash
    # Must be set:
    DATABASE_URL
-   BETTER_AUTH_SECRET
-   BETTER_AUTH_URL
-   ROOT_URL
+   SECRET_KEY
+   BASE_URL
+   BASE_URL
    ```
 
 2. **Verify .env is loaded**
@@ -145,7 +145,7 @@ Quackback requires PostgreSQL 18 or higher for native `uuidv7()` support used in
 
 **Solutions**:
 
-1. **Check BETTER_AUTH_URL**
+1. **Check BASE_URL**
    - Must match exact domain users access
    - Include protocol: `https://feedback.example.com`
 

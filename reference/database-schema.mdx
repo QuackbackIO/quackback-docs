@@ -19,7 +19,7 @@ Quackback uses a PostgreSQL database with the following characteristics:
 - **Relational queries**: Drizzle relations enable type-safe joins and nested queries
 
 <Tip>
-When working with the database, always import from `@/lib/db` rather than `@quackback/db` directly. This ensures proper tenant handling in multi-tenant deployments.
+When working with the database, always import from `@/lib/db` rather than `@quackback/db` directly. This ensures proper connection handling.
 </Tip>
 
 ## Table Categories
@@ -261,7 +261,7 @@ Application settings and branding configuration. Single row in self-hosted deplo
   "version": number,
   "steps": { "core": boolean, "workspace": boolean, "boards": boolean },
   "completedAt": "ISO timestamp",
-  "source": "cloud" | "self-hosted",
+  "source": "self-hosted",
   "useCase": "saas" | "consumer" | "marketplace" | "internal"
 }
 ```

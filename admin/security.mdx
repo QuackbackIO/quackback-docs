@@ -1,12 +1,12 @@
 ---
 title: "Security"
-description: "Control how your team signs in: from simple email OTP to enterprise SSO."
+description: "Control how your team signs in: from simple email OTP to OIDC SSO."
 icon: "shield-check"
 ---
 
 # Security
 
-Protect your admin dashboard with the right level of security for your team. Use simple email magic links, require OAuth through GitHub or Google, or enforce enterprise SSO.
+Protect your admin dashboard with the right level of security for your team. Use simple email magic links, require OAuth through GitHub or Google, or enforce SSO through your identity provider.
 
 ## Overview
 
@@ -74,12 +74,12 @@ GOOGLE_CLIENT_SECRET=your-client-secret
 
 See [Environment Variables](/reference/environment-variables) for complete configuration.
 
-## Enterprise SSO
+## SSO
 
-For enterprise single sign-on (SAML, OIDC) with your identity provider, see the [SSO documentation](/auth/sso).
+For single sign-on (OIDC) with your identity provider, see the [SSO documentation](/auth/sso).
 
 <Tip>
-Enterprise SSO allows you to enforce authentication through your corporate identity provider (Okta, Azure AD, Auth0, etc.).
+SSO allows you to enforce authentication through your corporate identity provider (Okta, Azure AD, Auth0, etc.).
 </Tip>
 
 ## Best Practices
@@ -120,4 +120,4 @@ Only **Admins** can modify security settings.
 
 - [Portal Authentication](/admin/portal-auth) - Configure how portal users sign in
 - [Team Members](/admin/team) - Manage your team
-- [SSO](/auth/sso) - Set up enterprise single sign-on
+- [SSO](/auth/sso) - Set up OIDC single sign-on

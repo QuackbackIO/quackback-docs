@@ -1,164 +1,208 @@
 ---
 title: "API Overview"
-description: "Build on Quackback. Automate workflows, sync data, and integrate with your tools."
+description: "Build on Quackback with the REST API. Automate workflows, sync data, and integrate with your tools."
 icon: "code"
 ---
 
 # API Overview
 
-Build on Quackback. Whether you're syncing feedback to your issue tracker, automating status updates, or building custom dashboards, the API gives you full access to your data.
-
-## API Types
-
-### Server Functions (RPC)
-
-The primary API uses TanStack Server Functions for type-safe RPC endpoints:
-
-- Automatic TypeScript types
-- Request/response validation with Zod
-- Session-based authentication
-
-**Best for**: Frontend applications, internal tools
-
-### REST API Routes
-
-Traditional HTTP endpoints for specific operations:
-
-- CSV import/export
-- OAuth callbacks
-- Authentication endpoints
-
-**Best for**: Admin operations, authentication flows
-
-### Event Hooks
-
-Quackback uses an internal hook system to notify external services when events occur:
-
-- Slack notifications
-- Email notifications
-- Linear issue creation (coming soon)
-
-<Note>
-Custom outgoing webhooks are not yet implemented. Use the Slack integration for external notifications.
-</Note>
+Build on Quackback. Whether you're syncing feedback to your issue tracker, automating status updates, or building custom dashboards, the REST API gives you full programmatic access to your data.
 
 ## Authentication
 
-### Session-Based
+All API requests require an API key, passed as a Bearer token in the `Authorization` header:
 
-Most APIs use session cookies:
+```bash
+curl https://feedback.example.com/api/v1/posts \
+  -H "Authorization: Bearer qb_your_api_key_here"
+```
 
-1. User signs in via portal or admin
-2. Session cookie set automatically
-3. Subsequent requests authenticated
+### Creating API Keys
 
-### API Keys (Coming Soon)
+1. Go to **Admin > Settings > API Keys**
+2. Click **Create API Key**
+3. Give it a name (e.g., "CI/CD Integration")
+4. Copy the key immediately — it's only shown once
 
-<Tip>
-API keys for programmatic access without user sessions are coming soon.
-</Tip>
+API keys are prefixed with `qb_` and inherit the role of the team member who creates them. An admin's key has admin access; a member's key has member access.
 
-## Common Endpoints
+### Role-Based Access
 
-### REST API Routes
+Endpoints enforce role-based authorization:
 
-| Endpoint | Method | Auth | Description |
-|----------|--------|------|-------------|
-| `/api/auth/*` | GET/POST | - | Better Auth endpoints |
-| `/api/auth/oauth/:provider` | GET | - | OAuth initiation (github, google) |
-| `/api/import` | POST | Admin | CSV import (multipart form) |
-| `/api/export` | GET | Admin | CSV export |
-| `/api/user/avatar/:userId` | GET | - | User avatar image |
-| `/api/user/profile` | GET/POST | Auth | User profile management |
+| Role Required | Who Can Access | Endpoints |
+|--------------|----------------|-----------|
+| **Team** (admin or member) | Any team member | Most endpoints — posts, boards, tags, statuses, roadmaps, comments |
+| **Admin** | Admins only | Webhooks, changelog writes, member management, user deletion |
 
-### Server Functions
+If your key doesn't have sufficient permissions, you'll receive a `403 Forbidden` response.
 
-#### Public (No Auth Required)
+## Base URL
 
-| Function | Description |
-|----------|-------------|
-| `listPublicPostsFn` | List posts with filtering and pagination |
-| `listPublicRoadmapsFn` | List public roadmaps |
-| `getPublicRoadmapPostsFn` | Get posts for a roadmap |
-| `findSimilarPostsFn` | Find similar posts (duplicate detection) |
+All API endpoints are under `/api/v1/`:
 
-#### Authenticated (Any User)
+```
+https://feedback.example.com/api/v1/posts
+https://feedback.example.com/api/v1/boards
+https://feedback.example.com/api/v1/tags
+```
 
-| Function | Description |
-|----------|-------------|
-| `createPublicPostFn` | Submit feedback to a board |
-| `toggleVoteFn` | Toggle vote on a post |
-| `createCommentFn` | Add a comment to a post |
-| `subscribeToPostFn` | Subscribe to post updates |
-| `getVotedPostsFn` | Get all posts user has voted on |
+## Resources
 
-#### Team Members (Admin/Member)
+### Posts
 
-| Function | Description |
-|----------|-------------|
-| `fetchInboxPostsForAdmin` | List inbox posts with advanced filters |
-| `fetchPostWithDetails` | Get post with comments and metadata |
-| `createPostFn` | Create post from admin dashboard |
-| `updatePostFn` | Update post details |
-| `changePostStatusFn` | Change post status |
-| `deletePostFn` | Soft delete a post |
-| `pinCommentFn` | Pin a comment as official response |
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/v1/posts` | Team | List posts with filtering and pagination |
+| POST | `/api/v1/posts` | Team | Create a new post |
+| GET | `/api/v1/posts/:postId` | Team | Get a single post |
+| PATCH | `/api/v1/posts/:postId` | Team | Update a post |
+| DELETE | `/api/v1/posts/:postId` | Team | Delete a post |
+| POST | `/api/v1/posts/:postId/vote` | Team | Toggle vote on a post |
+| GET | `/api/v1/posts/:postId/comments` | Team | List comments on a post |
+| POST | `/api/v1/posts/:postId/comments` | Team | Add a comment to a post |
+
+### Boards
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/v1/boards` | Team | List all boards |
+| POST | `/api/v1/boards` | Team | Create a board |
+| GET | `/api/v1/boards/:boardId` | Team | Get a single board |
+| PATCH | `/api/v1/boards/:boardId` | Team | Update a board |
+| DELETE | `/api/v1/boards/:boardId` | Team | Delete a board |
+
+### Tags
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/v1/tags` | Team | List all tags |
+| POST | `/api/v1/tags` | Team | Create a tag |
+| GET | `/api/v1/tags/:tagId` | Team | Get a single tag |
+| PATCH | `/api/v1/tags/:tagId` | Team | Update a tag |
+| DELETE | `/api/v1/tags/:tagId` | Team | Delete a tag |
+
+### Statuses
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/v1/statuses` | Team | List all statuses |
+| POST | `/api/v1/statuses` | Team | Create a status |
+| GET | `/api/v1/statuses/:statusId` | Team | Get a single status |
+| PATCH | `/api/v1/statuses/:statusId` | Team | Update a status |
+| DELETE | `/api/v1/statuses/:statusId` | Team | Delete a status |
+
+### Roadmaps
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/v1/roadmaps` | Team | List all roadmaps |
+| POST | `/api/v1/roadmaps` | Team | Create a roadmap |
+| GET | `/api/v1/roadmaps/:roadmapId` | Team | Get a single roadmap |
+| PATCH | `/api/v1/roadmaps/:roadmapId` | Team | Update a roadmap |
+| DELETE | `/api/v1/roadmaps/:roadmapId` | Team | Delete a roadmap |
+| GET | `/api/v1/roadmaps/:roadmapId/posts` | Team | List posts on a roadmap |
+| POST | `/api/v1/roadmaps/:roadmapId/posts` | Team | Add a post to a roadmap |
+| DELETE | `/api/v1/roadmaps/:roadmapId/posts/:postId` | Team | Remove a post from a roadmap |
+
+### Comments
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/v1/comments/:commentId` | Team | Get a single comment |
+| PATCH | `/api/v1/comments/:commentId` | Team | Update a comment |
+| DELETE | `/api/v1/comments/:commentId` | Team | Delete a comment |
+
+### Changelog
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/v1/changelog` | Team | List changelog entries |
+| POST | `/api/v1/changelog` | Admin | Create a changelog entry |
+| GET | `/api/v1/changelog/:entryId` | Team | Get a single entry |
+| PATCH | `/api/v1/changelog/:entryId` | Admin | Update a changelog entry |
+| DELETE | `/api/v1/changelog/:entryId` | Admin | Delete a changelog entry |
+
+### Webhooks
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/v1/webhooks` | Admin | List all webhooks |
+| POST | `/api/v1/webhooks` | Admin | Create a webhook |
+| GET | `/api/v1/webhooks/:webhookId` | Admin | Get a single webhook |
+| PATCH | `/api/v1/webhooks/:webhookId` | Admin | Update a webhook |
+| DELETE | `/api/v1/webhooks/:webhookId` | Admin | Delete a webhook |
+| POST | `/api/v1/webhooks/:webhookId/rotate` | Admin | Rotate signing secret |
+
+### Members
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/v1/members` | Team | List team members |
+| GET | `/api/v1/members/:memberId` | Team | Get a single member |
+| PATCH | `/api/v1/members/:memberId` | Admin | Update a member |
+| DELETE | `/api/v1/members/:memberId` | Admin | Remove a member |
+
+### Users
+
+| Method | Endpoint | Auth | Description |
+|--------|----------|------|-------------|
+| GET | `/api/v1/users` | Team | List portal users |
+| GET | `/api/v1/users/:userId` | Team | Get a single user |
+| DELETE | `/api/v1/users/:userId` | Admin | Delete a portal user |
 
 ## Request Format
 
-### Server Functions
-
-Called from React with TanStack Query:
-
-```typescript
-import { useMutation } from '@tanstack/react-query'
-import { createPostFn } from '@/lib/server-functions/posts'
-
-function CreatePostForm() {
-  const mutation = useMutation({
-    mutationFn: createPostFn,
-  })
-
-  const handleSubmit = (data) => {
-    mutation.mutate({
-      data: {
-        title: data.title,
-        content: data.content,
-        boardId: data.boardId,
-      }
-    })
-  }
-}
-```
-
-### REST Endpoints
-
-Standard HTTP requests:
+Send JSON in the request body for POST and PATCH requests:
 
 ```bash
-# Export posts (admin only)
-curl https://feedback.example.com/api/export \
-  -H "Cookie: better-auth.session_token=..."
-
-# Import posts (admin only)
-curl -X POST https://feedback.example.com/api/import \
-  -H "Cookie: better-auth.session_token=..." \
-  -F "file=@posts.csv"
+curl -X POST https://feedback.example.com/api/v1/posts \
+  -H "Authorization: Bearer qb_your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "boardId": "board_01h455vb4pex5vsknk084sn02q",
+    "title": "Add dark mode support",
+    "content": "It would be great to have a dark theme option."
+  }'
 ```
 
 ## Response Format
 
 ### Success
 
+Successful responses wrap the result in a `data` field:
+
 ```json
 {
-  "id": "post_01h455vb4pex5vsknk084sn02q",
-  "title": "Feature request",
-  "status": "created"
+  "data": {
+    "id": "post_01h455vb4pex5vsknk084sn02q",
+    "title": "Add dark mode support",
+    "content": "It would be great to have a dark theme option.",
+    "voteCount": 0,
+    "boardId": "board_01h455vb4pex5vsknk084sn02q",
+    "createdAt": "2025-01-15T10:30:00.000Z"
+  }
+}
+```
+
+List endpoints include pagination metadata:
+
+```json
+{
+  "data": [...],
+  "meta": {
+    "pagination": {
+      "cursor": "eyJvZmZzZXQiOjIwfQ",
+      "hasMore": true,
+      "total": 150
+    }
+  }
 }
 ```
 
 ### Error
+
+Error responses include a code and message:
 
 ```json
 {
@@ -169,141 +213,89 @@ curl -X POST https://feedback.example.com/api/import \
 }
 ```
 
+| HTTP Status | Error Code | Description |
+|-------------|-----------|-------------|
+| 400 | `BAD_REQUEST` | Invalid request body or parameters |
+| 400 | `VALIDATION_ERROR` | Input validation failed |
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
+| 403 | `FORBIDDEN` | Insufficient permissions for this operation |
+| 404 | `NOT_FOUND` | Resource not found |
+| 409 | `CONFLICT` | Duplicate resource (e.g., duplicate slug) |
+| 429 | `RATE_LIMITED` | Too many requests |
+| 500 | `INTERNAL_ERROR` | Unexpected server error |
+
+## Pagination
+
+List endpoints use cursor-based pagination:
+
+```bash
+# First page
+curl "https://feedback.example.com/api/v1/posts?limit=20" \
+  -H "Authorization: Bearer qb_..."
+
+# Next page (use cursor from previous response)
+curl "https://feedback.example.com/api/v1/posts?limit=20&cursor=eyJvZmZzZXQiOjIwfQ" \
+  -H "Authorization: Bearer qb_..."
+```
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `cursor` | string | — | Opaque cursor from a previous response |
+| `limit` | number | 20 | Results per page (1–100) |
+
+When `hasMore` is `true`, use the returned `cursor` value to fetch the next page. When `hasMore` is `false`, you've reached the end.
+
+## Filtering
+
+The posts endpoint supports filtering:
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `boardId` | TypeID | Filter by board |
+| `status` | string | Filter by status slug |
+| `tagIds` | string | Comma-separated tag TypeIDs |
+| `search` | string | Full-text search |
+| `sort` | string | `newest` (default), `oldest`, or `votes` |
+
+```bash
+curl "https://feedback.example.com/api/v1/posts?boardId=board_01h4...&status=planned&sort=votes" \
+  -H "Authorization: Bearer qb_..."
+```
+
 ## Rate Limiting
 
-<Warning>
-Rate limiting is not currently implemented at the application level. For production deployments, configure rate limiting at the infrastructure level.
-</Warning>
+The API enforces rate limiting per client IP. When you exceed the limit, you'll receive a `429` response with a `Retry-After` header indicating how many seconds to wait.
 
-Recommended approaches:
+```json
+{
+  "error": {
+    "code": "RATE_LIMITED",
+    "message": "Too many requests. Please try again later."
+  }
+}
+```
 
-- **Nginx**: Use `limit_req_zone` and `limit_req` directives
-- **Cloudflare**: Use rate limiting rules
-- **Reverse proxy**: Most reverse proxies support rate limiting
-
-Recommended limits:
-| Endpoint Type | Suggested Limit |
-|---------------|-----------------|
-| Public read | 100/min |
-| Authenticated | 60/min |
-| Write operations | 30/min |
-
-## Error Codes
-
-The application uses domain exceptions that map to HTTP status codes:
-
-| Exception Class | HTTP Status | Use Case |
-|-----------------|-------------|----------|
-| `ValidationError` | 400 | Invalid input data, bad request |
-| `NotFoundError` | 404 | Resource not found |
-| `ForbiddenError` | 403 | Insufficient permissions |
-| `ConflictError` | 409 | Duplicate resource, already exists |
-| `InternalError` | 500 | Database errors, unexpected failures |
-
-Common error codes:
-- `VALIDATION_ERROR` - Input validation failed
-- `POST_NOT_FOUND` - Post does not exist
-- `BOARD_NOT_FOUND` - Board does not exist
-- `CANNOT_DELETE` - User lacks delete permission
-- `CANNOT_EDIT` - User lacks edit permission
-- `DUPLICATE_VOTE` - User already voted
+Implement exponential backoff in your integration to handle rate limits gracefully.
 
 ## TypeIDs
 
-All resource IDs are TypeIDs:
+All resource IDs are TypeIDs — branded, sortable UUIDs with a type prefix:
 
 ```
 post_01h455vb4pex5vsknk084sn02q
 board_01h455vb4pex5vsknk084sn02q
 status_01h455vb4pex5vsknk084sn02q
+tag_01h455vb4pex5vsknk084sn02q
 ```
 
-Format: `{type}_{ulid}`
+The prefix tells you the resource type at a glance. TypeIDs are globally unique and sortable by creation time.
 
-Benefits:
-- Self-describing (prefix shows type)
-- Globally unique
-- Sortable by creation time
+## OpenAPI Specification
 
-## Pagination
-
-List endpoints support pagination:
-
-```typescript
-// Request
-{
-  page: 1,
-  limit: 20,  // max 100
-}
-
-// Response
-{
-  data: [...],
-  pagination: {
-    page: 1,
-    limit: 20,
-    total: 150,
-    hasMore: true
-  }
-}
-```
-
-## Events and Hooks
-
-Quackback dispatches events internally that trigger notifications:
-
-| Event | Description |
-|-------|-------------|
-| `post.created` | New post submitted |
-| `post.status_changed` | Post status updated |
-| `comment.created` | New comment added |
-
-These events can trigger:
-- **Slack notifications** - Post to configured channels
-- **Email notifications** - Notify subscribers
-
-Custom outgoing webhooks are planned for a future release.
-
-## SDK
-
-No official SDKs are currently available. Use the server functions directly from your TanStack Start application, or call the REST endpoints from external applications.
-
-## Best Practices
-
-### Use Server Functions
-
-For frontend integration, server functions provide:
-- Type safety
-- Automatic validation
-- Optimistic updates
-
-### Handle Errors Gracefully
-
-```typescript
-import { ValidationError, NotFoundError, ForbiddenError } from '@/lib/shared/errors'
-
-try {
-  await createPostFn({ data })
-} catch (error) {
-  if (error instanceof ValidationError) {
-    // Show validation message
-    console.log(error.code, error.message)
-  } else if (error instanceof ForbiddenError) {
-    // Handle permission denied
-  } else {
-    // Generic error handling
-  }
-}
-```
-
-### Respect Rate Limits
-
-- Implement exponential backoff
-- Cache responses where appropriate
-- Batch operations when possible
+An OpenAPI specification is available at `/api/v1/openapi.json` and interactive documentation at `/api/v1/docs`.
 
 ## Next Steps
 
-- [Posts API](/api/posts) - Post operations
-- [Comments API](/api/comments) - Comment operations
-- [Webhooks](/integrations/webhooks) - Event notifications
+- [Webhooks](/integrations/webhooks) — Receive real-time event notifications
+- [Integrations Overview](/integrations/overview) — All available integrations
+- [Core Concepts](/getting-started/concepts) — Understand boards, posts, and statuses

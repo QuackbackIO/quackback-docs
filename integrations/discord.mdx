@@ -1,95 +1,60 @@
 ---
 title: "Discord Integration"
-description: "Get feedback notifications in your Discord server. Meet your community where they already are."
+description: "Get feedback notifications in your Discord server."
 icon: "discord"
 ---
 
 # Discord Integration
 
-Meet your community where they are. Send feedback notifications directly to Discord channels: new submissions, status updates, and comments. Nothing slips through the cracks.
+<Note>
+**Status: Community Contribution Welcome**
 
-<Warning>
-**Status: Coming Soon**
+The Discord integration is not yet built. If you'd like to contribute, the architecture is ready — Quackback's event system makes adding new notification targets straightforward.
+</Note>
 
-The Discord integration is planned but not yet implemented. This page outlines the planned functionality.
-</Warning>
+## Workaround: Use Webhooks
 
-## Planned Features
+You can get Discord notifications today using Quackback's [webhook integration](/integrations/webhooks) with Discord's incoming webhooks:
 
-### Notifications
+1. **Create a Discord webhook** — In your Discord channel settings, go to Integrations > Webhooks > New Webhook
+2. **Create a Quackback webhook** — Point it at a small middleware service that reformats the payload
+3. **Transform the payload** — Discord expects a specific embed format
 
-Send notifications to Discord channels when:
+### Example Middleware
 
-- New feedback is submitted
-- Post status changes
-- New comments are posted
+```javascript
+app.post('/quackback-to-discord', async (req, res) => {
+  const { event, data } = req.body;
 
-### Rich Embeds
+  if (event === 'post.created') {
+    await fetch(DISCORD_WEBHOOK_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        embeds: [{
+          title: data.post.title,
+          description: data.post.content?.substring(0, 200),
+          color: 0x5865F2,
+          url: `https://feedback.example.com/b/${data.post.boardSlug}/${data.post.id}`,
+        }],
+      }),
+    });
+  }
 
-Discord notifications will use rich embeds with:
+  res.sendStatus(200);
+});
+```
 
-- Color-coded status indicators
-- Clickable links to posts
-- Author information
-- Timestamp
+## Contributing
 
-### Channel Configuration
+If you'd like to build the native Discord integration:
 
-Configure which events go to which channels:
-
-- Route new posts to a general feedback channel
-- Send status updates to a product channel
-- Filter by board or status
-
-## Planned Setup Flow
-
-1. Navigate to **Admin > Settings > Integrations**
-2. Click **Discord**
-3. Click **Add to Server**
-4. Select your Discord server
-5. Authorize the bot permissions
-6. Choose a default channel
-7. Configure event mappings
-
-## Webhook Support
-
-For simpler setups, webhook-based Discord notifications may be supported:
-
-1. Create a webhook in your Discord channel settings
-2. Add the webhook URL in Quackback
-3. Configure which events trigger notifications
-
-## Feature Request
-
-<Tip>
-Want Discord integration sooner? Let us know:
-
-- Vote for the feature on our [roadmap](https://github.com/quackback/quackback/discussions)
-- Share your use case in the discussions
-- Contribute to the implementation
-</Tip>
-
-## Technical Notes
-
-The Discord integration will follow the same hook architecture as existing integrations:
-
-- Event-driven notifications via the hook system
-- OAuth2 for bot authorization (or webhooks for simpler setup)
-- Encrypted token storage
-- Configurable event mappings per channel
-
-## Alternative: Webhooks
-
-While waiting for native Discord support, you can use Discord webhooks with Quackback's webhook integration:
-
-1. Create a Discord webhook in your channel
-2. Set up a middleware service to transform Quackback events to Discord format
-3. Configure Quackback to send to your middleware
-
-See [Webhooks](/integrations/webhooks) for more information.
+- [GitHub Issues](https://github.com/quackbackio/quackback/issues) — Check for an existing issue or create one
+- [Contributing Guide](/developers/contributing) — How to contribute
+- The Slack integration in `packages/integrations/` is a good reference implementation
 
 ## Next Steps
 
-- [Slack](/integrations/slack) - Currently available integration
-- [Webhooks](/integrations/webhooks) - Build custom integrations
-- [Integrations Overview](/integrations/overview) - All integrations
+- [Webhooks](/integrations/webhooks) — Build custom integrations now
+- [Slack](/integrations/slack) — Built-in Slack notification integration
+- [Integrations Overview](/integrations/overview) — All integrations

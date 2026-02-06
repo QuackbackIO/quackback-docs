@@ -28,7 +28,8 @@ Quackback gives you a single source of truth. Users submit feedback through a cl
 - Triage feedback in a unified inbox
 - Organize with boards, tags, and statuses
 - Plan releases with drag-and-drop roadmaps
-- Connect to Slack, Linear, and other tools
+- Automate workflows with webhooks and the REST API
+- Connect to Slack and other tools
 
 ## Key Features
 
@@ -52,15 +53,32 @@ Your workflow isn't one-size-fits-all. Create statuses like "In Design", "In Bet
 
 Show users what's coming. They can see what's planned, in progress, and shipped, and follow updates on features they voted for.
 
+### Changelog
+
+Announce what you've shipped. Link changelog entries to the posts that inspired them so users can see their feedback turned into features.
+
+### REST API & API Keys
+
+Automate your feedback workflow with a full [REST API](/api/overview). Create API keys scoped to your team role, then build custom integrations, sync data to your issue tracker, or power internal dashboards.
+
+### Webhooks
+
+Get real-time HTTP notifications when things happen — new posts, status changes, comments. Filter by board, verify with HMAC-SHA256 signatures, and connect to any system.
+
+### AI Agent Support (MCP)
+
+Quackback includes a [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server, so AI coding agents like Claude Code can search feedback, triage posts, update statuses, and create changelog entries directly.
+
 ### Integrations
 
 Connect Quackback to your existing tools:
 
-| Integration | What it does |
-|-------------|--------------|
-| **Slack** | Get notified about new feedback in your channels |
-| **Webhooks** | Send events to any HTTP endpoint |
-| **Linear** | Sync feedback to your issue tracker (coming soon) |
+| Integration | Status | What it does |
+|-------------|--------|--------------|
+| **Slack** | Available | Get notified about new feedback in your channels |
+| **Webhooks** | Available | Send events to any HTTP endpoint |
+| **REST API** | Available | Full CRUD access to all resources |
+| **MCP** | Available | AI agent integration for feedback triage |
 
 ### Self-Hosted
 
@@ -68,33 +86,23 @@ Run Quackback on your own infrastructure. Your data stays with you. No third-par
 
 ## How It's Built
 
-Quackback uses modern technologies:
+Quackback uses modern, open-source technologies:
 
 | Layer | Technology |
 |-------|------------|
 | Framework | TanStack Start + TanStack Router |
 | Database | PostgreSQL + Drizzle ORM |
-| Auth | Better Auth with email OTP |
+| Auth | Better Auth with email OTP + OAuth |
 | Runtime | Bun |
 | Styling | Tailwind CSS + shadcn/ui |
+| IDs | TypeIDs (branded, sortable UUIDs) |
 
-## Editions
+## License
 
-### Community Edition (AGPL-3.0)
-
-The full-featured open-source version. Free forever.
-
-### Enterprise Edition
-
-Additional features for larger organizations:
-- SAML/SSO authentication
-- SCIM user provisioning
-- Audit logging
-
-Contact sales@quackback.io for licensing.
+Quackback is licensed under [AGPL-3.0](https://www.gnu.org/licenses/agpl-3.0.html). You can use it freely, self-host it, and modify it. If you distribute a modified version, you must share your changes under the same license.
 
 ## Next Steps
 
-- [Quick Start](/getting-started/quick-start) - Get Quackback running in 5 minutes
-- [Core Concepts](/getting-started/concepts) - Understand boards, posts, and statuses
-- [Self-Hosting Guide](/self-hosting/docker) - Deploy on your own infrastructure
+- [Quick Start](/getting-started/quick-start) — Get Quackback running in 5 minutes
+- [Core Concepts](/getting-started/concepts) — Understand boards, posts, and statuses
+- [Self-Hosting Guide](/self-hosting/docker) — Deploy on your own infrastructure

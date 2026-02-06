@@ -1,25 +1,24 @@
 ---
 title: "Environment Variables"
-description: "Complete reference for all Quackback configuration options"
+description: "Complete reference for all Quackback configuration options."
 icon: "gear"
 ---
 
 # Environment Variables
 
-Complete reference for all Quackback configuration options.
+Complete reference for all Quackback configuration options. Copy `.env.example` to `.env` and fill in your values.
 
 ## Required Variables
 
 <Warning>
-These variables must be set for Quackback to run. The application will fail to start if any are missing.
+These variables must be set for Quackback to run.
 </Warning>
 
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `DATABASE_URL` | PostgreSQL connection string | `postgresql://postgres:password@localhost:5432/quackback` |
-| `BETTER_AUTH_SECRET` | Encryption key for auth (32+ chars) | `openssl rand -base64 32` |
-| `BETTER_AUTH_URL` | Public URL for auth callbacks | `https://feedback.example.com` |
-| `ROOT_URL` | Public instance URL | `https://feedback.example.com` |
+| `SECRET_KEY` | Secret key for authentication and encryption (32+ chars). Used for session signing and deriving encryption keys. | `openssl rand -base64 32` |
+| `BASE_URL` | Public URL for your instance (used for auth, emails, and OAuth callbacks) | `https://feedback.example.com` |
 
 ## Email Configuration
 
@@ -28,6 +27,8 @@ Configure email delivery for OTP codes, notifications, and invitations.
 <Tip>
 If email is not configured, OTP codes and other emails are printed to the console. This is useful for local development.
 </Tip>
+
+Priority order: SMTP (if configured) > Resend (if configured) > Console logging.
 
 ### SMTP
 
@@ -38,14 +39,14 @@ If email is not configured, OTP codes and other emails are printed to the consol
 | `EMAIL_SMTP_USER` | SMTP username | `apikey` |
 | `EMAIL_SMTP_PASS` | SMTP password | `SG.xxxx` |
 | `EMAIL_SMTP_SECURE` | Use TLS (for port 465) | `true` |
-| `EMAIL_FROM` | Sender email address | `feedback@example.com` |
+| `EMAIL_FROM` | Sender email address | `Quackback <feedback@example.com>` |
 
 ### Resend
 
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `EMAIL_RESEND_API_KEY` | Resend API key | `re_xxxxxxxxxxxx` |
-| `EMAIL_FROM` | Sender email address | `feedback@example.com` |
+| `EMAIL_FROM` | Sender email address | `Quackback <feedback@example.com>` |
 
 ## OAuth Providers
 
@@ -79,7 +80,7 @@ Callback URL: `https://your-domain.com/api/auth/callback/google`
 |----------|-------------|
 | `MICROSOFT_CLIENT_ID` | Azure AD application ID |
 | `MICROSOFT_CLIENT_SECRET` | Azure AD client secret |
-| `MICROSOFT_TENANT_ID` | Azure AD tenant ID |
+| `MICROSOFT_TENANT_ID` | Azure AD tenant ID (default: `common`) |
 
 ## Integrations
 
@@ -110,38 +111,32 @@ Required scopes: `channels:read`, `chat:write`, `team:read`
 
 Create at: [GitHub Apps](https://github.com/settings/apps)
 
-### Integration Security
+## AI
 
-| Variable | Description |
-|----------|-------------|
-| `INTEGRATION_ENCRYPTION_KEY` | Key for encrypting stored OAuth tokens |
+Enable AI features like auto-categorization and summarization.
 
-Generate with: `openssl rand -base64 32`
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `OPENAI_API_KEY` | OpenAI API key | `sk-...` |
+| `OPENAI_BASE_URL` | Custom endpoint (e.g., Azure OpenAI, Cloudflare AI Gateway) | `https://your-endpoint.com/v1` |
 
-## Security
+## File Storage
 
-| Variable | Description |
-|----------|-------------|
-| `ENCRYPTION_KEY` | 32-byte hex key for AES-256-GCM encryption |
+S3-compatible storage for image uploads in changelogs and rich text content. Supports AWS S3, Cloudflare R2, Backblaze B2, MinIO, and other S3-compatible services.
 
 <Note>
-Generate the encryption key with: `openssl rand -hex 32`
-
-This key is used for encrypting sensitive data like connection strings.
+If not configured, image upload is disabled in the rich text editor. For local development, MinIO is included in `docker-compose` and configured by default. Run `bun run setup` to start it.
 </Note>
 
-## Build Configuration
-
-These affect how Quackback is built, not runtime behavior.
-
-| Variable | Description | Default |
+| Variable | Description | Example |
 |----------|-------------|---------|
-| `EDITION` | Build edition | `self-hosted` |
-| `INCLUDE_EE` | Include Enterprise features | `false` |
-
-Values for `EDITION`:
-- `self-hosted` - Single-tenant deployment
-- `cloud` - Multi-tenant SaaS (internal use)
+| `S3_ENDPOINT` | S3 endpoint URL (leave empty for AWS S3) | `http://localhost:9000` |
+| `S3_BUCKET` | S3 bucket name | `quackback` |
+| `S3_REGION` | S3 region | `us-east-1` |
+| `S3_ACCESS_KEY_ID` | S3 access key | `minioadmin` |
+| `S3_SECRET_ACCESS_KEY` | S3 secret key | `minioadmin` |
+| `S3_FORCE_PATH_STYLE` | Use path-style URLs (required for MinIO, R2) | `true` |
+| `S3_PUBLIC_URL` | Public URL for uploaded files (optional) | `https://cdn.example.com` |
 
 ## Complete Example
 
@@ -150,9 +145,8 @@ Values for `EDITION`:
 # Required
 # ===================
 DATABASE_URL="postgresql://postgres:password@localhost:5432/quackback"
-BETTER_AUTH_SECRET="your-32-character-minimum-secret-key-here"
-BETTER_AUTH_URL="https://feedback.yourcompany.com"
-ROOT_URL="https://feedback.yourcompany.com"
+SECRET_KEY="your-32-character-minimum-secret-key-here"
+BASE_URL="https://feedback.yourcompany.com"
 
 # ===================
 # Email (choose one)
@@ -182,12 +176,6 @@ GOOGLE_CLIENT_SECRET="your-google-client-secret"
 # ===================
 SLACK_CLIENT_ID="your-slack-client-id"
 SLACK_CLIENT_SECRET="your-slack-client-secret"
-INTEGRATION_ENCRYPTION_KEY="your-encryption-key"
-
-# ===================
-# Security (optional)
-# ===================
-ENCRYPTION_KEY="your-32-byte-hex-key"
 ```
 
 ## Validation

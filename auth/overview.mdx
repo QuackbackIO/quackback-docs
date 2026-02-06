@@ -1,12 +1,12 @@
 ---
 title: "Authentication Overview"
-description: "Secure, passwordless authentication for your users and team. Email codes, OAuth, or enterprise SSO."
+description: "Secure, passwordless authentication for your users and team. Email codes, OAuth, or OIDC."
 icon: "lock"
 ---
 
 # Authentication Overview
 
-No more password resets. Quackback uses passwordless authentication (email codes, OAuth, or enterprise SSO) so users sign in quickly and securely without another password to forget.
+No more password resets. Quackback uses passwordless authentication (email codes, OAuth, or OIDC) so users sign in quickly and securely without another password to forget.
 
 ## Authentication Flows
 
@@ -37,7 +37,7 @@ Admins and staff who manage feedback in the admin dashboard:
 |--------|-------------|
 | Email OTP | 6-digit code sent to email (password auth is disabled) |
 | OAuth | GitHub, Google |
-| SAML SSO | Enterprise identity provider (Enterprise Edition) |
+| OIDC SSO | Connect to your identity provider |
 
 Configure in: **[Admin → Settings → Security](/admin/security)**
 
@@ -51,8 +51,8 @@ Password-based authentication is disabled. All authentication uses passwordless 
 
 ```bash
 # Required
-BETTER_AUTH_SECRET="your-32-char-secret"  # openssl rand -base64 32
-BETTER_AUTH_URL="https://feedback.yourcompany.com"
+SECRET_KEY="your-32-char-secret"  # openssl rand -base64 32
+BASE_URL="https://feedback.yourcompany.com"
 ```
 
 With just these settings:
@@ -169,33 +169,9 @@ Control what sign-in methods are available to team members (employees):
 
 1. Go to **Admin → Settings → Security**
 2. Toggle methods on/off (Email, GitHub, Google)
-3. Configure SAML SSO if using Enterprise Edition
+3. Configure OIDC if needed
 
 See [Security](/admin/security) for details.
-
-## Enterprise Features
-
-These features are available with the Enterprise Edition (`ee/` packages).
-
-### SAML SSO
-
-Enterprise customers can configure SAML:
-- Single Sign-On with identity providers
-- Automatic user provisioning
-- Centralized access control
-
-See [SSO Setup](/auth/sso) for details.
-
-### SCIM Provisioning
-
-Automatic user management:
-- Create users on IdP assignment
-- Remove users on de-assignment
-- Sync user attributes
-
-<Note>
-Enterprise features require `INCLUDE_EE=true` and a valid license.
-</Note>
 
 ## Troubleshooting
 
@@ -203,7 +179,7 @@ Enterprise features require `INCLUDE_EE=true` and a valid license.
 
 1. Clear browser cookies
 2. Try incognito mode
-3. Check `BETTER_AUTH_URL` matches your domain
+3. Check `BASE_URL` matches your domain
 
 ### OTP not received
 
@@ -221,4 +197,4 @@ Enterprise features require `INCLUDE_EE=true` and a valid license.
 
 - [Email OTP](/auth/email-otp) - Magic link setup
 - [OAuth](/auth/oauth) - Social login configuration
-- [SSO](/auth/sso) - Enterprise SSO (SAML)
+- [SSO](/auth/sso) - OIDC Single Sign-On

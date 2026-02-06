@@ -6,7 +6,7 @@ icon: "lock"
 
 # Portal Authentication
 
-Let users sign in the way they prefer. Enable email magic links for simplicity, OAuth for convenience, or connect your identity provider for enterprise SSO.
+Let users sign in the way they prefer. Enable email magic links for simplicity, OAuth for convenience, or connect your identity provider for OIDC SSO.
 
 ## Overview
 
@@ -45,7 +45,7 @@ Allow users to sign in using their Google accounts.
 Connect your own identity provider to let users sign in with existing accounts.
 
 - **Supported providers**: Okta, Auth0, Azure AD, Keycloak, and any OIDC-compliant provider
-- **Best for**: Enterprise customers requiring SSO
+- **Best for**: Organizations requiring SSO
 
 ## Configuring Sign-in Methods
 
@@ -148,14 +148,14 @@ Consider your user base when selecting authentication methods:
 
 - **Developer products** → Enable GitHub
 - **Business products** → Enable Google
-- **Enterprise customers** → Configure OIDC
+- **Organizations with SSO** → Configure OIDC
 - **Maximum accessibility** → Keep Email enabled
 </Tip>
 
 ### Security Recommendations
 
 1. **Enable multiple methods** - Provides fallback if one method has issues
-2. **Use OIDC for enterprise** - Allows customers to use their corporate credentials
+2. **Use OIDC for organizations** - Allows customers to use their corporate credentials
 3. **Domain restrictions** - Use email domain restriction for OIDC to limit access
 
 ### User Experience
@@ -176,5 +176,5 @@ Only **Admins** can modify portal authentication settings.
 ## Next Steps
 
 - [Security](/admin/security) - Configure team member authentication
-- [SSO](/auth/sso) - Learn more about enterprise SSO
+- [SSO](/auth/sso) - Learn more about OIDC SSO
 - [OAuth](/auth/oauth) - OAuth provider setup details

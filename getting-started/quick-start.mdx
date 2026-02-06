@@ -10,7 +10,7 @@ Ready to try Quackback? You'll have it running in under 5 minutes.
 
 ## Prerequisites
 
-- Docker and Docker Compose installed
+- [Bun](https://bun.sh) (v1.3.7+) or Docker and Docker Compose installed
 - A domain or subdomain (for production)
 
 ## One-Command Setup
@@ -20,20 +20,23 @@ Ready to try Quackback? You'll have it running in under 5 minutes.
 git clone https://github.com/quackbackio/quackback.git
 cd quackback
 
-# Copy environment template
-cp .env.example .env
+# Run setup (installs deps, starts Docker services, runs migrations, seeds demo data)
+bun run setup
+```
 
-# Start everything
-docker compose up -d
+Then start the dev server:
+
+```bash
+bun run dev
 ```
 
 Quackback is now running at [http://localhost:3000](http://localhost:3000).
 
 ## First-Time Setup
 
-1. **Open the app** - Navigate to `http://localhost:3000`
-2. **Create your workspace** - Follow the onboarding wizard
-3. **Sign in** - Use `demo@example.com` (check the console for the OTP code in development)
+1. **Open the app** — Navigate to `http://localhost:3000`
+2. **Sign in** — Use `demo@example.com` (the OTP code is printed to the console in development)
+3. **Explore** — The seed data includes sample boards, posts, and statuses
 
 <Tip>
 In development mode, OTP codes are printed to the console instead of being sent via email. Watch your terminal output for the login code.
@@ -46,11 +49,10 @@ Edit `.env` with your settings:
 ```bash
 # Required
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/quackback"
-BETTER_AUTH_SECRET="your-32-character-secret-key-here"
-BETTER_AUTH_URL="http://localhost:3000"
-ROOT_URL="http://localhost:3000"
+SECRET_KEY="your-32-character-secret-key-here"
+BASE_URL="http://localhost:3000"
 
-# Email (optional - emails print to console if not configured)
+# Email (optional — emails print to console if not configured)
 EMAIL_SMTP_HOST="smtp.example.com"
 EMAIL_SMTP_PORT="587"
 EMAIL_SMTP_USER="your-smtp-user"
@@ -64,7 +66,7 @@ openssl rand -base64 32
 ```
 
 <Warning>
-Never commit your `.env` file to version control. The `BETTER_AUTH_SECRET` should be a strong, unique value in production.
+Never commit your `.env` file to version control. The `SECRET_KEY` should be a strong, unique value in production.
 </Warning>
 
 ## What's Next?
@@ -75,23 +77,23 @@ For production deployments, you'll need to:
 
 1. Set up a proper domain with HTTPS
 2. Configure email delivery (SMTP or Resend)
-3. Set strong secrets
+3. Set a strong `SECRET_KEY`
 4. Use a managed PostgreSQL database
 
 See the [Docker Deployment Guide](/self-hosting/docker) for complete instructions.
 
 ### Explore the Platform
 
-- **Create a board** - Go to Admin → Settings → Boards
-- **Invite your team** - Go to Admin → Settings → Team
-- **Customize branding** - Go to Admin → Settings → Branding
-- **Connect Slack** - Go to Admin → Settings → Integrations
+- **Create a board** — Go to Admin > Settings > Boards
+- **Invite your team** — Go to Admin > Settings > Team
+- **Customize branding** — Go to Admin > Settings > Branding
+- **Connect Slack** — Go to Admin > Settings > Integrations
 
 ### Import Existing Feedback
 
 Migrating from another platform? Quackback supports CSV import:
 
-1. Go to Admin → Settings → Boards
+1. Go to Admin > Settings > Boards
 2. Select a board
 3. Click "Import from CSV"
 
@@ -123,10 +125,10 @@ If the database container shows as "unhealthy", try running `docker compose down
 ### Emails not sending
 
 <Info>
-In development, emails are printed to the console. For production, configure SMTP or Resend in your `.env` file.
+In development, emails are printed to the console. For production, configure SMTP or Resend in your `.env` file. See [Environment Variables](/reference/environment-variables) for details.
 </Info>
 
 ## Getting Help
 
-- [GitHub Issues](https://github.com/quackbackio/quackback/issues) - Bug reports and feature requests
-- [GitHub Discussions](https://github.com/quackbackio/quackback/discussions) - Questions and community support
+- [GitHub Issues](https://github.com/quackbackio/quackback/issues) — Bug reports and feature requests
+- [GitHub Discussions](https://github.com/quackbackio/quackback/discussions) — Questions and community support

@@ -253,9 +253,8 @@ services:
     image: ghcr.io/quackbackio/quackback:latest
     environment:
       - DATABASE_URL=postgresql://user:pass@postgres:5432/quackback
-      - BETTER_AUTH_SECRET=your-secret
-      - BETTER_AUTH_URL=https://feedback.yourcompany.com
-      - ROOT_URL=https://feedback.yourcompany.com
+      - SECRET_KEY=your-secret
+      - BASE_URL=https://feedback.yourcompany.com
     labels:
       - "traefik.enable=true"
       # Router
@@ -554,11 +553,11 @@ proxy_set_header Connection "upgrade";
 
 ### Mixed Content Warnings
 
-Ensure `X-Forwarded-Proto: https` header is passed and `ROOT_URL` uses HTTPS.
+Ensure `X-Forwarded-Proto: https` header is passed and `BASE_URL` uses HTTPS.
 
 ### Redirect Loops
 
-Check that both `ROOT_URL` and `BETTER_AUTH_URL` in `.env` use `https://`.
+Check that both `BASE_URL` and `BASE_URL` in `.env` use `https://`.
 
 ## Next Steps
 

@@ -157,7 +157,7 @@ Quackback uses PKCE (Proof Key for Code Exchange) for all OIDC flows, protecting
 
 ### Secret Storage
 
-Client secrets are encrypted at rest using AES-256-GCM before being stored. The encryption key comes from your `ENCRYPTION_KEY` or `BETTER_AUTH_SECRET` environment variable.
+Client secrets are encrypted at rest using AES-256-GCM before being stored. The encryption key is derived from your `SECRET_KEY` environment variable.
 
 ### Sessions
 
@@ -228,7 +228,7 @@ Existing users who signed up via SSO can still sign in using email OTP. Accounts
 
 ## SAML Support
 
-Quackback currently supports OIDC for SSO. SAML support is planned for a future Enterprise Edition release.
+Quackback currently supports OIDC for SSO. SAML support may be added in a future release.
 
 Most identity providers support both OIDC and SAML. If your organization requires SAML specifically, check if your IdP can expose an OIDC interface for the same users/groups.
 

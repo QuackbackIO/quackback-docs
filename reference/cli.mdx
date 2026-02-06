@@ -23,14 +23,6 @@ Options:
 - Source maps enabled
 - OTP codes printed to console
 
-### Start Cloud Development
-
-```bash
-bun run dev:cloud
-```
-
-Runs in multi-tenant cloud mode for testing tenant features.
-
 ### Build for Production
 
 ```bash
@@ -256,34 +248,6 @@ cp .env.example .env
 # Generate secret
 openssl rand -base64 32
 ```
-
-## Build Variants
-
-### Self-Hosted (Default)
-
-```bash
-EDITION=self-hosted bun run build
-```
-
-Single-tenant deployment.
-
-### Cloud
-
-```bash
-EDITION=cloud bun run build
-```
-
-Multi-tenant SaaS deployment.
-
-### Enterprise
-
-```bash
-INCLUDE_EE=true bun run build
-```
-
-<Note>
-Enterprise features require a valid license. Contact the Quackback team for licensing information.
-</Note>
 
 ## Data Import
 

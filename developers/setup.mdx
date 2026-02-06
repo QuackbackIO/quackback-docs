@@ -78,9 +78,8 @@ openssl rand -base64 32
 Edit `.env`:
 ```bash
 DATABASE_URL="postgresql://postgres:postgres@localhost:5432/quackback"
-BETTER_AUTH_SECRET="your-generated-secret-here"
-BETTER_AUTH_URL="http://localhost:3000"
-ROOT_URL="http://localhost:3000"
+SECRET_KEY="your-generated-secret-here"
+BASE_URL="http://localhost:3000"
 ```
 
 ### 3. Start PostgreSQL
@@ -140,9 +139,6 @@ quackback/
 │   ├── ids/                  # TypeID system
 │   └── email/                # Email service & templates
 │
-├── ee/                       # Enterprise Edition (proprietary)
-│   └── packages/
-│
 ├── deploy/                   # Deployment configurations
 ├── scripts/                  # Utility scripts
 └── docker-compose.yml        # Local development services
@@ -152,8 +148,7 @@ quackback/
 
 ```bash
 # Development
-bun run dev              # Start dev server (self-hosted mode)
-bun run dev:cloud        # Start in cloud multi-tenant mode
+bun run dev              # Start dev server
 bun run build            # Production build
 
 # Database

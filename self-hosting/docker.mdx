@@ -39,9 +39,8 @@ docker run -d \
   --name quackback \
   -p 3000:3000 \
   -e DATABASE_URL="postgresql://user:pass@host:5432/quackback" \
-  -e BETTER_AUTH_SECRET="your-32-char-secret" \
-  -e BETTER_AUTH_URL="https://feedback.yourcompany.com" \
-  -e ROOT_URL="https://feedback.yourcompany.com" \
+  -e SECRET_KEY="your-32-char-secret" \
+  -e BASE_URL="https://feedback.yourcompany.com" \
   ghcr.io/quackbackio/quackback:latest
 ```
 
@@ -54,11 +53,10 @@ docker run -d \
 DATABASE_URL="postgresql://postgres:postgres@postgres:5432/quackback"
 
 # Authentication (generate with: openssl rand -base64 32)
-BETTER_AUTH_SECRET="your-32-character-minimum-secret-key"
+SECRET_KEY="your-32-character-minimum-secret-key"
 
-# Public URLs (must match your domain)
-BETTER_AUTH_URL="https://feedback.yourcompany.com"
-ROOT_URL="https://feedback.yourcompany.com"
+# Public URL (must match your domain)
+BASE_URL="https://feedback.yourcompany.com"
 ```
 
 ### Email Configuration
@@ -100,9 +98,6 @@ GOOGLE_CLIENT_SECRET="your-google-client-secret"
 # Slack
 SLACK_CLIENT_ID="your-slack-client-id"
 SLACK_CLIENT_SECRET="your-slack-client-secret"
-
-# Encryption key for storing OAuth tokens
-INTEGRATION_ENCRYPTION_KEY="your-encryption-key"
 ```
 
 See [Environment Variables Reference](/reference/environment-variables) for all options.
