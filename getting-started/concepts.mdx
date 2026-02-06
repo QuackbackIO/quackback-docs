@@ -1,55 +1,34 @@
 ---
 title: "Core Concepts"
-description: "Understand workspaces, boards, posts, statuses, and user roles in Quackback."
+description: "Understand workspaces, boards, posts, statuses, and user roles."
 icon: "lightbulb"
 ---
 
 # Core Concepts
 
-Before diving in, here's how the pieces fit together. Understanding these concepts will help you get the most out of Quackback.
+Here's how the pieces fit together. Understanding these five concepts is enough to get started.
 
 ## Workspaces
 
-A **workspace** is your Quackback instance. It's the container for all your boards, posts, team members, and settings.
-
-Each self-hosted deployment is a single workspace. You configure its name, logo, branding, and domain during setup.
-
-<Note>
-Think of a workspace like your company's feedback hub. Everything lives here.
-</Note>
+A **workspace** is your Quackback instance — the container for all your boards, posts, team members, and settings. Each self-hosted deployment is a single workspace.
 
 ## Boards
 
-**Boards** keep different types of feedback organized. Without them, everything piles up in one place.
+**Boards** keep different types of feedback organized. Common examples: "Feature Requests", "Bug Reports", "Integrations".
 
-Common examples:
-- Feature Requests
-- Bug Reports
-- Integrations
-- Documentation
-
-Each board has a name, URL slug (e.g., `/b/feature-requests`), optional description, and a public/private visibility toggle.
+Each board has a name, URL slug (e.g., `/b/feature-requests`), and a public/private visibility toggle.
 
 <Tip>
-Start with just 2-3 boards. You can always add more later, but too many boards confuse users about where to post.
+Start with 2-3 boards. You can always add more later, but too many boards confuse users about where to post.
 </Tip>
+
+[Learn more about boards](/admin/boards)
 
 ## Posts
 
-A **post** is a single piece of feedback: an idea, request, or bug report. Posts belong to a board and include:
+A **post** is a single piece of feedback: an idea, request, or bug report. Posts belong to a board and include a title, description, status, tags, votes, and comments.
 
-- **Title** - Brief summary of the feedback
-- **Content** - Detailed description with rich text formatting (powered by Tiptap)
-- **Status** - Where it is in your workflow
-- **Tags** - Labels for extra organization
-- **Votes** - How many users support this idea
-- **Comments** - Discussion thread
-- **Owner** - The team member responsible for this post
-- **Official response** - A pinned reply from your team
-
-Posts also track edit history, so you can see what changed and when.
-
-### How Posts Move Through Your Workflow
+Posts move through your workflow as your team triages them:
 
 ```
 Submitted → Under Review → Planned → In Progress → Shipped
@@ -61,162 +40,47 @@ When a post's status changes, subscribed users are notified automatically.
 
 ## Statuses
 
-**Statuses** show users what's happening with their feedback. They're the stages in your workflow, organized into three categories:
+**Statuses** show users what's happening with their feedback. They're organized into three categories:
 
 | Category | Default Statuses | Purpose |
 |----------|-----------------|---------|
 | **Active** | Under Review, Planned, In Progress | Posts that need attention or are being worked on |
-| **Complete** | Shipped | Posts that have been successfully addressed |
+| **Complete** | Shipped | Posts that have been addressed |
 | **Closed** | Declined | Posts that won't be implemented |
 
-You can create custom statuses like "In Design", "In Beta", or "Blocked" to match your actual workflow. Each status has a name, color, and a toggle to control whether it appears on the public roadmap.
+You can [create custom statuses](/admin/statuses) like "In Design", "In Beta", or "Blocked" to match your workflow.
 
-<Tip>
-Go to **Admin → Settings → Statuses** to customize your workflow.
-</Tip>
-
-## Tags
-
-**Tags** let you categorize posts across boards. Unlike statuses (one per post), posts can have multiple tags.
-
-Examples:
-- `mobile`, `web`, `api` - by platform
-- `high-priority`, `quick-win` - by priority
-- `enterprise`, `free-tier` - by customer segment
-
-Tags are global - they work across all boards. They're created on the fly as you use them, or automatically during CSV import.
-
-## Roadmaps
-
-A **roadmap** is a public view of what you're building. It shows posts grouped by status in a kanban-style layout.
-
-You can create multiple roadmaps (e.g., "Product Roadmap", "API Roadmap") and control which are public or private.
-
-Users can:
-- See what's planned, in progress, and shipped
-- Vote on upcoming features
-- Subscribe to updates on specific items
-
-<Note>
-The roadmap only shows posts you've explicitly added to it. Not everything needs to be public - you control what's visible.
-</Note>
-
-## Voting
-
-**Voting** lets users show what they want most. Each user gets one vote per post - it's a simple toggle, not a scale.
-
-Why it matters:
-- Prioritize based on actual demand
-- Spot popular requests quickly
-- Make data-driven decisions instead of guessing
-
-Vote counts are displayed on posts and used for sorting (e.g., "Top Votes" in the admin inbox).
-
-## Comments
-
-**Comments** enable discussion on posts. They support:
-
-- **Threaded replies** - Nested conversations under any comment
-- **Official responses** - Pinned team replies that stand out visually
-- **Reactions** - Emoji reactions on individual comments
-- **Rich text** - Formatting support in comment content
-- **Team badges** - Comments from team members are visually distinguished
-
-## Changelog
-
-The **changelog** is where you announce what you've shipped. Each entry has a title, rich text content, and an optional publish date.
-
-- **Draft entries** are only visible to your team
-- **Published entries** appear on the public changelog page
-- Entries can be linked to the posts that inspired them
-
-This closes the feedback loop: users can see their suggestions turn into shipped features.
-
-## Users vs. Team Members
+## Users & Roles
 
 Quackback has two types of accounts with three roles:
 
-### Portal Users (role: `user`)
-
-Your customers and community members:
-- Sign up through the public portal
-- Submit feedback, vote, and comment
-- Manage their notification preferences
-- Authenticate via email OTP or OAuth
-
-### Team Members (roles: `admin` or `member`)
-
-Your internal team:
-- Invited by workspace admins
-- Access the admin dashboard
-- Manage feedback, settings, and integrations
-
-<Note>
-Team members can also use the public portal like regular users, in addition to having admin access.
-</Note>
-
 | Capability | Portal User | Member | Admin |
 |------------|:-----------:|:------:|:-----:|
-| Submit feedback | ✓ | ✓ | ✓ |
-| Vote & comment | ✓ | ✓ | ✓ |
+| Submit feedback, vote, comment | ✓ | ✓ | ✓ |
 | View admin dashboard | | ✓ | ✓ |
 | Manage feedback & statuses | | ✓ | ✓ |
-| Add to roadmap | | ✓ | ✓ |
-| Workspace settings | | | ✓ |
-| Team management | | | ✓ |
-| Integrations & API keys | | | ✓ |
+| Workspace settings & integrations | | | ✓ |
 
-## API Keys
-
-**API keys** provide programmatic access to Quackback's REST API. Keys inherit the role of the team member who creates them - an admin's key has admin access, a member's key has member access.
-
-Keys are prefixed with `qb_` and authenticated via the `Authorization: Bearer` header.
+**Portal users** are your customers — they sign up through the public portal. **Team members** are invited by admins and access the admin dashboard.
 
 <Note>
-API keys are created in **Admin → Settings → API Keys**. The full key is only shown once at creation - store it securely.
+Team members can also use the public portal like regular users.
 </Note>
 
-## Webhooks
+## More to Explore
 
-**Webhooks** let you receive real-time HTTP notifications when events occur in Quackback.
+Once you're up and running, these features help you get more out of Quackback:
 
-Each webhook specifies:
-- A **URL** to receive POST requests
-- Which **events** to listen for (e.g., `post.created`, `post.status_changed`, `comment.created`)
-- Optional **board filtering** to only receive events from specific boards
-
-Payloads are signed with HMAC-SHA256 so you can verify they came from Quackback.
-
-## Integrations
-
-**Integrations** connect Quackback to your other tools:
-
-| Integration | What it does |
-|-------------|--------------|
-| **Slack** | Post notifications to channels when events occur |
-| **Webhooks** | Send signed HTTP callbacks to any URL |
-| **REST API** | Full programmatic access to all resources |
-| **MCP** | AI agent integration via the Model Context Protocol |
-
-You configure **event mappings** to control which events trigger notifications and where they go.
-
-## Subscriptions & Notifications
-
-Users can **subscribe** to posts to get updates when:
-- The status changes
-- New comments are added
-- The team posts an official response
-
-Notifications go to:
-- In-app notification center
-- Email (if configured)
-
-<Info>
-Users are automatically subscribed to posts they create or vote on. They can manage their preferences in account settings.
-</Info>
+- **[Tags](/admin/tags)** — Label posts across boards by platform, priority, or team
+- **[Roadmaps](/admin/roadmap)** — Show users what's planned, in progress, and shipped
+- **[Voting](/users/voting)** — Let users prioritize what matters most
+- **[Comments](/users/comments)** — Threaded discussions with official team responses
+- **[Changelog](/getting-started/introduction#changelog)** — Announce shipped features and close the feedback loop
+- **[API & Webhooks](/api/overview)** — Automate workflows and build custom integrations
+- **[Integrations](/integrations/overview)** — Connect to Slack, Linear, and more
 
 ## Next Steps
 
-- [Quick Start](/getting-started/quick-start) - Get Quackback running
-- [Managing Boards](/admin/boards) - Set up your first boards
-- [Self-Hosting](/self-hosting/docker) - Production deployment
+- [Quick Start](/getting-started/quick-start) — Get Quackback running
+- [Organize feedback with boards](/admin/boards) — Set up your first boards
+- [Deploy with Docker](/self-hosting/docker) — Production deployment
