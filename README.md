@@ -1,91 +1,102 @@
 # Quackback Documentation
 
-Welcome to the Quackback documentation. Quackback is an open-source customer feedback platform for collecting, organizing, and acting on user feedback.
-
-## Documentation Structure
-
-### Getting Started
-- [Introduction](getting-started/introduction.mdx) - What is Quackback
-- [Quick Start](getting-started/quick-start.mdx) - Deploy in 5 minutes
-- [Core Concepts](getting-started/concepts.mdx) - Boards, posts, statuses, and more
-
-### Self-Hosting
-- [Requirements](self-hosting/requirements.mdx) - System requirements
-- [Docker Deployment](self-hosting/docker.mdx) - Recommended deployment method
-- [Manual Installation](self-hosting/manual.mdx) - Install without Docker
-- [Reverse Proxy](self-hosting/reverse-proxy.mdx) - Nginx, Caddy, Traefik configuration
-- [Troubleshooting](self-hosting/troubleshooting.mdx) - Common issues and solutions
-
-### User Guide
-- [Submitting Feedback](users/submitting-feedback.mdx) - How to share ideas
-- [Voting](users/voting.mdx) - Supporting ideas you care about
-- [Comments](users/comments.mdx) - Joining the discussion
-- [Notifications](users/notifications.mdx) - Managing alerts
-- [Account Settings](users/account.mdx) - Profile and preferences
-
-### Admin Guide
-- [Managing Feedback](admin/inbox.mdx) - Feedback inbox and workflow
-- [Boards](admin/boards.mdx) - Organizing feedback categories
-- [Statuses](admin/statuses.mdx) - Workflow stages
-- [Tags](admin/tags.mdx) - Additional categorization
-- [Roadmap](admin/roadmap.mdx) - Public progress tracking
-- [Portal Users](admin/users.mdx) - Managing portal user accounts
-- [Notifications](admin/notifications.mdx) - Admin notification settings
-- [Team](admin/team.mdx) - Team member management
-- [Security](admin/security.mdx) - Team authentication settings
-- [Portal Authentication](admin/portal-auth.mdx) - Portal user sign-in options
-- [Branding](admin/branding.mdx) - Customization
-- [Import & Export](admin/import-export.mdx) - Data migration
-
-### Authentication
-- [Overview](auth/overview.mdx) - Auth methods and configuration
-- [Email OTP](auth/email-otp.mdx) - Magic link authentication
-- [OAuth](auth/oauth.mdx) - GitHub, Google, Microsoft setup
-
-### Integrations
-- [Overview](integrations/overview.mdx) - How integrations work
-- [Slack](integrations/slack.mdx) - Slack notifications
-- [Webhooks](integrations/webhooks.mdx) - Send events to any HTTP endpoint
-- [Discord](integrations/discord.mdx) - Discord integration (community)
-- [Linear](integrations/linear.mdx) - Linear integration (community)
-
-### API Reference
-- [Overview](api/overview.mdx) - REST API v1 documentation
-- [Posts API](api/posts.mdx) - Post operations
-- [Comments API](api/comments.mdx) - Comment operations
-
-### Developer Guide
-- [Development Setup](developers/setup.mdx) - Local environment
-- [Architecture](developers/architecture.mdx) - System design
-- [Server Functions](developers/server-functions.mdx) - RPC patterns
-- [Database](developers/database.mdx) - Schema and queries
-- [Adding Features](developers/adding-features.mdx) - Feature development guide
-- [Testing](developers/testing.mdx) - Vitest and Playwright
-- [Contributing](developers/contributing.mdx) - How to contribute
-
-### Reference
-- [Environment Variables](reference/environment-variables.mdx) - Configuration options
-- [CLI Commands](reference/cli.mdx) - Command reference
-- [Database Schema](reference/database-schema.mdx) - Tables and relationships
+Collect, organize, and act on user feedback. Open source, self-hosted.
 
 ## Quick Links
 
 | I want to... | Go to... |
 |--------------|----------|
-| Deploy Quackback | [Quick Start](getting-started/quick-start.mdx) |
-| Understand the product | [Introduction](getting-started/introduction.mdx) |
+| Get Quackback running | [Quick Start](getting-started/quick-start.mdx) |
+| Understand the core ideas | [Core Concepts](getting-started/concepts.mdx) |
+| Organize feedback by category | [Organize feedback with boards](admin/boards.mdx) |
+| Track feedback from idea to shipped | [Track progress with statuses](admin/statuses.mdx) |
+| Show users what I'm building | [Build a public roadmap](admin/roadmap.mdx) |
+| Connect to Slack | [Set up Slack notifications](integrations/slack.mdx) |
+| Send events to my server | [Send events with webhooks](integrations/webhooks.mdx) |
+| Build a custom integration | [API Overview](api/overview.mdx) |
+| Deploy to production | [Deploy with Docker](self-hosting/docker.mdx) |
 | Configure settings | [Environment Variables](reference/environment-variables.mdx) |
-| Use the REST API | [API Overview](api/overview.mdx) |
-| Set up Slack | [Slack Integration](integrations/slack.mdx) |
-| Set up webhooks | [Webhooks](integrations/webhooks.mdx) |
-| Build a feature | [Adding Features](developers/adding-features.mdx) |
-| Contribute code | [Contributing](developers/contributing.mdx) |
 | Fix a problem | [Troubleshooting](self-hosting/troubleshooting.mdx) |
+| Contribute code | [Contribute to Quackback](developers/contributing.mdx) |
+
+## Getting Started
+
+- [Introduction](getting-started/introduction.mdx) — What is Quackback
+- [Quick Start](getting-started/quick-start.mdx) — Get running in 5 minutes
+- [Core Concepts](getting-started/concepts.mdx) — Boards, posts, statuses, and roles
+
+## For Users
+
+- [Submit feedback](users/submitting-feedback.mdx) — Share ideas and report bugs
+- [Vote on feedback](users/voting.mdx) — Support ideas you care about
+- [Comment on posts](users/comments.mdx) — Join the discussion
+- [Manage your notifications](users/notifications.mdx) — Control your alerts
+- [Manage your account](users/account.mdx) — Profile and preferences
+
+## For Admins
+
+- [Triage feedback in the inbox](admin/inbox.mdx) — Filter, triage, and respond
+- [Organize feedback with boards](admin/boards.mdx) — Categorize by type
+- [Track progress with statuses](admin/statuses.mdx) — Define workflow stages
+- [Categorize posts with tags](admin/tags.mdx) — Label and filter
+- [Build a public roadmap](admin/roadmap.mdx) — Show what you're building
+- [Manage portal users](admin/users.mdx) — See who's giving feedback
+- [Configure admin notifications](admin/notifications.mdx) — Team alert settings
+- [Manage your team](admin/team.mdx) — Invite teammates and assign roles
+- [Configure team security](admin/security.mdx) — Team sign-in methods
+- [Set up portal sign-in](admin/portal-auth.mdx) — User authentication options
+- [Customize your portal](admin/branding.mdx) — Logo, colors, and fonts
+- [Import and export data](admin/import-export.mdx) — Migrate from other tools
+
+## Authentication
+
+- [Authentication](auth/overview.mdx) — Overview of auth methods
+- [Set up email sign-in](auth/email-otp.mdx) — Passwordless email codes
+- [Set up OAuth providers](auth/oauth.mdx) — GitHub, Google, Microsoft
+- [Set up single sign-on](auth/sso.mdx) — OIDC SSO
+
+## Integrations
+
+- [Integrations](integrations/overview.mdx) — How integrations work
+- [Set up Slack notifications](integrations/slack.mdx) — Feedback alerts in Slack
+- [Send events with webhooks](integrations/webhooks.mdx) — HTTP event notifications
+- [Set up Discord notifications](integrations/discord.mdx) — Community contribution
+- [Sync feedback with Linear](integrations/linear.mdx) — Community contribution
+
+## API Reference
+
+- [API Overview](api/overview.mdx) — REST API v1 documentation
+- [Posts API](api/posts.mdx) — Post operations
+- [Comments API](api/comments.mdx) — Comment operations
+
+## Self-Hosting
+
+- [System Requirements](self-hosting/requirements.mdx) — Hardware and software
+- [Deploy with Docker](self-hosting/docker.mdx) — Recommended deployment
+- [Install without Docker](self-hosting/manual.mdx) — Manual installation
+- [Set up a reverse proxy](self-hosting/reverse-proxy.mdx) — Nginx, Caddy, Traefik
+- [Troubleshooting](self-hosting/troubleshooting.mdx) — Common issues
+
+## Developer Guide
+
+- [Set up local development](developers/setup.mdx) — Local environment
+- [Architecture](developers/architecture.mdx) — System design
+- [Server Functions](developers/server-functions.mdx) — RPC patterns
+- [Database](developers/database.mdx) — Schema and queries
+- [Add a new feature](developers/adding-features.mdx) — Feature development
+- [Testing](developers/testing.mdx) — Vitest and Playwright
+- [Contribute to Quackback](developers/contributing.mdx) — How to contribute
+
+## Reference
+
+- [Environment Variables](reference/environment-variables.mdx) — Configuration options
+- [CLI Reference](reference/cli.mdx) — Command reference
+- [Database Schema](reference/database-schema.mdx) — Tables and relationships
 
 ## Support
 
-- [GitHub Issues](https://github.com/quackbackio/quackback/issues) - Bug reports
-- [GitHub Discussions](https://github.com/quackbackio/quackback/discussions) - Questions and ideas
+- [GitHub Issues](https://github.com/quackbackio/quackback/issues) — Bug reports
+- [GitHub Discussions](https://github.com/quackbackio/quackback/discussions) — Questions and ideas
 
 ## License
 
