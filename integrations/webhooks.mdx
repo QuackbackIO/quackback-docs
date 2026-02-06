@@ -1,10 +1,10 @@
 ---
-title: "Webhooks"
-description: "Receive real-time HTTP notifications when events occur in Quackback."
+title: "Send events with webhooks"
+description: "Send real-time event notifications to any HTTP endpoint."
 icon: "webhook"
 ---
 
-# Webhooks
+# Send events with webhooks
 
 Build any integration you need. Webhooks send real-time HTTP notifications to any endpoint when events occur in Quackback. Connect to Zapier, your data warehouse, custom bots, or internal tools.
 
@@ -17,9 +17,9 @@ Webhooks are managed entirely through the [REST API](/api/overview). Each webhoo
 - Optional **board filtering** to scope events to specific boards
 - A **signing secret** for verifying authenticity (HMAC-SHA256)
 
-## Creating a Webhook
+## Create a webhook
 
-Create a webhook via the API:
+**[Your App]** Create a webhook via the API:
 
 ```bash
 curl -X POST https://feedback.example.com/api/v1/webhooks \
@@ -74,7 +74,7 @@ Each webhook delivery includes these headers:
 
 ## Signature Verification
 
-Every webhook delivery is signed with HMAC-SHA256. Always verify the signature to confirm the request came from Quackback.
+**[Your Server]** Every webhook delivery is signed with HMAC-SHA256. Always verify the signature to confirm the request came from Quackback.
 
 The signature is computed over `{timestamp}.{json_body}`:
 
@@ -127,7 +127,7 @@ curl -X POST https://feedback.example.com/api/v1/webhooks \
   }'
 ```
 
-## Managing Webhooks
+## Manage webhooks
 
 ### List webhooks
 
@@ -186,10 +186,10 @@ app.post('/webhook', async (req, res) => {
 
 ### Zapier / n8n Integration
 
-1. Create a Zap or n8n workflow with a webhook trigger
+1. **[Zapier / n8n]** Create a Zap or n8n workflow with a webhook trigger
 2. Copy the webhook URL
-3. Create a Quackback webhook pointing to that URL
-4. Map fields in your automation tool
+3. **[Your App]** Create a Quackback webhook pointing to that URL
+4. **[Zapier / n8n]** Map fields in your automation tool
 
 ### Data Warehouse Sync
 

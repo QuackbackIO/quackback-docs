@@ -1,10 +1,10 @@
 ---
-title: "Docker Deployment"
-description: "Deploy Quackback using Docker. The fastest way to get to production."
+title: "Deploy with Docker"
+description: "Deploy Quackback with Docker and Docker Compose."
 icon: "docker"
 ---
 
-# Docker Deployment
+# Deploy with Docker
 
 The fastest way to get Quackback into production. Docker handles dependencies, database setup, and migrations automatically.
 
@@ -17,7 +17,9 @@ The fastest way to get Quackback into production. Docker handles dependencies, d
 
 ## Quick Deploy
 
-### Using Docker Compose (Recommended)
+### Use Docker Compose (recommended)
+
+**[Server]**
 
 ```bash
 # Clone the repository
@@ -32,7 +34,7 @@ cp .env.example .env
 docker compose up -d
 ```
 
-### Using Docker Run
+### Use Docker Run
 
 ```bash
 docker run -d \
@@ -153,19 +155,19 @@ The custom Dockerfile (`docker/postgres/Dockerfile`) installs `pg_cron` and `pgv
 
 ## Database Setup
 
-### Using the Included PostgreSQL
+### Use the included PostgreSQL
 
 The docker-compose setup includes PostgreSQL with the required extensions (`pgvector`, `pg_cron`). Migrations run automatically when the container starts.
 
-### Using an External Database
+### Use an external database
 
-For managed databases (AWS RDS, Supabase, Neon, etc.):
+**[Database Provider]** For managed databases (AWS RDS, Supabase, Neon, etc.):
 
 1. Create a PostgreSQL 17+ database
 2. Enable the `pgvector` extension
 3. Set `DATABASE_URL` in your `.env`
 
-Migrations run automatically when the Docker container starts, so no manual migration step is needed. If you need to run migrations outside of Docker:
+**[Server]** Migrations run automatically when the Docker container starts, so no manual migration step is needed. If you need to run migrations outside of Docker:
 
 ```bash
 docker run --rm \
@@ -178,7 +180,7 @@ docker run --rm \
 
 In production, place a reverse proxy in front of Quackback for HTTPS. See the [Reverse Proxy Configuration](/docs/self-hosting/reverse-proxy) guide for Caddy, Nginx, and Traefik examples.
 
-## Upgrading
+## Upgrade
 
 <Warning>
 Always back up your database before upgrading.

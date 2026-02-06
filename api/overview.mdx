@@ -1,6 +1,6 @@
 ---
 title: "API Overview"
-description: "Build on Quackback with the REST API. Automate workflows, sync data, and integrate with your tools."
+description: "Build integrations with Quackback's REST API."
 icon: "code"
 ---
 
@@ -17,7 +17,9 @@ curl https://feedback.example.com/api/v1/posts \
   -H "Authorization: Bearer qb_your_api_key_here"
 ```
 
-### Creating API Keys
+### Create API keys
+
+**[Dashboard]**
 
 1. Go to **Admin > Settings > API Keys**
 2. Click **Create API Key**
@@ -46,6 +48,24 @@ https://feedback.example.com/api/v1/posts
 https://feedback.example.com/api/v1/boards
 https://feedback.example.com/api/v1/tags
 ```
+
+## Try the API
+
+Once you have an API key, try these commands:
+
+```bash
+# List your boards
+curl https://feedback.example.com/api/v1/boards \
+  -H "Authorization: Bearer qb_your_api_key_here"
+
+# Create a post
+curl -X POST https://feedback.example.com/api/v1/posts \
+  -H "Authorization: Bearer qb_your_api_key_here" \
+  -H "Content-Type: application/json" \
+  -d '{"boardId": "board_01abc...", "title": "Add dark mode"}'
+```
+
+Replace `feedback.example.com` with your instance URL and `qb_your_api_key_here` with your API key.
 
 ## Resources
 
@@ -153,7 +173,7 @@ https://feedback.example.com/api/v1/tags
 
 ## Request Format
 
-Send JSON in the request body for POST and PATCH requests:
+**[Your App]** Send JSON in the request body for POST and PATCH requests:
 
 ```bash
 curl -X POST https://feedback.example.com/api/v1/posts \

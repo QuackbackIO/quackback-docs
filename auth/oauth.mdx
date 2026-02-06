@@ -1,10 +1,10 @@
 ---
-title: "OAuth Provider Setup"
-description: "Let users sign in with GitHub, Google, or Microsoft. One click and they're in."
+title: "Set up OAuth providers"
+description: "Let users sign in with GitHub, Google, or Microsoft."
 icon: "key"
 ---
 
-# OAuth Provider Setup
+# Set up OAuth providers
 
 One-click sign-in. Let users authenticate with GitHub, Google, or Microsoft instead of managing another set of credentials. Works for both portal users (customers) and team members (your employees).
 
@@ -32,6 +32,8 @@ OAuth lets users sign in with accounts they already have. No new passwords, no v
 ## GitHub Setup
 
 ### Step 1: Create OAuth Application
+
+**[GitHub]**
 
 1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
 2. Click **OAuth Apps** > **New OAuth App**
@@ -76,6 +78,8 @@ http://localhost:3000/api/auth/callback/github
 
 ### Step 1: Create OAuth Credentials
 
+**[Google Cloud Console]**
+
 1. Go to [Google Cloud Console](https://console.cloud.google.com/)
 2. Create a new project or select an existing one
 3. Navigate to **APIs & Services** > **Credentials**
@@ -87,6 +91,8 @@ http://localhost:3000/api/auth/callback/github
    - Authorized domains: `yourcompany.com`
 
 ### Step 2: Configure OAuth Client
+
+**[Google Cloud Console]**
 
 1. Application type: **Web application**
 2. Name: `Quackback`
@@ -124,6 +130,8 @@ https://YOUR_DOMAIN/api/auth/callback/google
 
 ### Step 1: Register Application
 
+**[Azure Portal]**
+
 1. Go to [Azure Portal](https://portal.azure.com/)
 2. Navigate to **Microsoft Entra ID** (formerly Azure AD)
 3. Go to **App registrations** > **New registration**
@@ -141,6 +149,8 @@ https://YOUR_DOMAIN/api/auth/callback/google
 - **Multitenant + personal** - Work, school, and personal Microsoft accounts
 
 ### Step 2: Configure Client Secret
+
+**[Azure Portal]**
 
 1. Go to **Certificates & secrets**
 2. Click **New client secret**
@@ -176,11 +186,13 @@ MICROSOFT_TENANT_ID="your-tenant-id"  # Or "common" for multi-tenant
 https://YOUR_DOMAIN/api/auth/callback/microsoft
 ```
 
-## Enabling OAuth in Quackback
+## Enable OAuth in Quackback
 
 After configuring environment variables, OAuth providers are automatically available. To enable/disable them for portal users:
 
 ### Admin Settings
+
+**[Dashboard]**
 
 1. Navigate to **Admin > Settings > Authentication**
 2. Under **Portal Authentication**, toggle the providers:
@@ -206,6 +218,8 @@ Any OIDC-compliant provider works:
 - Custom OIDC servers
 
 ### Configuration
+
+**[Dashboard]**
 
 1. Navigate to **Admin > Settings > Authentication**
 2. Click the gear icon next to **Custom OpenID Connect**
@@ -351,7 +365,9 @@ BASE_URL=""
 BASE_URL=""
 ```
 
-## Testing OAuth Locally
+## Test OAuth locally
+
+**[Browser]**
 
 ### Local Development Setup
 
@@ -359,7 +375,7 @@ BASE_URL=""
 2. Most providers allow `http://localhost` for development
 3. For Google, add `http://localhost:3000` to authorized origins
 
-### Testing Checklist
+### Test checklist
 
 - [ ] OAuth app created with correct callback URL
 - [ ] Environment variables set in `.env`
