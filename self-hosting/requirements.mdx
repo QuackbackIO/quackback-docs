@@ -15,21 +15,18 @@ Hardware, software, and infrastructure requirements for self-hosting Quackback.
 | CPU | 1 core | 2+ cores |
 | RAM | 1 GB | 2+ GB |
 | Storage | 10 GB | 20+ GB |
-| PostgreSQL | 18+ | 18+ |
+| PostgreSQL | 17+ | 17+ |
 
 ## Software Requirements
 
 ### PostgreSQL
 
-**Version**: 18 or higher (required)
+**Version**: 17 or higher (required)
 
 **Required Extensions**:
 - `pgvector` - Vector similarity search
 - `pg_cron` - Scheduled jobs (optional)
 
-<Info>
-Quackback uses native `uuidv7()` for ID generation, which requires PostgreSQL 18+.
-</Info>
 
 ### Docker (Recommended)
 
@@ -59,7 +56,7 @@ If running without Docker:
 
 ### Domains
 
-You'll need:
+You need:
 - A domain or subdomain (e.g., `feedback.yourcompany.com`)
 - SSL certificate (Let's Encrypt works great)
 

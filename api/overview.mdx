@@ -22,7 +22,7 @@ curl https://feedback.example.com/api/v1/posts \
 1. Go to **Admin > Settings > API Keys**
 2. Click **Create API Key**
 3. Give it a name (e.g., "CI/CD Integration")
-4. Copy the key immediately — it's only shown once
+4. Copy the key immediately - it's only shown once
 
 API keys are prefixed with `qb_` and inherit the role of the team member who creates them. An admin's key has admin access; a member's key has member access.
 
@@ -32,7 +32,7 @@ Endpoints enforce role-based authorization:
 
 | Role Required | Who Can Access | Endpoints |
 |--------------|----------------|-----------|
-| **Team** (admin or member) | Any team member | Most endpoints — posts, boards, tags, statuses, roadmaps, comments |
+| **Team** (admin or member) | Any team member | Most endpoints - posts, boards, tags, statuses, roadmaps, comments |
 | **Admin** | Admins only | Webhooks, changelog writes, member management, user deletion |
 
 If your key doesn't have sufficient permissions, you'll receive a `403 Forbidden` response.
@@ -240,7 +240,7 @@ curl "https://feedback.example.com/api/v1/posts?limit=20&cursor=eyJvZmZzZXQiOjIw
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `cursor` | string | — | Opaque cursor from a previous response |
+| `cursor` | string | - | Opaque cursor from a previous response |
 | `limit` | number | 20 | Results per page (1–100) |
 
 When `hasMore` is `true`, use the returned `cursor` value to fetch the next page. When `hasMore` is `false`, you've reached the end.
@@ -279,7 +279,7 @@ Implement exponential backoff in your integration to handle rate limits graceful
 
 ## TypeIDs
 
-All resource IDs are TypeIDs — branded, sortable UUIDs with a type prefix:
+All resource IDs are TypeIDs - branded, sortable UUIDs with a type prefix:
 
 ```
 post_01h455vb4pex5vsknk084sn02q
@@ -296,6 +296,6 @@ An OpenAPI specification is available at `/api/v1/openapi.json` and interactive 
 
 ## Next Steps
 
-- [Webhooks](/integrations/webhooks) — Receive real-time event notifications
-- [Integrations Overview](/integrations/overview) — All available integrations
-- [Core Concepts](/getting-started/concepts) — Understand boards, posts, and statuses
+- [Webhooks](/integrations/webhooks) - Receive real-time event notifications
+- [Integrations Overview](/integrations/overview) - All available integrations
+- [Core Concepts](/getting-started/concepts) - Understand boards, posts, and statuses

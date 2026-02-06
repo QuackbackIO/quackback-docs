@@ -212,14 +212,14 @@ app.post('/webhook', async (req, res) => {
 
 ## Security Best Practices
 
-1. **Always verify signatures** — reject unverified requests
-2. **Use HTTPS** — never use HTTP endpoints for webhook receivers
-3. **Check timestamps** — reject requests older than 5 minutes
-4. **Rotate secrets periodically** — use the rotate endpoint
-5. **Respond quickly** — return a `200` status within a few seconds; process asynchronously if needed
+1. **Always verify signatures** - reject unverified requests
+2. **Use HTTPS** - never use HTTP endpoints for webhook receivers
+3. **Check timestamps** - reject requests older than 5 minutes
+4. **Rotate secrets periodically** - use the rotate endpoint
+5. **Respond quickly** - return a `200` status within a few seconds; process asynchronously if needed
 
 ## Next Steps
 
-- [API Overview](/api/overview) — Full REST API documentation
-- [Integrations Overview](/integrations/overview) — All available integrations
-- [Slack](/integrations/slack) — Built-in Slack notification integration
+- [API Overview](/api/overview) - Full REST API documentation
+- [Integrations Overview](/integrations/overview) - All available integrations
+- [Slack](/integrations/slack) - Built-in Slack notification integration

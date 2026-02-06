@@ -49,7 +49,6 @@ Common issues and solutions for self-hosted Quackback deployments.
    DATABASE_URL
    SECRET_KEY
    BASE_URL
-   BASE_URL
    ```
 
 2. **Verify .env is loaded**
@@ -107,18 +106,6 @@ PORT=8080 bun run start
 Only use `db:reset` in development environments. This will delete all data.
 </Warning>
 
-### "Function uuidv7 does not exist"
-
-**Symptoms**: Queries fail with function error.
-
-**Cause**: PostgreSQL version too old.
-
-**Solution**: Upgrade to PostgreSQL 18+.
-
-<Info>
-Quackback requires PostgreSQL 18 or higher for native `uuidv7()` support used in ID generation.
-</Info>
-
 ### "Extension pgvector not found"
 
 **Symptoms**: Vector-related queries fail.
@@ -134,7 +121,7 @@ Quackback requires PostgreSQL 18 or higher for native `uuidv7()` support used in
    ```yaml
    services:
      postgres:
-       image: pgvector/pgvector:pg18
+       image: pgvector/pgvector:pg17
    ```
 
 ## Authentication Problems

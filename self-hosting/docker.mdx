@@ -6,14 +6,14 @@ icon: "docker"
 
 # Docker Deployment
 
-The fastest way to get Quackback into production. Docker handles dependencies, database setup, and migrations. You just configure a few environment variables and you're running.
+The fastest way to get Quackback into production. Docker handles dependencies, database setup, and migrations automatically.
 
 ## Prerequisites
 
 - Docker Engine 20.10+
 - Docker Compose v2+
-- 1GB RAM minimum (2GB recommended)
-- PostgreSQL 18+ (included in docker-compose, or bring your own)
+- 1 GB RAM minimum (2 GB recommended)
+- PostgreSQL 17+ (included in docker-compose, or bring your own)
 
 ## Quick Deploy
 
@@ -44,6 +44,20 @@ docker run -d \
   ghcr.io/quackbackio/quackback:latest
 ```
 
+## How the Docker Image Works
+
+The Quackback Docker image uses a multi-stage build:
+
+- **Builder stage** compiles the application and installs dependencies
+- **Production stage** runs as a non-root `quackback` user for security
+- **Entrypoint** (`docker-entrypoint.sh`) runs database migrations automatically on every startup, then starts the server
+- **Optional seeding** with `SEED_DATABASE=true` to populate demo data
+- **Health endpoints** at `/api/health` (app) and `/api/ready` (app + database)
+
+<Tip>
+Because migrations run on every startup, upgrading is as simple as pulling the latest image and restarting. No manual migration step needed.
+</Tip>
+
 ## Configuration
 
 ### Required Environment Variables
@@ -62,7 +76,7 @@ BASE_URL="https://feedback.yourcompany.com"
 ### Email Configuration
 
 <Note>
-Without email configuration, OTP codes are printed to the console. For production, configure one of the email providers below.
+Without email configuration, OTP codes are printed to the console. For production, configure one of the providers below.
 </Note>
 
 **SMTP (Recommended)**
@@ -100,11 +114,11 @@ SLACK_CLIENT_ID="your-slack-client-id"
 SLACK_CLIENT_SECRET="your-slack-client-secret"
 ```
 
-See [Environment Variables Reference](/reference/environment-variables) for all options.
+See [Environment Variables Reference](/docs/reference/environment-variables) for all options.
 
 ## Docker Compose Configuration
 
-The included `docker-compose.yml` uses a custom PostgreSQL 18 image with required extensions:
+The included `docker-compose.yml` uses a custom PostgreSQL image with required extensions:
 
 ```yaml
 services:
@@ -134,23 +148,24 @@ volumes:
 ```
 
 <Tip>
-The custom Dockerfile (`docker/postgres/Dockerfile`) installs `pg_cron` and `pgvector` extensions on PostgreSQL 18.
+The custom Dockerfile (`docker/postgres/Dockerfile`) installs `pg_cron` and `pgvector` extensions on top of PostgreSQL.
 </Tip>
 
 ## Database Setup
 
 ### Using the Included PostgreSQL
 
-The docker-compose setup includes PostgreSQL 17 with required extensions (`pgvector`, `pg_cron`). Migrations run automatically on startup.
+The docker-compose setup includes PostgreSQL with the required extensions (`pgvector`, `pg_cron`). Migrations run automatically when the container starts.
 
 ### Using an External Database
 
 For managed databases (AWS RDS, Supabase, Neon, etc.):
 
-1. Create a PostgreSQL 18+ database
-2. Ensure the `pgvector` extension is available
-3. Update `DATABASE_URL` in your `.env`
-4. Run migrations manually:
+1. Create a PostgreSQL 17+ database
+2. Enable the `pgvector` extension
+3. Set `DATABASE_URL` in your `.env`
+
+Migrations run automatically when the Docker container starts, so no manual migration step is needed. If you need to run migrations outside of Docker:
 
 ```bash
 docker run --rm \
@@ -159,57 +174,46 @@ docker run --rm \
   bun run db:migrate
 ```
 
-## Reverse Proxy Setup
+## Reverse Proxy
 
-### Nginx
+In production, place a reverse proxy in front of Quackback for HTTPS. See the [Reverse Proxy Configuration](/docs/self-hosting/reverse-proxy) guide for Caddy, Nginx, and Traefik examples.
 
-```nginx
-server {
-    listen 443 ssl http2;
-    server_name feedback.yourcompany.com;
+## Upgrading
 
-    ssl_certificate /path/to/cert.pem;
-    ssl_certificate_key /path/to/key.pem;
+<Warning>
+Always back up your database before upgrading.
+</Warning>
 
-    location / {
-        proxy_pass http://localhost:3000;
-        proxy_http_version 1.1;
-        proxy_set_header Upgrade $http_upgrade;
-        proxy_set_header Connection 'upgrade';
-        proxy_set_header Host $host;
-        proxy_set_header X-Real-IP $remote_addr;
-        proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
-        proxy_set_header X-Forwarded-Proto $scheme;
-        proxy_cache_bypass $http_upgrade;
-    }
-}
+```bash
+# 1. Back up your database
+docker compose exec postgres pg_dump -U postgres quackback > backup.sql
+
+# 2. Pull the latest image
+docker compose pull
+
+# 3. Restart (migrations run automatically)
+docker compose up -d
 ```
 
-### Caddy
+Drizzle migrations are sequential and safe to re-run, so the container handles schema updates on startup without any manual steps.
 
-```
-feedback.yourcompany.com {
-    reverse_proxy localhost:3000
-}
-```
+### Rollback
 
-### Traefik
+If something goes wrong:
 
-Add labels to your docker-compose service:
+```bash
+# Stop containers
+docker compose down
 
-```yaml
-services:
-  app:
-    labels:
-      - "traefik.enable=true"
-      - "traefik.http.routers.quackback.rule=Host(`feedback.yourcompany.com`)"
-      - "traefik.http.routers.quackback.tls.certresolver=letsencrypt"
-      - "traefik.http.services.quackback.loadbalancer.server.port=3000"
+# Restore the backup
+docker compose up -d postgres
+docker compose exec -T postgres psql -U postgres quackback < backup.sql
+
+# Start with the previous image
+docker compose up -d app
 ```
 
 ## Health Checks
-
-Quackback exposes health endpoints:
 
 ```bash
 # Application health
@@ -217,47 +221,6 @@ curl http://localhost:3000/api/health
 
 # Ready check (includes database)
 curl http://localhost:3000/api/ready
-```
-
-## Upgrading
-
-### Standard Upgrade
-
-```bash
-# Pull latest image
-docker compose pull
-
-# Restart with new image (migrations run automatically)
-docker compose up -d
-```
-
-### Backup Before Upgrade
-
-<Warning>
-Always backup your database before upgrading to prevent data loss in case of issues.
-</Warning>
-
-```bash
-# Backup database
-docker compose exec postgres pg_dump -U postgres quackback > backup.sql
-
-# Then upgrade
-docker compose pull
-docker compose up -d
-```
-
-### Rollback
-
-```bash
-# Stop current version
-docker compose down
-
-# Restore database
-docker compose up -d postgres
-docker compose exec -T postgres psql -U postgres quackback < backup.sql
-
-# Start previous version
-docker compose up -d app
 ```
 
 ## Troubleshooting
@@ -281,13 +244,6 @@ docker compose logs app
    docker compose exec postgres psql -U postgres -c "SELECT 1"
    ```
 
-### Migrations failed
-
-Run migrations manually with verbose output:
-```bash
-docker compose exec app bun run db:migrate
-```
-
 ### Port already in use
 
 ```bash
@@ -295,24 +251,24 @@ docker compose exec app bun run db:migrate
 lsof -i :3000
 
 # Or change the port in docker-compose.yml
-ports:
-  - "8080:3000"
+# ports:
+#   - "8080:3000"
 ```
 
-## Security Considerations
+## Security
 
 <Warning>
-Follow these security best practices for production deployments.
+Follow these practices for production deployments.
 </Warning>
 
 1. **Use strong secrets** - Generate with `openssl rand -base64 32`
 2. **Enable HTTPS** - Always use TLS in production
-3. **Restrict database access** - Don't expose PostgreSQL publicly
-4. **Regular backups** - Automate database backups
+3. **Restrict database access** - Do not expose PostgreSQL publicly
+4. **Back up regularly** - Automate database backups
 5. **Keep updated** - Pull latest images regularly
 
 ## Next Steps
 
-- [Configuration Reference](/reference/environment-variables) - All environment variables
-- [Reverse Proxy Setup](/self-hosting/reverse-proxy) - Detailed proxy configurations
-- [Upgrading](/self-hosting/upgrading) - Version upgrade procedures
+- [Configuration Reference](/docs/reference/environment-variables) - All environment variables
+- [Reverse Proxy Setup](/docs/self-hosting/reverse-proxy) - SSL/TLS and proxy configurations
+- [Troubleshooting](/docs/self-hosting/troubleshooting) - Common issues and solutions

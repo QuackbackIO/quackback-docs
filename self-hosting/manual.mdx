@@ -28,7 +28,7 @@ bun --version
 
 ### PostgreSQL
 
-**Version**: 18 or higher (required for native `uuidv7()` support)
+**Version**: 17 or higher
 
 **Required Extensions**:
 - `pgvector` - Vector similarity search (for AI features)
@@ -82,7 +82,7 @@ See [Environment Variables](/reference/environment-variables) for all options.
 
 ### 4. Set Up PostgreSQL
 
-#### Install PostgreSQL 18
+#### Install PostgreSQL 17
 
 **Ubuntu/Debian**:
 
@@ -91,16 +91,16 @@ See [Environment Variables](/reference/environment-variables) for all options.
 sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
 
-# Install PostgreSQL 18
+# Install PostgreSQL 17
 sudo apt update
-sudo apt install postgresql-18 postgresql-18-pgvector postgresql-18-cron
+sudo apt install postgresql-17 postgresql-17-pgvector postgresql-17-cron
 ```
 
 **macOS (Homebrew)**:
 
 ```bash
-brew install postgresql@18
-brew services start postgresql@18
+brew install postgresql@17
+brew services start postgresql@17
 
 # Install pgvector
 brew install pgvector
@@ -109,11 +109,11 @@ brew install pgvector
 **RHEL/CentOS/Fedora**:
 
 ```bash
-# Install PostgreSQL 18 repo
+# Install PostgreSQL 17 repo
 sudo dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 
 # Install PostgreSQL and extensions
-sudo dnf install -y postgresql18-server postgresql18-contrib postgresql18-pgvector postgresql18-pg_cron
+sudo dnf install -y postgresql17-server postgresql17-contrib postgresql17-pgvector postgresql17-pg_cron
 ```
 
 #### Create Database and User
@@ -329,6 +329,10 @@ Do NOT expose port 3000 directly. Use a reverse proxy.
 </Warning>
 
 ## Updating Quackback
+
+<Note>
+If you are using Docker, migrations run automatically on container startup. This manual migration step is only needed for non-Docker installations.
+</Note>
 
 ### 1. Stop the Service
 
