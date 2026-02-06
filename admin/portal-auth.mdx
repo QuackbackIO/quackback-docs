@@ -1,10 +1,10 @@
 ---
-title: "Portal Authentication"
-description: "Choose how users sign in: email, OAuth, or your own identity provider."
+title: "Set up portal sign-in"
+description: "Choose how users sign in: email, OAuth, or your identity provider."
 icon: "lock"
 ---
 
-# Portal Authentication
+# Set up portal sign-in
 
 Let users sign in the way they prefer. Enable email magic links for simplicity, OAuth for convenience, or connect your identity provider for OIDC SSO.
 
@@ -47,7 +47,7 @@ Connect your own identity provider to let users sign in with existing accounts.
 - **Supported providers**: Okta, Auth0, Azure AD, Keycloak, and any OIDC-compliant provider
 - **Best for**: Organizations requiring SSO
 
-## Configuring Sign-in Methods
+## Configure sign-in methods
 
 ### Enable/Disable Methods
 
@@ -59,7 +59,7 @@ Connect your own identity provider to let users sign in with existing accounts.
 At least one authentication method must remain enabled. The last enabled method shows a lock icon and cannot be disabled.
 </Warning>
 
-## Setting Up OpenID Connect
+## Set up OpenID Connect
 
 To configure a custom identity provider:
 
@@ -89,7 +89,7 @@ To configure a custom identity provider:
    - ✅ Green checkmark = OIDC endpoints verified
    - ❌ Red warning = Check your issuer URL
 
-### Saving Configuration
+### Save configuration
 
 Click **Save & Enable** to save and activate the OIDC connection.
 
@@ -97,16 +97,16 @@ Click **Save & Enable** to save and activate the OIDC connection.
 Use the "Test" button to verify your issuer URL is correct before entering client credentials.
 </Tip>
 
-## Managing OIDC Configuration
+## Manage OIDC configuration
 
-### Editing Configuration
+### Edit configuration
 
 1. Click the gear icon next to "Custom OpenID Connect"
 2. Update the fields as needed
 3. Leave Client Secret empty to keep the existing value
 4. Click **Save Changes**
 
-### Removing Configuration
+### Remove configuration
 
 1. Click the gear icon
 2. Click the **Remove** button at the bottom
@@ -141,7 +141,7 @@ Removing OIDC configuration will immediately disable that sign-in method. Users 
 
 ## Best Practices
 
-### Choosing Methods
+### Choose methods
 
 <Tip>
 Consider your user base when selecting authentication methods:

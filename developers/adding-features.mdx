@@ -1,14 +1,14 @@
 ---
-title: "Adding Features"
-description: "Build new features the right way. From database to UI, following patterns that already work."
+title: "Add a new feature"
+description: "Build features from database to UI using existing patterns."
 icon: "plus"
 ---
 
-# Adding Features
+# Add a new feature
 
 Build features that fit. This guide walks you through adding new functionality to Quackback, from database schema to UI components, using patterns that already exist in the codebase. Follow these conventions and your code will feel native.
 
-## Planning a Feature
+## Plan a feature
 
 Before writing code, understand where each piece goes:
 
@@ -32,7 +32,7 @@ Before writing code, understand where each piece goes:
 
 ## Database Changes
 
-### Adding a New Table
+### Add a new table
 
 1. Create or edit a schema file in `packages/db/src/schema/`:
 
@@ -116,7 +116,7 @@ export const ID_PREFIXES = {
 } as const
 ```
 
-### Generating Migrations
+### Generate migrations
 
 After modifying schema files:
 
@@ -163,7 +163,7 @@ CREATE UNIQUE INDEX IF NOT EXISTS "reactions_unique_idx"
 
 Services contain business logic, validation, and database operations. They throw typed errors that map to HTTP status codes.
 
-### Creating a Service
+### Create a service
 
 ```typescript
 // apps/web/src/lib/reactions/reaction.service.ts
@@ -306,7 +306,7 @@ export interface ReactionResult {
 
 Server functions provide the API layer using TanStack Start's `createServerFn`. They handle validation, authentication, and call service functions.
 
-### Creating Server Functions
+### Create server functions
 
 ```typescript
 // apps/web/src/lib/server-functions/reactions.ts
@@ -549,7 +549,7 @@ export function ReactionPicker({ postId }: { postId: PostId }) {
 }
 ```
 
-### Using shadcn/ui Components
+### Use shadcn/ui components
 
 Import from `@/components/ui/`:
 
@@ -692,7 +692,7 @@ TanStack Router uses file-based routing. Routes are in `apps/web/src/routes/`.
 | `admin.login/signup` | Team member auth |
 | `api/` | API routes |
 
-### Creating a Route
+### Create a route
 
 ```typescript
 // apps/web/src/routes/admin/reactions.tsx
@@ -792,7 +792,7 @@ function BoardsSettingsPage() {
 }
 ```
 
-## Complete Example: Adding a "Bookmarks" Feature
+## Complete example: Add a "Bookmarks" feature
 
 Let's walk through adding a complete feature - allowing users to bookmark posts.
 

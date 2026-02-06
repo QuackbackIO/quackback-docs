@@ -26,7 +26,7 @@ bun run test:e2e:headed   # Run in headed browser mode
 
 ---
 
-## Unit Testing with Vitest
+## Test with Vitest
 
 Unit tests verify individual functions, modules, and utilities in isolation.
 
@@ -67,7 +67,7 @@ export default defineConfig({
 })
 ```
 
-### Writing Unit Tests
+### Write unit tests
 
 Basic test structure:
 
@@ -102,7 +102,7 @@ describe('TypeID Core', () => {
 })
 ```
 
-### Testing Error Cases
+### Test error cases
 
 ```typescript
 describe('toUuid', () => {
@@ -123,7 +123,7 @@ describe('fromUuid', () => {
 
 ---
 
-## E2E Testing with Playwright
+## Test with Playwright
 
 E2E tests verify complete user flows through the browser.
 
@@ -318,7 +318,7 @@ test.afterAll(async () => {
 })
 ```
 
-### Writing E2E Tests
+### Write E2E tests
 
 #### Basic Test Structure
 
@@ -347,7 +347,7 @@ test.describe('Admin Board Management', () => {
 })
 ```
 
-#### Testing Forms
+#### Test forms
 
 ```typescript
 test('can create a new board', async ({ page }) => {
@@ -375,7 +375,7 @@ test('can create a new board', async ({ page }) => {
 })
 ```
 
-#### Testing Rich Text Editors (TipTap)
+#### Test rich text editors (TipTap)
 
 ```typescript
 test('can type in TipTap editor', async ({ page }) => {
@@ -545,7 +545,7 @@ const uniqueTitle = `E2E Test Post ${Date.now()}`
 const testBoardName = `Test Board ${Date.now()}`
 ```
 
-### Running Tests
+### Run tests
 
 ```bash
 # All E2E tests
@@ -567,7 +567,7 @@ bun run test:e2e:headed
 bunx playwright test --debug
 ```
 
-### Debugging Tests
+### Debug tests
 
 1. **Use UI mode**: `bun run test:e2e:ui` for interactive debugging
 2. **Add screenshots**: Automatic on failure, or `await page.screenshot({ path: 'debug.png' })`

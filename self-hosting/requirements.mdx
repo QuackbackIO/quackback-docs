@@ -1,6 +1,6 @@
 ---
 title: "System Requirements"
-description: "Hardware, software, and infrastructure requirements for self-hosting Quackback"
+description: "Hardware and software requirements for self-hosting Quackback."
 icon: "server"
 ---
 
@@ -184,7 +184,7 @@ Block:
 Securely manage all secrets including `SECRET_KEY`, database credentials, OAuth client secrets, and integration tokens. Use environment variables or a secrets management solution.
 </Warning>
 
-## Scaling Considerations
+## Plan for scaling
 
 ### Single Server
 
@@ -192,7 +192,7 @@ Suitable for:
 - Up to 10,000 users
 - Moderate traffic
 
-### Horizontal Scaling
+### Scale horizontally
 
 For higher loads:
 - Multiple application instances
@@ -200,14 +200,14 @@ For higher loads:
 - Shared PostgreSQL
 - Session storage (database-backed)
 
-### Database Scaling
+### Scale the database
 
 Options:
 - Vertical scaling (bigger instance)
 - Read replicas (for read-heavy loads)
 - Connection pooling (PgBouncer)
 
-## Monitoring Recommendations
+## Set up monitoring
 
 ### Application
 

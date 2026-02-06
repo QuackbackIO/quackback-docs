@@ -17,7 +17,7 @@ Quackback uses [TanStack Start's server functions](https://tanstack.com/start/la
 - **Validated**: Built-in support for Zod schema validation
 - **Secure**: Authentication and authorization checks are easy to implement
 
-## Creating a Server Function
+## Create a server function
 
 Server functions are located in `apps/web/src/lib/server-functions/`. Each file typically groups related operations (e.g., `posts.ts`, `boards.ts`, `comments.ts`).
 
@@ -120,7 +120,7 @@ const updatePostSchema = z.object({
 })
 ```
 
-### Using inputValidator
+### Use inputValidator
 
 The `inputValidator` method validates input before the handler runs:
 
@@ -137,14 +137,14 @@ export const updateBoardFn = createServerFn({ method: 'POST' })
 
 The `requireAuth` helper in `auth-helpers.ts` handles authentication and authorization:
 
-### Requiring Any Team Member
+### Require any team member
 
 ```typescript
 // Require authentication (any role)
 const auth = await requireAuth()
 ```
 
-### Requiring Specific Roles
+### Require specific roles
 
 ```typescript
 // Require admin or member role
@@ -244,7 +244,7 @@ export async function deletePost(id: PostId, actor: { role: Role }) {
 | `ConflictError` | 409 | Duplicate resource, already exists |
 | `InternalError` | 500 | Database or unexpected errors |
 
-### Logging Errors
+### Log errors
 
 Add logging to track errors in production:
 
@@ -303,7 +303,7 @@ export function useCreateBoard() {
 }
 ```
 
-### Using in Components
+### Use in components
 
 ```typescript
 function BoardList() {

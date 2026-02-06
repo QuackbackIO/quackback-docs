@@ -1,10 +1,10 @@
 ---
-title: "Single Sign-On (SSO)"
-description: "Let users sign in with their existing work accounts. Faster onboarding, better security."
+title: "Set up single sign-on"
+description: "Let users sign in with their existing work accounts via OIDC."
 icon: "building"
 ---
 
-# Single Sign-On (SSO)
+# Set up single sign-on
 
 One less password for your users to remember. SSO lets customers sign in with their existing work accounts. Faster onboarding, better security, and no more "forgot password" requests.
 
@@ -48,7 +48,7 @@ You'll need from your identity provider:
    https://your-domain.com/api/auth/callback/oidc
    ```
 
-## Setting Up Portal SSO
+## Set up portal SSO
 
 Let customers sign in with your identity provider:
 
@@ -69,7 +69,7 @@ Let customers sign in with your identity provider:
 
 The login page now shows "Continue with Acme Corp SSO".
 
-## Setting Up Team SSO
+## Set up team SSO
 
 Require or allow team members to use SSO:
 
@@ -123,7 +123,7 @@ When SSO is required, other sign-in methods (GitHub, Google) are disabled for te
    - **Allowed Logout URLs**: `https://your-domain.com`
 3. Use `https://your-tenant.auth0.com` as Issuer URL
 
-## Testing SSO
+## Test SSO
 
 After configuration:
 
@@ -140,7 +140,7 @@ After configuration:
 - [ ] User is created/logged in
 - [ ] Email domain restriction works (if configured)
 
-## Restricting by Email Domain
+## Restrict by email domain
 
 Want to limit SSO to users with specific email domains?
 
@@ -208,7 +208,7 @@ User's email doesn't match the configured domain restriction.
 
 An admin can still sign in via email OTP. Once logged in, adjust SSO settings or fix the IdP configuration.
 
-## Removing SSO
+## Remove SSO
 
 ### Portal SSO
 

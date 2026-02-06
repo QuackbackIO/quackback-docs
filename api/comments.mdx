@@ -19,7 +19,7 @@ Comments support nested replies, emoji reactions, and the ability to pin team re
 - **Reactions:** Requires any authenticated user
 - **Pinning comments:** Requires `admin` or `member` role
 
-## Creating Comments
+## Create comments
 
 ### Create Comment
 
@@ -98,7 +98,7 @@ const reply = await createCommentFn({
 - `comment.created` event is dispatched (for integrations like Slack)
 </Tip>
 
-## Updating Comments
+## Update comments
 
 ### Update Comment (Admin)
 
@@ -170,7 +170,7 @@ const updated = await userEditCommentFn({
 })
 ```
 
-## Deleting Comments
+## Delete comments
 
 ### Delete Comment (Admin)
 
@@ -284,7 +284,7 @@ console.log('Updated reactions:', result.reactions)
 // [{ emoji: '👍', count: 5, hasReacted: true }]
 ```
 
-## Pinning Comments (Official Response)
+## Pin comments (official response)
 
 Team members can pin a comment as the "official response" to a post. This highlights the comment at the top of the discussion.
 
