@@ -1,0 +1,12 @@
+{
+  "tabs": [
+    { "id": "getting-started", "label": "Getting Started", "icon": "book-open", "sections": ["getting-started"], "defaultSlug": "getting-started/introduction" },
+    { "id": "self-hosting", "label": "Self Hosting", "icon": "server", "sections": ["self-hosting"], "defaultSlug": "self-hosting/docker" },
+    { "id": "users", "label": "Users", "icon": "users", "sections": ["users"], "defaultSlug": "users/submitting-feedback" },
+    { "id": "admin", "label": "Admin", "icon": "settings", "sections": ["admin"], "defaultSlug": "admin/inbox" },
+    { "id": "auth", "label": "Auth", "icon": "shield", "sections": ["auth"], "defaultSlug": "auth/overview" },
+    { "id": "integrations", "label": "Integrations", "icon": "plug", "sections": ["integrations"], "defaultSlug": "integrations/overview" },
+    { "id": "api", "label": "API", "icon": "code", "sections": ["api"], "defaultSlug": "api/overview" },
+    { "id": "developers", "label": "Developers", "icon": "terminal", "sections": ["developers", "reference"], "defaultSlug": "developers/setup" }
+  ]
+}

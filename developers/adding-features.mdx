@@ -15,7 +15,7 @@ Before writing code, understand where each piece goes:
 | Layer | Location | Purpose |
 |-------|----------|---------|
 | Schema | `packages/db/src/schema/` | Database tables and relations |
-| Service | `apps/web/src/lib/{feature}/` | Business logic and validation |
+| Service | `apps/web/src/lib/\{feature\}/` | Business logic and validation |
 | Server Functions | `apps/web/src/lib/server-functions/` | API endpoints (RPC) |
 | Queries | `apps/web/src/lib/queries/` | TanStack Query factories |
 | Hooks | `apps/web/src/lib/hooks/` | React hooks for mutations |
@@ -1152,7 +1152,7 @@ When adding a feature to Quackback:
 2. **Schema**: Add tables in `packages/db/src/schema/`
 3. **TypeID**: Add prefix in `packages/ids/src/prefixes.ts`
 4. **Migrate**: Run `bun run db:generate && bun run db:migrate`
-5. **Service**: Add business logic in `apps/web/src/lib/{feature}/`
+5. **Service**: Add business logic in `apps/web/src/lib/\{feature\}/`
 6. **Server Functions**: Add API in `apps/web/src/lib/server-functions/`
 7. **Hooks**: Add React hooks in `apps/web/src/lib/hooks/`
 8. **Components**: Build UI in `apps/web/src/components/`

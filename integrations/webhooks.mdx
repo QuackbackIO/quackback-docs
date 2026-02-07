@@ -76,7 +76,7 @@ Each webhook delivery includes these headers:
 
 **[Your Server]** Every webhook delivery is signed with HMAC-SHA256. Always verify the signature to confirm the request came from Quackback.
 
-The signature is computed over `{timestamp}.{json_body}`:
+The signature is computed over `\{timestamp\}.\{json_body\}`:
 
 ```javascript
 import crypto from 'crypto';
