@@ -1,63 +1,155 @@
 ---
-title: "Sync feedback with Linear"
-description: "Sync feedback posts with Linear issues."
+title: "Linear"
+description: "Create Linear issues from feedback and keep statuses in sync."
 icon: "linear"
 ---
 
-# Sync feedback with Linear
+# Linear
+
+Turn feedback into action. Automatically create Linear issues when feedback is submitted, and keep statuses synchronized between Quackback and Linear. When an issue moves through your Linear workflow, the linked feedback post updates too.
+
+## Overview
+
+The Linear integration enables:
+
+- **Create Linear issues from feedback posts** -- automatically create an issue when new feedback is submitted
+- **Link posts to issues** -- link feedback posts to Linear issues for traceability
+- **Status sync** -- keep feedback status in sync with Linear issue workflow states via inbound webhooks
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- A Linear workspace with admin access
+- A Linear OAuth application (created at [Linear Settings > API](https://linear.app/settings/api))
+
+## Setup
+
+### 1. Create a Linear OAuth Application
+
+1. Go to [Linear Settings > API](https://linear.app/settings/api)
+2. Create a new OAuth application
+3. Copy the **Client ID** and **Client Secret**
+
+### 2. Configure Platform Credentials
+
+1. Go to **Admin > Settings > Integrations > Linear**
+2. Enter the following credentials:
+   - **Client ID** from your Linear OAuth application
+   - **Client Secret** from your Linear OAuth application
+
+### 3. Connect Your Workspace
+
+1. Click **Connect to Linear**
+2. You'll be redirected to Linear to authorize the application
+3. Review the permissions and click **Authorize**
+
+The app requests these OAuth scopes: `read`, `write`, `issues:create`, `admin`.
+
+### 4. Select a Team
+
+Back in Quackback:
+
+1. Choose the Linear team where issues should be created
+2. Issues will be created in this team when new feedback is submitted
+
+### 5. Configure Status Mappings
+
+Map Linear workflow states to Quackback statuses:
+
+1. Go to the Linear integration settings
+2. Configure status mappings between Linear states and Quackback statuses
+3. Mappings are configurable per workspace -- map each Linear state name to the corresponding Quackback status, or set it to ignore
+
+Status sync works bidirectionally via Linear webhooks. When a linked Linear issue changes state, the corresponding Quackback post status updates automatically.
+
+### 6. Configure Events
+
+Choose which events trigger Linear actions:
+
+| Event | Action |
+|-------|--------|
+| New post | Create a Linear issue with the feedback details |
 
 <Note>
-**Status: Community Contribution Welcome**
-
-The Linear integration is not yet built, though configuration variables are already in place. If you'd like to contribute, the architecture is ready - Quackback's event system makes adding new integrations straightforward.
+The Linear integration currently creates issues only for `post.created` events. Status changes and comments are handled through the status sync mechanism rather than creating new issues.
 </Note>
 
-## Planned Features
+### 7. Save and Test
 
-The Linear integration would enable:
+1. Click **Save**
+2. Submit test feedback to verify an issue is created in Linear
 
-- **Create Linear issues from feedback posts** - Turn high-voted posts into actionable issues
-- **Status sync** - Map Quackback statuses to Linear workflow states
-- **Backlink comments** - Automatically link between both platforms
+## Issue Format
 
-### Status Mapping
+When a new feedback post triggers issue creation, the Linear issue includes:
 
-| Quackback Status | Linear State |
-|------------------|--------------|
-| Under Review | Backlog |
-| Planned | Todo |
-| In Progress | In Progress |
-| Shipped | Done |
+- **Title**: The feedback post title
+- **Description**: The post content, followed by metadata including the author, board, vote count, and a link back to the post in Quackback
 
-## Configuration
+## Status Sync
 
-The environment variables are already defined in `.env.example`:
+When status sync is configured, Quackback registers a webhook with Linear to receive issue updates. When a linked Linear issue's workflow state changes:
 
-```bash
-LINEAR_CLIENT_ID="your_client_id"
-LINEAR_CLIENT_SECRET="your_client_secret"
-```
+1. Linear sends a webhook to Quackback
+2. Quackback looks up the status mapping for the new Linear state
+3. If a mapping exists, the linked feedback post's status is updated
 
-Create a Linear OAuth application at [Linear Settings > API](https://linear.app/settings/api).
+The webhook signature is verified using HMAC-SHA256 via the `Linear-Signature` header.
 
-## Workaround: Use Webhooks
+## Manage the integration
 
-You can connect Quackback to Linear today using [webhooks](/integrations/webhooks):
+### Pause
 
-1. Create a small middleware service
-2. Set up a Quackback webhook for `post.status_changed` events
-3. Use the [Linear API](https://developers.linear.app) to create or update issues
+Temporarily stop the integration:
 
-## Contributing
+1. Go to **Admin > Settings > Integrations > Linear**
+2. Toggle **Enabled** off
+3. Issue creation and status sync pause, but the connection remains
 
-If you'd like to build the native Linear integration:
+### Reconnect
 
-- [GitHub Issues](https://github.com/quackbackio/quackback/issues) - Check for an existing issue or create one
-- [Contributing Guide](/developers/contributing) - How to contribute
-- The Slack integration in `packages/integrations/` is a good reference implementation
+If you see connection errors:
+
+1. Click **Reconnect**
+2. Re-authorize in Linear
+3. Tokens are automatically refreshed when they expire
+
+### Disconnect
+
+To fully remove the integration:
+
+1. Go to **Admin > Settings > Integrations > Linear**
+2. Click **Disconnect**
+3. Confirm the action
+
+<Note>
+Disconnecting revokes the OAuth token with Linear and removes the registered webhook.
+</Note>
+
+## Troubleshooting
+
+### Issues Not Being Created
+
+1. **Check integration status** -- look for errors in settings
+2. **Verify team selection** -- ensure a Linear team is selected
+3. **Check event mappings** -- confirm `post.created` is mapped
+4. **Admin permissions** -- the connected Linear account must have admin permissions to create webhooks
+
+### Status Sync Not Working
+
+1. **Check status mappings** -- ensure Linear states are mapped to Quackback statuses
+2. **Verify webhook** -- the Linear webhook may need to be re-registered
+3. **Check Linear permissions** -- the connected account needs admin access
+
+### "Authentication Failed" Error
+
+Linear OAuth tokens expire and are automatically refreshed. If refresh fails:
+
+1. Click **Reconnect**
+2. Re-authorize the app in Linear
 
 ## Next Steps
 
-- [Webhooks](/integrations/webhooks) - Build custom integrations now
-- [Slack](/integrations/slack) - Built-in Slack notification integration
+- [Slack](/integrations/slack) - Slack notification integration
+- [Webhooks](/integrations/webhooks) - Build custom integrations
 - [Integrations Overview](/integrations/overview) - All integrations

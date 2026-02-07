@@ -1,0 +1,148 @@
+---
+title: "Enrich feedback with HubSpot"
+description: "Enrich feedback with HubSpot contact data and deal value."
+icon: "hubspot"
+---
+
+# HubSpot
+
+See the revenue behind every feature request. Connect HubSpot to enrich feedback posts with contact data, company information, lifecycle stage, and deal pipeline value -- so you can prioritize what matters most to your bottom line.
+
+## Overview
+
+The HubSpot integration provides:
+
+- **Customer context** -- enrich feedback with HubSpot contact data like company, deal value, and lifecycle stage
+- **Revenue insights** -- see the revenue impact of feature requests by linking feedback to deal pipeline data
+
+<Note>
+HubSpot is an enrichment integration. It does not send notifications or create records in HubSpot -- it pulls contact and deal data into Quackback to give you context on who is requesting what.
+</Note>
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- A HubSpot account with API access
+- A HubSpot OAuth application (created in the [HubSpot Developer Portal](https://developers.hubspot.com/))
+
+## Setup
+
+### 1. Create a HubSpot OAuth Application
+
+1. Go to the [HubSpot Developer Portal](https://developers.hubspot.com/)
+2. Create a new app or use an existing one
+3. Under the **Auth** tab, copy the **Client ID** and **Client Secret**
+4. Add your Quackback OAuth callback URL as a redirect URI
+
+### 2. Configure Platform Credentials
+
+1. Go to **Admin > Settings > Integrations > HubSpot**
+2. Enter the following credentials:
+   - **Client ID** from your HubSpot application
+   - **Client Secret** from your HubSpot application
+
+### 3. Connect Your Account
+
+1. Click **Connect to HubSpot**
+2. You'll be redirected to HubSpot to authorize the application
+3. Select the HubSpot account you want to connect
+4. Review the permissions and click **Grant access**
+
+The app requests these OAuth scopes:
+
+| Scope | Purpose |
+|-------|---------|
+| `crm.objects.contacts.read` | Look up contacts by email |
+| `crm.objects.companies.read` | Read company information |
+| `crm.objects.deals.read` | Read deal pipeline data and amounts |
+| `oauth` | Token management |
+
+### 4. Verify the Connection
+
+Once connected, Quackback stores your HubSpot portal ID and domain. You can verify the connection is active in the integration settings.
+
+## How It Works
+
+### Contact Lookup
+
+When you view a feedback post, Quackback can look up the author's email in HubSpot and display:
+
+- **Name** -- first and last name from the contact record
+- **Company** -- the associated company name
+- **Lifecycle stage** -- where the contact is in your pipeline (subscriber, lead, customer, etc.)
+
+### Deal Enrichment
+
+Beyond basic contact data, the integration fetches associated deals (up to 5 per contact) and shows:
+
+- **Deal name** and current **stage**
+- **Deal amount** for each associated deal
+- **Total deal value** -- the combined value across all associated deals
+
+This lets you see at a glance whether a feature request comes from a prospect with a \$500 deal or an enterprise customer with \$500,000 in pipeline.
+
+<Tip>
+Use deal value data to prioritize feature requests. Sort your feedback board by revenue impact to focus on what drives the most business value.
+</Tip>
+
+### Token Refresh
+
+HubSpot access tokens expire after 30 minutes. Quackback automatically refreshes tokens using the stored refresh token when they expire, so the connection stays active without manual intervention.
+
+## Manage the Integration
+
+### Pause
+
+Temporarily stop the integration:
+
+1. Go to **Admin > Settings > Integrations > HubSpot**
+2. Toggle **Enabled** off
+3. Contact lookups pause, but the connection remains
+
+### Reconnect
+
+If you see connection errors:
+
+1. Click **Reconnect**
+2. Re-authorize in HubSpot
+3. Tokens are automatically refreshed when they expire
+
+### Disconnect
+
+To fully remove the integration:
+
+1. Go to **Admin > Settings > Integrations > HubSpot**
+2. Click **Disconnect**
+3. Confirm the action
+
+<Note>
+Disconnecting revokes the OAuth refresh token with HubSpot and removes the stored credentials from Quackback.
+</Note>
+
+## Troubleshooting
+
+### Contact Not Found
+
+1. **Check the email** -- the lookup matches on exact email address
+2. **Verify the contact exists** -- confirm the contact is in your HubSpot CRM
+3. **Check permissions** -- the connected HubSpot account must have access to the contact
+
+### Deal Data Missing
+
+1. **Check deal associations** -- the contact must be associated with deals in HubSpot
+2. **Verify deal properties** -- deals need `dealname`, `dealstage`, and `amount` properties populated
+3. **Limit** -- only the first 5 associated deals are fetched
+
+### "Authentication Failed" Error
+
+HubSpot tokens are short-lived (30 minutes) and auto-refresh. If refresh fails:
+
+1. Click **Reconnect**
+2. Re-authorize the app in HubSpot
+3. If the issue persists, verify your Client ID and Client Secret are still valid in the HubSpot Developer Portal
+
+## Next Steps
+
+- [Intercom](/integrations/intercom) -- Enrich feedback with Intercom contact data
+- [Zendesk](/integrations/zendesk) -- Enrich feedback with Zendesk user data
+- [Integrations Overview](/integrations/overview) -- All integrations

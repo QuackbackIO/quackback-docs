@@ -1,24 +1,24 @@
 ---
 title: "Configure team security"
-description: "Control how your team signs in, from email OTP to OIDC SSO."
+description: "Control how your team signs in, from email OTP to OAuth."
 icon: "shield-check"
 ---
 
 # Configure team security
 
-Protect your admin dashboard with the right level of security for your team. Use simple email magic links, require OAuth through GitHub or Google, or enforce SSO through your identity provider.
+Protect your admin dashboard with the right level of security for your team. Use simple email magic links or require OAuth through GitHub or Google.
 
 ## Overview
 
-Access Security settings from **Admin → Settings → Security**. Choose which authentication methods your team can use.
+Team authentication controls how team members (admins and members) sign in to the admin dashboard. By default, email OTP, GitHub, and Google are all enabled.
 
 <Note>
-Security settings control **team member** authentication (employees managing feedback). For **portal user** authentication (customers submitting feedback), see [Portal Authentication](/admin/portal-auth).
+Team authentication controls **team member** sign-in (employees managing feedback). For **portal user** authentication (customers submitting feedback), see [Portal Authentication](/admin/portal-auth).
 </Note>
 
 ## Team Sign-in Methods
 
-Toggle which authentication methods team members can use to sign in:
+Team members can sign in using the following methods:
 
 ### Email (Magic Link)
 
@@ -35,6 +35,7 @@ Allow team members to sign in using their GitHub accounts.
 - **How it works**: User clicks "Continue with GitHub" → authorizes access → signed in
 - **Best for**: Developer teams already using GitHub
 - **Requires**: GitHub OAuth app configured in environment
+- **Enabled by default**: Yes
 
 ### Google
 
@@ -43,16 +44,7 @@ Allow team members to sign in using their Google accounts.
 - **How it works**: User clicks "Continue with Google" → authorizes access → signed in
 - **Best for**: Teams using Google Workspace
 - **Requires**: Google OAuth credentials configured in environment
-
-## Configure sign-in methods
-
-1. Navigate to **Admin → Settings → Security**
-2. Toggle each method on or off using the switches
-3. Changes save automatically
-
-<Warning>
-At least one authentication method must remain enabled. The last enabled method cannot be disabled.
-</Warning>
+- **Enabled by default**: Yes
 
 ## OAuth Provider Setup
 
@@ -74,14 +66,6 @@ GOOGLE_CLIENT_SECRET=your-client-secret
 
 See [Environment Variables](/reference/environment-variables) for complete configuration.
 
-## SSO
-
-For single sign-on (OIDC) with your identity provider, see the [SSO documentation](/auth/sso).
-
-<Tip>
-SSO allows you to enforce authentication through your corporate identity provider (Okta, Azure AD, Auth0, etc.).
-</Tip>
-
 ## Best Practices
 
 ### Multi-Factor Authentication
@@ -89,13 +73,11 @@ SSO allows you to enforce authentication through your corporate identity provide
 While Quackback doesn't have built-in MFA, you can achieve equivalent security by:
 
 - Using OAuth providers that require MFA (GitHub, Google)
-- Configuring SSO with your identity provider's MFA policies
 
 ### Principle of Least Privilege
 
-- Enable only the authentication methods your team actually uses
-- Use SSO to enforce corporate authentication policies
 - Review team member access regularly
+- Only grant Admin role to those who need full settings access
 
 ### Secure Defaults
 
@@ -104,20 +86,9 @@ For most teams, we recommend:
 
 1. Enable **Email** for backup access
 2. Enable **one OAuth provider** that matches your workflow (GitHub for devs, Google for business)
-3. Or configure **SSO** to use your corporate identity provider
 </Tip>
-
-## Access Control
-
-Only **Admins** can modify security settings.
-
-| Role | Can View | Can Modify |
-|------|----------|------------|
-| Admin | Yes | Yes |
-| Member | No | No |
 
 ## Next Steps
 
 - [Portal Authentication](/admin/portal-auth) - Configure how portal users sign in
 - [Team Members](/admin/team) - Manage your team
-- [SSO](/auth/sso) - Set up OIDC single sign-on

@@ -1,0 +1,161 @@
+---
+title: "Sync feedback with ClickUp"
+description: "Turn feedback into ClickUp tasks and track progress."
+icon: "plug"
+---
+
+# ClickUp
+
+Turn feedback into tasks. Automatically create ClickUp tasks when feedback is submitted, and keep statuses synchronized between Quackback and ClickUp. When a task's status changes in ClickUp, the linked feedback post updates too.
+
+## Overview
+
+The ClickUp integration enables:
+
+- **Create ClickUp tasks from feedback posts** -- automatically create a task when new feedback is submitted
+- **Link posts to tasks** -- link feedback posts to ClickUp tasks for traceability
+- **Status sync** -- keep feedback post status and ClickUp task status in sync via inbound webhooks
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- A ClickUp workspace
+- A ClickUp OAuth application (created at [ClickUp Integrations](https://clickup.com/integrations))
+
+## Setup
+
+### 1. Create a ClickUp OAuth Application
+
+1. Go to [ClickUp Integrations](https://clickup.com/integrations)
+2. Create a new application
+3. Copy the **Client ID** and **Client Secret**
+
+### 2. Configure Platform Credentials
+
+1. Go to **Admin > Settings > Integrations > ClickUp**
+2. Enter the following credentials:
+   - **Client ID** from your ClickUp application
+   - **Client Secret** from your ClickUp application
+
+### 3. Connect Your Workspace
+
+1. Click **Connect to ClickUp**
+2. You'll be redirected to ClickUp to authorize the application
+3. Review the permissions and click **Allow**
+
+After authorization, Quackback automatically detects your ClickUp team (workspace).
+
+<Note>
+ClickUp access tokens do not expire, so you will not need to re-authorize unless you disconnect the integration.
+</Note>
+
+### 4. Select a Space and List
+
+Back in Quackback:
+
+1. Choose the ClickUp space that contains your target list
+2. Then choose the specific list where tasks should be created
+3. Tasks will be created in this list when new feedback is submitted
+
+### 5. Configure Status Mappings
+
+Map ClickUp task statuses to Quackback statuses:
+
+1. Go to the ClickUp integration settings
+2. Configure status mappings between ClickUp statuses and Quackback statuses
+3. Each ClickUp status can be mapped to a corresponding Quackback status, or set to ignore
+
+Status sync works via ClickUp webhooks. When a linked ClickUp task's status changes, the corresponding Quackback post status updates automatically.
+
+### 6. Configure Events
+
+Choose which events trigger ClickUp actions:
+
+| Event | Action |
+|-------|--------|
+| New post | Create a ClickUp task with the feedback details |
+
+<Note>
+The ClickUp integration currently creates tasks only for `post.created` events. Status changes and comments are handled through the status sync mechanism rather than creating new tasks.
+</Note>
+
+### 7. Save and Test
+
+1. Click **Save**
+2. Submit test feedback to verify a task is created in ClickUp
+
+## Task Format
+
+When a new feedback post triggers task creation, the ClickUp task includes:
+
+- **Name**: The feedback post title
+- **Description** (Markdown): The post content, followed by metadata including the author, board, vote count, and a link back to the post in Quackback
+
+The task is created in the selected list within your connected ClickUp workspace.
+
+## Status Sync
+
+When status sync is configured, Quackback registers a webhook with ClickUp to receive `taskStatusUpdated` events. When a linked ClickUp task's status changes:
+
+1. ClickUp sends a webhook event to Quackback
+2. Quackback extracts the new status from the event's history items
+3. If a status mapping exists for that status name, the linked feedback post's status is updated
+
+The webhook signature is verified using HMAC-SHA256 via the `X-Signature` header.
+
+## Manage the integration
+
+### Pause
+
+Temporarily stop the integration:
+
+1. Go to **Admin > Settings > Integrations > ClickUp**
+2. Toggle **Enabled** off
+3. Task creation and status sync pause, but the connection remains
+
+### Reconnect
+
+If you see connection errors:
+
+1. Click **Reconnect**
+2. Re-authorize in ClickUp
+
+### Disconnect
+
+To fully remove the integration:
+
+1. Go to **Admin > Settings > Integrations > ClickUp**
+2. Click **Disconnect**
+3. Confirm the action
+
+<Note>
+ClickUp does not support token revocation, so disconnecting removes the integration from Quackback but the token is not revoked on ClickUp's side. You can remove the app from your ClickUp workspace settings if needed.
+</Note>
+
+## Troubleshooting
+
+### Tasks Not Being Created
+
+1. **Check integration status** -- look for errors in settings
+2. **Verify list selection** -- ensure a ClickUp space and list are selected
+3. **Check event mappings** -- confirm `post.created` is mapped
+4. **Workspace access** -- the connected ClickUp account must have access to the selected list
+
+### Status Sync Not Working
+
+1. **Check status mappings** -- ensure ClickUp statuses are mapped to Quackback statuses
+2. **Verify webhook** -- the ClickUp webhook may need to be re-registered
+3. **Check permissions** -- the connected account needs access to manage webhooks
+
+### "Authentication Failed" Error
+
+ClickUp access tokens do not expire. If you see this error:
+
+1. The token may have been manually revoked in ClickUp
+2. Click **Reconnect** and re-authorize the app
+
+## Next Steps
+
+- [Asana](/integrations/asana) - Asana task sync integration
+- [Webhooks](/integrations/webhooks) - Build custom integrations
+- [Integrations Overview](/integrations/overview) - All integrations

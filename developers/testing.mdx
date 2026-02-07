@@ -56,10 +56,18 @@ export default defineConfig({
     globals: true,              // Use global describe, it, expect
     environment: 'node',        // Node.js environment
     include: ['**/*.test.ts'],  // Test file pattern
-    exclude: ['**/node_modules/**'],
+    exclude: ['**/node_modules/**', '**/.next/**'],
+    env: {
+      DATABASE_URL: 'postgresql://postgres:password@localhost:5432/quackback_test',
+    },
   },
   resolve: {
     alias: {
+      '@quackback/db/client': path.resolve(__dirname, './packages/db/src/client.ts'),
+      '@quackback/db/schema': path.resolve(__dirname, './packages/db/src/schema/index.ts'),
+      '@quackback/db/catalog': path.resolve(__dirname, './packages/db/src/catalog/index.ts'),
+      '@quackback/db/tenant': path.resolve(__dirname, './packages/db/src/tenant/index.ts'),
+      '@quackback/db/types': path.resolve(__dirname, './packages/db/src/types.ts'),
       '@quackback/db': path.resolve(__dirname, './packages/db/index.ts'),
       '@': path.resolve(__dirname, './apps/web/src'),
     },

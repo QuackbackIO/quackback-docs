@@ -1,0 +1,128 @@
+---
+title: "Enrich feedback with Intercom"
+description: "Push feedback from Intercom conversations and sync customer data."
+icon: "intercom"
+---
+
+# Intercom
+
+Know your customers behind every request. Connect Intercom to enrich feedback posts with contact data, company information, custom attributes, and tags -- so you can understand who is asking for what and why.
+
+## Overview
+
+The Intercom integration provides:
+
+- **Capture feedback** -- turn Intercom conversations into feedback posts without leaving your inbox
+- **Customer context** -- enrich feedback with Intercom contact data like plan, company, and conversation history
+
+<Note>
+Intercom is an enrichment integration. It pulls contact data into Quackback to give you context on the customers behind your feedback. It does not send notifications to Intercom.
+</Note>
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- An Intercom workspace with admin access
+- An Intercom OAuth application (created in the [Intercom Developer Hub](https://developers.intercom.com/))
+
+## Setup
+
+### 1. Create an Intercom OAuth Application
+
+1. Go to the [Intercom Developer Hub](https://developers.intercom.com/)
+2. Create a new app
+3. Copy the **Client ID** and **Client Secret**
+4. Add your Quackback OAuth callback URL as a redirect URI
+
+### 2. Configure Platform Credentials
+
+1. Go to **Admin > Settings > Integrations > Intercom**
+2. Enter the following credentials:
+   - **Client ID** from your Intercom application
+   - **Client Secret** from your Intercom application
+
+### 3. Connect Your Workspace
+
+1. Click **Connect to Intercom**
+2. You'll be redirected to Intercom to authorize the application
+3. Review the permissions and click **Authorize**
+
+After authorization, Quackback stores your Intercom app ID and workspace name.
+
+### 4. Verify the Connection
+
+Once connected, verify the integration shows as active in **Admin > Settings > Integrations > Intercom**.
+
+## How It Works
+
+### Contact Lookup
+
+When you view a feedback post, Quackback can look up the author's email in Intercom and display:
+
+- **Name** -- the contact's full name
+- **Email** -- the contact's email address
+- **Company** -- the associated company name and ID
+- **Custom attributes** -- any custom data fields you have on the contact (e.g., plan name, account tier, MRR)
+- **Tags** -- all tags applied to the contact in Intercom
+
+<Tip>
+Custom attributes are especially useful if you store plan or revenue data on your Intercom contacts. This data appears alongside feedback posts to help you prioritize by customer segment.
+</Tip>
+
+### No Token Expiration
+
+Unlike some OAuth providers, Intercom access tokens do not expire. Once connected, the integration stays active without requiring token refreshes.
+
+## Manage the Integration
+
+### Pause
+
+Temporarily stop the integration:
+
+1. Go to **Admin > Settings > Integrations > Intercom**
+2. Toggle **Enabled** off
+3. Contact lookups pause, but the connection remains
+
+### Reconnect
+
+If you see connection errors:
+
+1. Click **Reconnect**
+2. Re-authorize in Intercom
+
+### Disconnect
+
+To fully remove the integration:
+
+1. Go to **Admin > Settings > Integrations > Intercom**
+2. Click **Disconnect**
+3. Confirm the action
+
+<Note>
+Intercom does not support programmatic token revocation. Disconnecting removes the stored credentials from Quackback, but you may also want to revoke access from the Intercom Developer Hub.
+</Note>
+
+## Troubleshooting
+
+### Contact Not Found
+
+1. **Check the email** -- the lookup matches on exact email address
+2. **Verify the contact exists** -- confirm the contact is in your Intercom workspace
+3. **Check contact type** -- both leads and users are searchable
+
+### Custom Attributes Missing
+
+1. **Verify the attribute exists** -- check that the custom attribute is defined in Intercom
+2. **Check the contact record** -- the attribute must have a value set on the specific contact
+
+### "Authentication Failed" Error
+
+1. Verify your Client ID and Client Secret are correct
+2. Click **Reconnect** and re-authorize the app
+3. Check that the app has not been revoked in the Intercom Developer Hub
+
+## Next Steps
+
+- [HubSpot](/integrations/hubspot) -- Enrich feedback with HubSpot contact and deal data
+- [Zendesk](/integrations/zendesk) -- Enrich feedback with Zendesk user data
+- [Integrations Overview](/integrations/overview) -- All integrations

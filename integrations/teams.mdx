@@ -1,0 +1,207 @@
+---
+title: "Microsoft Teams"
+description: "Post adaptive cards to your Teams channels when events occur."
+icon: "plug"
+---
+
+# Microsoft Teams
+
+Feedback in your Teams workspace. Get notified with rich Adaptive Cards in Microsoft Teams channels when new feedback arrives, statuses change, or users comment. Cards include post details and direct links back to your feedback portal.
+
+## Overview
+
+The Microsoft Teams integration sends Adaptive Card notifications to channels when:
+- New feedback is submitted
+- Post status changes
+- New comments are posted
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- An Azure AD application registered in the [Azure Portal](https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps)
+- Permission to grant OAuth consent in your Microsoft 365 tenant
+
+## Setup
+
+### 1. Register an Azure AD Application
+
+1. Go to the [Azure Portal App Registrations](https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps)
+2. Click **New registration**
+3. Enter a name (e.g., "Quackback")
+4. Under **Supported account types**, select **Accounts in any organizational directory**
+5. Add a redirect URI (provided in your Quackback integration settings)
+6. Click **Register**
+7. Copy the **Application (client) ID**
+8. Go to **Certificates & secrets**, create a new client secret, and copy the value
+
+### 2. Configure Platform Credentials
+
+1. Go to **Admin > Settings > Integrations > Teams**
+2. Enter the following credentials:
+   - **Client ID** from your Azure AD application
+   - **Client Secret** from your Azure AD application
+
+### 3. Connect Your Organization
+
+1. Click **Connect to Teams**
+2. You'll be redirected to Microsoft to authorize the application
+3. Review the permissions and click **Accept**
+
+The app requests these OAuth scopes:
+- `ChannelMessage.Send` -- post messages to channels
+- `Team.ReadBasic.All` -- list your teams
+- `Channel.ReadBasic.All` -- list channels within teams
+- `offline_access` -- refresh tokens automatically
+
+### 4. Select a Team and Channel
+
+Back in Quackback:
+
+1. Choose the team you want to post to
+2. Select a channel within that team for notifications
+3. Both standard and private channels are listed
+
+### 5. Configure Events
+
+Choose which events trigger Teams notifications:
+
+| Event | Description |
+|-------|-------------|
+| New post | Someone submits new feedback |
+| Status change | Post status is updated |
+| New comment | Comment added to a post |
+
+### 6. Save and Test
+
+1. Click **Save**
+2. Click **Send Test** to verify the connection
+3. Check your Teams channel for the test message
+
+## Notification Format
+
+Teams notifications use Adaptive Cards for rich, structured messages.
+
+**New post:**
+```
+Adaptive Card
+Header: New feedback from jane@example.com
+Title: Add dark mode support
+Body: It would be great to have a dark mode...
+Footer: Board: feature-requests
+Action: [View in Portal] (links to post)
+```
+
+**Status change:**
+```
+Adaptive Card
+Header: Status changed by admin@example.com
+Title: Add dark mode support
+Body: Under Review -> Planned
+Action: [View in Portal] (links to post)
+```
+
+**New comment:**
+```
+Adaptive Card
+Header: New comment from jane@example.com
+Title: Add dark mode support
+Body: Great idea! We're considering this for Q2.
+Action: [View in Portal] (links to post)
+```
+
+All cards include a "View in Portal" button that links directly to the post.
+
+## Event Mapping
+
+Send different events to different channels:
+
+1. Go to the Teams integration settings
+2. Click **Add Event Mapping**
+3. Configure:
+   - **Event type**: post.created, post.status\_changed, etc.
+   - **Team**: Target team
+   - **Channel**: Target channel within the team
+   - **Filters** (optional): Board, status, or other conditions
+
+## Manage the integration
+
+### Pause Notifications
+
+Temporarily stop notifications:
+
+1. Go to **Admin > Settings > Integrations > Teams**
+2. Toggle **Enabled** off
+3. Notifications pause, but the connection remains
+
+### Reconnect
+
+If you see connection errors:
+
+1. Click **Reconnect**
+2. Re-authorize in Microsoft
+3. Reconfigure teams and channels if needed
+
+Tokens are automatically refreshed when they expire. If a refresh fails, you will need to reconnect.
+
+### Disconnect
+
+To fully remove the integration:
+
+1. Go to **Admin > Settings > Integrations > Teams**
+2. Click **Disconnect**
+3. Confirm the action
+
+<Note>
+Disconnecting removes the connection in Quackback but does not revoke the Azure AD application registration. To fully revoke access, remove the application from your Azure AD tenant.
+</Note>
+
+## Troubleshooting
+
+### Notifications Not Appearing
+
+1. **Check integration status** -- look for errors in settings
+2. **Verify channel** -- ensure the team and channel still exist
+3. **Check event mappings** -- confirm events are configured
+4. **App permissions** -- verify the app has been granted consent in your tenant
+
+### "Team ID Not Configured" Error
+
+The integration requires both a team and channel to be selected:
+
+1. Go to the Teams integration settings
+2. Select a team from the list
+3. Select a channel within that team
+
+### "Authentication Failed" Error
+
+1. Click **Reconnect**
+2. Re-authorize the app with Microsoft
+3. Test the connection
+
+### Rate Limiting
+
+Microsoft Graph API enforces rate limits. If you see rate-limit errors, notifications are automatically retried. Reduce notification volume by filtering events if this occurs frequently.
+
+## Permissions
+
+The Azure AD application requires:
+
+| Permission | Purpose |
+|------------|---------|
+| `ChannelMessage.Send` | Post Adaptive Cards to channels |
+| `Team.ReadBasic.All` | List teams you're a member of |
+| `Channel.ReadBasic.All` | List channels within a team |
+| `offline_access` | Refresh access tokens automatically |
+
+<Note>
+The app cannot:
+- Read your messages or channel history
+- Access private channels unless listed
+- Post as individual users
+</Note>
+
+## Next Steps
+
+- [Slack](/integrations/slack) - Slack notification integration
+- [Webhooks](/integrations/webhooks) - Build custom integrations
+- [Integrations Overview](/integrations/overview) - All integrations

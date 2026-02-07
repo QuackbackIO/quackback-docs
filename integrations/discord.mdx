@@ -1,60 +1,167 @@
 ---
-title: "Set up Discord notifications"
+title: "Discord"
 description: "Get feedback notifications in your Discord server."
 icon: "discord"
 ---
 
-# Set up Discord notifications
+# Discord
 
-<Note>
-**Status: Community Contribution Welcome**
+Feedback where your community lives. Get notified in Discord channels when new feedback arrives, statuses change, or users comment. Messages use rich embeds with post details and direct links back to your portal.
 
-The Discord integration is not yet built. If you'd like to contribute, the architecture is ready - Quackback's event system makes adding new notification targets straightforward.
-</Note>
+## Overview
 
-## Workaround: Use Webhooks
+The Discord integration sends notifications to channels when:
+- New feedback is submitted
+- Post status changes
+- New comments are posted
 
-You can get Discord notifications today using Quackback's [webhook integration](/integrations/webhooks) with Discord's incoming webhooks:
+## Prerequisites
 
-1. **Create a Discord webhook** - In your Discord channel settings, go to Integrations > Webhooks > New Webhook
-2. **Create a Quackback webhook** - Point it at a small middleware service that reformats the payload
-3. **Transform the payload** - Discord expects a specific embed format
+- Admin access to your Quackback workspace
+- A Discord application with a bot user (created at [Discord Developer Portal](https://discord.com/developers/applications))
+- Permission to add bots to your Discord server
 
-### Example Middleware
+## Setup
 
-```javascript
-app.post('/quackback-to-discord', async (req, res) => {
-  const { event, data } = req.body;
+### 1. Create a Discord Application
 
-  if (event === 'post.created') {
-    await fetch(DISCORD_WEBHOOK_URL, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        embeds: [{
-          title: data.post.title,
-          description: data.post.content?.substring(0, 200),
-          color: 0x5865F2,
-          url: `https://feedback.example.com/b/${data.post.boardSlug}/${data.post.id}`,
-        }],
-      }),
-    });
-  }
+1. Go to the [Discord Developer Portal](https://discord.com/developers/applications)
+2. Click **New Application** and give it a name
+3. Go to the **Bot** tab and create a bot user
+4. Copy the **Bot Token**
 
-  res.sendStatus(200);
-});
+### 2. Configure Platform Credentials
+
+1. Go to **Admin > Settings > Integrations > Discord**
+2. Enter the following credentials:
+   - **Client ID** from your Discord application's General Information page
+   - **Client Secret** from your Discord application's General Information page
+   - **Bot Token** from your Discord application's Bot page
+
+### 3. Connect Your Server
+
+1. Click **Connect to Discord**
+2. You'll be redirected to Discord to authorize the bot
+3. Select the server you want to add the bot to
+4. Click **Authorize**
+
+The bot requests these permissions:
+- **Send Messages** (2048) -- post notifications to channels
+- **Embed Links** (16384) -- format messages with rich embeds
+
+### 4. Select a Channel
+
+Back in Quackback:
+
+1. Choose a channel for notifications
+2. Select from text channels available in the connected server
+
+### 5. Configure Events
+
+Choose which events trigger Discord notifications:
+
+| Event | Description |
+|-------|-------------|
+| New post | Someone submits new feedback |
+| Status change | Post status is updated |
+| New comment | Comment added to a post |
+
+### 6. Save and Test
+
+1. Click **Save**
+2. Click **Send Test** to verify the connection
+3. Check your Discord channel for the test message
+
+## Notification Format
+
+Discord notifications use rich embeds with color-coded status indicators.
+
+**New post:**
+```
+[Embed]
+Author: New feedback from jane@example.com
+Title: Add dark mode support (linked to post)
+Description: It would be great to have a dark mode...
+Footer: Board: feature-requests
+Color: Blue (#5865F2)
 ```
 
-## Contributing
+**Status change:**
+```
+[Embed]
+Author: Status changed by admin@example.com
+Title: Add dark mode support (linked to post)
+Description: Under Review > **Planned**
+Color: Status-dependent (green for Complete, yellow for In Progress, etc.)
+```
 
-If you'd like to build the native Discord integration:
+**New comment:**
+```
+[Embed]
+Author: New comment from jane@example.com
+Title: Add dark mode support (linked to post)
+Description: Great idea! We're considering this for Q2.
+Color: Blue (#5865F2)
+```
 
-- [GitHub Issues](https://github.com/quackbackio/quackback/issues) - Check for an existing issue or create one
-- [Contributing Guide](/developers/contributing) - How to contribute
-- The Slack integration in `packages/integrations/` is a good reference implementation
+All notifications include clickable links to the post.
+
+## Event Mapping
+
+Send different events to different channels:
+
+1. Go to the Discord integration settings
+2. Click **Add Event Mapping**
+3. Configure:
+   - **Event type**: post.created, post.status_changed, etc.
+   - **Channel**: Target Discord channel
+   - **Filters** (optional): Board, status, or other conditions
+
+## Manage the integration
+
+### Pause Notifications
+
+Temporarily stop notifications:
+
+1. Go to **Admin > Settings > Integrations > Discord**
+2. Toggle **Enabled** off
+3. Notifications pause, but the connection remains
+
+### Reconnect
+
+If you see connection errors:
+
+1. Click **Reconnect**
+2. Re-authorize in Discord
+3. Reconfigure channels if needed
+
+### Disconnect
+
+To fully remove the integration:
+
+1. Go to **Admin > Settings > Integrations > Discord**
+2. Click **Disconnect**
+3. Confirm the action
+
+## Troubleshooting
+
+### Notifications Not Appearing
+
+1. **Check integration status** -- look for errors in settings
+2. **Verify channel** -- ensure the channel still exists and the bot has access
+3. **Check event mappings** -- confirm events are configured
+4. **Bot permissions** -- verify the bot has Send Messages and Embed Links permissions in the channel
+
+### "Authentication Failed" Error
+
+The bot token may be invalid or the bot was removed from the server:
+
+1. Check the bot token in your Discord Developer Portal
+2. Re-authorize the bot in your server
+3. Reconnect in Quackback
 
 ## Next Steps
 
-- [Webhooks](/integrations/webhooks) - Build custom integrations now
-- [Slack](/integrations/slack) - Built-in Slack notification integration
+- [Slack](/integrations/slack) - Slack notification integration
+- [Webhooks](/integrations/webhooks) - Build custom integrations
 - [Integrations Overview](/integrations/overview) - All integrations

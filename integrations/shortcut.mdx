@@ -1,0 +1,151 @@
+---
+title: "Sync feedback with Shortcut"
+description: "Create Shortcut stories from feedback and sync status changes."
+icon: "plug"
+---
+
+# Shortcut
+
+Turn feedback into stories. Automatically create Shortcut stories when feedback is submitted, and keep statuses synchronized between Quackback and Shortcut. When a story's workflow state changes in Shortcut, the linked feedback post updates too.
+
+## Overview
+
+The Shortcut integration enables:
+
+- **Create Shortcut stories from feedback posts** -- automatically create a story when new feedback is submitted
+- **Link posts to stories** -- link feedback posts to Shortcut stories for traceability
+- **Status sync** -- keep feedback post status and Shortcut story workflow state in sync via inbound webhooks
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- A Shortcut workspace
+- A Shortcut API token (generated at [Shortcut Settings > API Tokens](https://app.shortcut.com/settings/account/api-tokens))
+
+## Setup
+
+### 1. Generate a Shortcut API Token
+
+1. Go to [Shortcut Settings > API Tokens](https://app.shortcut.com/settings/account/api-tokens)
+2. Generate a new API token
+3. Copy the token
+
+<Note>
+Shortcut uses API token authentication rather than OAuth. No application registration is required.
+</Note>
+
+### 2. Connect Your Workspace
+
+1. Go to **Admin > Settings > Integrations > Shortcut**
+2. Enter your **API Token**
+3. Click **Save**
+
+Quackback validates the token by checking it against the Shortcut API and automatically detects your workspace name.
+
+### 3. Select a Project
+
+Back in Quackback:
+
+1. Choose the Shortcut project where stories should be created
+2. Stories will be created in this project when new feedback is submitted
+
+### 4. Configure Status Mappings
+
+Map Shortcut workflow states to Quackback statuses:
+
+1. Go to the Shortcut integration settings
+2. Configure status mappings between Shortcut workflow state names and Quackback statuses
+3. Each Shortcut workflow state can be mapped to a corresponding Quackback status, or set to ignore
+
+Shortcut uses workflow state IDs internally. Quackback maintains a mapping of workflow state IDs to their names, so status sync resolves the ID to a name before looking up the configured mapping.
+
+### 5. Configure Events
+
+Choose which events trigger Shortcut actions:
+
+| Event | Action |
+|-------|--------|
+| New post | Create a Shortcut story with the feedback details |
+
+<Note>
+The Shortcut integration currently creates stories only for `post.created` events. Status changes and comments are handled through the status sync mechanism rather than creating new stories.
+</Note>
+
+### 6. Save and Test
+
+1. Click **Save**
+2. Submit test feedback to verify a story is created in Shortcut
+
+## Story Format
+
+When a new feedback post triggers story creation, the Shortcut story includes:
+
+- **Name**: The feedback post title (truncated to 512 characters if needed)
+- **Description** (Markdown): The post content, followed by metadata including the author, board, vote count, and a link back to the post in Quackback
+- **Story type**: Feature
+- **Project**: The selected Shortcut project
+
+## Status Sync
+
+When status sync is configured, Quackback receives webhook events from Shortcut. When a linked story's workflow state changes:
+
+1. Shortcut sends a webhook event to Quackback
+2. Quackback looks for story update actions with `workflow_state_id` changes
+3. The new workflow state ID is resolved to a state name using the cached workflow states mapping
+4. If a status mapping exists for that state name, the linked feedback post's status is updated
+
+The webhook signature is verified using HMAC-SHA256 via the `Payload-Signature` header.
+
+## Manage the integration
+
+### Pause
+
+Temporarily stop the integration:
+
+1. Go to **Admin > Settings > Integrations > Shortcut**
+2. Toggle **Enabled** off
+3. Story creation and status sync pause, but the connection remains
+
+### Reconnect
+
+If you see connection errors:
+
+1. Generate a new API token in Shortcut
+2. Update the token in **Admin > Settings > Integrations > Shortcut**
+
+### Disconnect
+
+To fully remove the integration:
+
+1. Go to **Admin > Settings > Integrations > Shortcut**
+2. Click **Disconnect**
+3. Confirm the action
+
+## Troubleshooting
+
+### Stories Not Being Created
+
+1. **Check integration status** -- look for errors in settings
+2. **Verify project selection** -- ensure a Shortcut project is selected
+3. **Check event mappings** -- confirm `post.created` is mapped
+4. **Validate API token** -- ensure the token has not been revoked in Shortcut
+
+### Status Sync Not Working
+
+1. **Check status mappings** -- ensure Shortcut workflow states are mapped to Quackback statuses
+2. **Verify workflow states** -- the integration needs a mapping of workflow state IDs to names; if new states were added in Shortcut, they may need to be configured
+3. **Check webhook** -- the Shortcut webhook may need to be re-registered
+
+### "Authentication Failed" Error
+
+Shortcut API tokens do not expire automatically but can be revoked. If you see this error:
+
+1. Verify the token is still valid in Shortcut settings
+2. Generate a new token if needed
+3. Update the token in Quackback
+
+## Next Steps
+
+- [Linear](/integrations/linear) - Linear issue sync integration
+- [Webhooks](/integrations/webhooks) - Build custom integrations
+- [Integrations Overview](/integrations/overview) - All integrations

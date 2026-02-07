@@ -84,28 +84,37 @@ apps/web/src/
 │   └── ui/                    # shadcn/ui primitives
 │
 ├── lib/                       # Business logic
-│   ├── server-functions/      # RPC endpoints
-│   ├── auth/                  # Auth configuration
-│   ├── posts/                 # Post service
-│   ├── boards/                # Board service
-│   ├── comments/              # Comment service
-│   ├── statuses/              # Status service
-│   ├── tags/                  # Tag service
-│   ├── members/               # Member service
-│   ├── users/                 # User service
-│   ├── notifications/         # Notification service
-│   ├── subscriptions/         # Subscription service
-│   ├── events/                # Event dispatch
-│   ├── hooks/                 # Integration handlers
-│   ├── tenant/                # Multi-tenancy
-│   ├── ai/                    # AI integrations
-│   ├── sentiment/             # Sentiment analysis
-│   ├── embeddings/            # Vector embeddings
-│   ├── stores/                # Zustand stores
-│   ├── db.ts                  # Database proxy (tenant-aware)
+│   ├── server/                # Server-side code
+│   │   ├── functions/         # RPC endpoints (server functions)
+│   │   ├── domains/           # Service layers by feature
+│   │   │   ├── posts/         # Post service
+│   │   │   ├── boards/        # Board service
+│   │   │   ├── comments/      # Comment service
+│   │   │   ├── statuses/      # Status service
+│   │   │   ├── tags/          # Tag service
+│   │   │   ├── members/       # Member service
+│   │   │   ├── users/         # User service
+│   │   │   ├── notifications/ # Notification service
+│   │   │   ├── subscriptions/ # Subscription service
+│   │   │   ├── ai/            # AI integrations
+│   │   │   ├── sentiment/     # Sentiment analysis
+│   │   │   └── embeddings/    # Vector embeddings
+│   │   ├── auth/              # Auth configuration
+│   │   ├── events/            # Event dispatch & handlers
+│   │   ├── integrations/      # Integration handlers
+│   │   ├── storage/           # File storage
+│   │   └── db.ts              # Database proxy (lazy singleton)
+│   │
+│   ├── client/                # Client-side code
+│   │   ├── hooks/             # React hooks
+│   │   ├── queries/           # TanStack Query factories
+│   │   ├── mutations/         # TanStack mutation hooks
+│   │   ├── stores/            # Zustand stores
+│   │   └── query/             # Query client setup
+│   │
 │   └── shared/                # Utilities & errors
 │
-└── server.ts                  # Server entry point
+└── router.tsx                 # Router configuration
 ```
 
 ### packages/
@@ -117,6 +126,7 @@ packages/
 ├── db/                        # Database layer
 │   ├── src/
 │   │   ├── schema/            # Drizzle table definitions
+│   │   ├── tenant/            # Multi-tenant provisioning
 │   │   ├── client.ts          # Connection factory
 │   │   ├── seed.ts            # Demo data seeding
 │   │   └── migrate.ts         # Migration runner
@@ -124,14 +134,21 @@ packages/
 │
 ├── ids/                       # TypeID system
 │   └── src/
-│       ├── index.ts           # ID generation
+│       ├── index.ts           # ID generation & exports
+│       ├── core.ts            # Core ID functions
+│       ├── prefixes.ts        # Entity type prefixes
+│       ├── types.ts           # Branded type definitions
 │       ├── zod.ts             # Validation helpers
 │       └── drizzle.ts         # DB column types
 │
-└── email/                     # Email service
-    └── src/
-        ├── index.ts           # Send functions
-        └── templates/         # React Email templates
+├── email/                     # Email service
+│   └── src/
+│       ├── index.ts           # Send functions
+│       └── templates/         # React Email templates
+│
+├── core/                      # Shared core utilities
+│
+└── integrations/              # Integration connectors
 ```
 
 ## Key Patterns
@@ -141,12 +158,12 @@ packages/
 Type-safe RPC between client and server:
 
 ```typescript
-// lib/server-functions/posts.ts
+// lib/server/functions/posts.ts
 import { createServerFn } from '@tanstack/react-start'
 import { z } from 'zod'
 
 export const createPostFn = createServerFn({ method: 'POST' })
-  .validator(z.object({
+  .inputValidator(z.object({
     title: z.string().min(1),
     content: z.string(),
     boardId: boardIdSchema,
@@ -169,7 +186,7 @@ const mutation = useMutation({
 Business logic separate from transport:
 
 ```typescript
-// lib/posts/post.service.ts
+// lib/server/domains/posts/post.service.ts
 export async function createPost(
   input: CreatePostInput,
   author: Author
@@ -196,12 +213,12 @@ export async function createPost(
 ### Database Access
 
 <Note>
-Always use the tenant-aware proxy for database access to ensure proper multi-tenancy support.
+Always use the database proxy from `@/lib/server/db` for database access to ensure proper connection management.
 </Note>
 
 ```typescript
 // ✅ Correct - use the proxy
-import { db, posts, eq } from '@/lib/db'
+import { db, posts, eq } from '@/lib/server/db'
 
 // ❌ Wrong - bypasses tenant context
 import { db } from '@quackback/db'
@@ -231,7 +248,7 @@ function getPost(id: PostId): Promise<Post> {
 Fire-and-forget event dispatch:
 
 ```typescript
-// lib/events/dispatch.ts
+// lib/server/events/dispatch.ts
 export async function dispatchPostCreated(
   post: Post,
   actor: EventActor
@@ -243,7 +260,7 @@ export async function dispatchPostCreated(
   })
 }
 
-// lib/events/process.ts
+// lib/server/events/process.ts
 export async function processEvent(event: AppEvent) {
   const targets = await getHookTargets(event.type)
 
@@ -258,7 +275,7 @@ export async function processEvent(event: AppEvent) {
 Extensible integration points:
 
 ```typescript
-// lib/hooks/slack/handler.ts
+// lib/server/events/handlers/webhook.ts (or similar handler file)
 export const slackHandler: HookHandler = {
   async run(event, target, config) {
     const message = formatSlackMessage(event)

@@ -37,27 +37,44 @@ Access branding settings from **Admin → Settings → Branding**. Changes previ
 
 Enter your workspace name in the text field. Changes are saved automatically after a short delay.
 
-## Appearance
+## Theme Mode
 
-### Brand Color
+Control how light/dark mode works for portal visitors:
+- **User choice (allow toggle)** - Visitors can switch between light and dark mode
+- **Light only** - Portal always displays in light mode
+- **Dark only** - Portal always displays in dark mode
 
-The primary brand color is used for buttons, links, active states, and accent elements.
+## Color Scheme
 
-To change:
-1. Click the color swatch to open the color picker
-2. Select a color or enter a hex code in the text field
-3. The preview updates automatically
-4. Click **Save Changes** to apply
+Quackback offers two branding modes, toggled by the **Simple** / **Advanced** switch:
 
-### Font
+### Simple Mode
+
+Customize your portal using color pickers and dropdowns:
+
+#### Colors
+
+Set your portal's color palette with the following inputs:
+
+| Color | What it controls |
+|-------|-----------------|
+| Primary | Buttons, links, active states |
+| Secondary | Secondary UI elements |
+| Accent | Accent highlights |
+| Background | Page background |
+| Foreground (Text) | Main text color |
+
+Click the color swatch to open the color picker, or type a hex code directly.
+
+#### Font
 
 Choose a font family from the dropdown. Fonts are organized by category:
-- **Sans Serif** - Clean, modern fonts like Inter, Roboto, Open Sans
-- **Serif** - Traditional fonts like Merriweather, Lora
-- **Monospace** - Technical fonts like JetBrains Mono, Fira Code
-- **System** - Uses the visitor's system font
+- **Sans Serif** - Clean, modern fonts like Inter, Roboto, Open Sans, DM Sans, Geist, and more
+- **Serif** - Traditional fonts like Playfair Display, Merriweather, Lora
+- **Monospace** - Technical fonts like Fira Code, JetBrains Mono
+- **System** - Uses the visitor's system font (System UI)
 
-### Corner Roundness
+#### Corner Roundness
 
 Adjust the roundness of buttons and cards using the slider:
 - **Sharp** (left) - Square corners
@@ -65,13 +82,20 @@ Adjust the roundness of buttons and cards using the slider:
 
 A preview of the corner radius is shown next to the slider.
 
+### Advanced Mode
+
+For full control, use theme presets or write custom CSS:
+
+- **Theme Presets** - Start from curated themes (e.g., Catppuccin, Supabase, Neo Brutalism)
+- **Custom CSS** - Write custom CSS with `:root \{\}` and `.dark \{\}` blocks using CSS custom properties. Design your theme at [tweakcn.com](https://tweakcn.com) and paste it in.
+
 ## Preview
 
-The right side of the branding page shows a live preview of your portal with the current settings. Use the Light/Dark toggle at the top of the preview to see how your branding looks in both modes.
+The right side of the branding page shows a live preview of your portal with the current settings. Use the **Light/Dark** toggle at the top of the preview to see how your branding looks in both modes.
 
 ## Save changes
 
-After making changes to the appearance settings, click **Save Changes** to apply them to your portal.
+After making changes, click **Save Changes** at the bottom of the controls panel to apply them to your portal. Identity changes (logo and workspace name) save automatically.
 
 ## Best Practices
 

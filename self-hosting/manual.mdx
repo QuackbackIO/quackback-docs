@@ -28,11 +28,18 @@ bun --version
 
 ### PostgreSQL
 
-**Version**: 17 or higher
+**Version**: 18 or higher
 
 **Required Extensions**:
 - `pgvector` - Vector similarity search (for AI features)
 - `pg_cron` - Scheduled jobs (optional)
+
+### Redis or Dragonfly
+
+Required for background job processing (BullMQ).
+
+- [Redis](https://redis.io/) 7+ or [Dragonfly](https://www.dragonflydb.io/) as a Redis-compatible alternative
+- Dragonfly must be started with `--cluster_mode=emulated --lock_on_hashtags` for BullMQ compatibility
 
 ### Other Tools
 
@@ -74,6 +81,7 @@ Edit `.env` with your settings:
 ```bash
 # Required settings
 DATABASE_URL="postgresql://quackback:your_password@localhost:5432/quackback"
+REDIS_URL="redis://localhost:6379"
 SECRET_KEY="your-generated-secret-key-at-least-32-characters"
 BASE_URL="https://feedback.yourcompany.com"
 ```
@@ -82,7 +90,7 @@ See [Environment Variables](/reference/environment-variables) for all options.
 
 ### 4. Set Up PostgreSQL
 
-#### Install PostgreSQL 17
+#### Install PostgreSQL 18
 
 **Ubuntu/Debian**:
 
@@ -91,16 +99,16 @@ See [Environment Variables](/reference/environment-variables) for all options.
 sudo sh -c 'echo "deb https://apt.postgresql.org/pub/repos/apt $(lsb_release -cs)-pgdg main" > /etc/apt/sources.list.d/pgdg.list'
 wget --quiet -O - https://www.postgresql.org/media/keys/ACCC4CF8.asc | sudo apt-key add -
 
-# Install PostgreSQL 17
+# Install PostgreSQL 18
 sudo apt update
-sudo apt install postgresql-17 postgresql-17-pgvector postgresql-17-cron
+sudo apt install postgresql-18 postgresql-18-pgvector postgresql-18-cron
 ```
 
 **macOS (Homebrew)**:
 
 ```bash
-brew install postgresql@17
-brew services start postgresql@17
+brew install postgresql@18
+brew services start postgresql@18
 
 # Install pgvector
 brew install pgvector
@@ -109,11 +117,11 @@ brew install pgvector
 **RHEL/CentOS/Fedora**:
 
 ```bash
-# Install PostgreSQL 17 repo
+# Install PostgreSQL 18 repo
 sudo dnf install -y https://download.postgresql.org/pub/repos/yum/reporpms/EL-9-x86_64/pgdg-redhat-repo-latest.noarch.rpm
 
 # Install PostgreSQL and extensions
-sudo dnf install -y postgresql17-server postgresql17-contrib postgresql17-pgvector postgresql17-pg_cron
+sudo dnf install -y postgresql18-server postgresql18-contrib postgresql18-pgvector postgresql18-pg_cron
 ```
 
 #### Create Database and User
@@ -180,7 +188,7 @@ This creates an optimized production build in `apps/web/.output/`.
 ### 7. Start the Server
 
 ```bash
-bun run start
+bun run --cwd apps/web start
 ```
 
 The server starts on port 3000 by default.
@@ -208,7 +216,7 @@ Group=quackback
 WorkingDirectory=/opt/quackback
 Environment=NODE_ENV=production
 EnvironmentFile=/opt/quackback/.env
-ExecStart=/home/quackback/.bun/bin/bun run start
+ExecStart=/home/quackback/.bun/bin/bun run --cwd apps/web start
 Restart=always
 RestartSec=10
 

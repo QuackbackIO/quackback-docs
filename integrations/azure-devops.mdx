@@ -1,0 +1,179 @@
+---
+title: "Azure DevOps"
+description: "Create and link Azure DevOps work items from feedback posts."
+icon: "azure-devops"
+---
+
+import { Note, Tip } from '../../../components/docs/mdx-components'
+
+# Azure DevOps
+
+Route feedback into your Azure DevOps boards. Automatically create work items when feedback is submitted, choose the project and work item type, and link them back to the original feedback post. Inbound webhooks keep your feedback post statuses in sync when work items move through your workflow.
+
+## Overview
+
+The Azure DevOps integration enables:
+
+- **Create work items from feedback posts** -- automatically create an Azure DevOps work item when new feedback is submitted
+- **Link posts to work items** -- link feedback posts to Azure DevOps work items for traceability
+- **Status sync** -- update feedback status when work item state changes via inbound webhooks
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- An Azure DevOps organization
+- A Personal Access Token (PAT) with **Work Items (Read & Write)** scope
+
+<Note>
+Azure DevOps uses Personal Access Tokens instead of OAuth. No OAuth application setup is required.
+</Note>
+
+## Setup
+
+### 1. Create a Personal Access Token
+
+1. Go to your Azure DevOps organization
+2. Click your profile icon and select **Personal access tokens**
+3. Click **New Token**
+4. Configure the token:
+   - **Name**: Quackback Integration
+   - **Organization**: Select your organization
+   - **Expiration**: Choose an appropriate duration
+   - **Scopes**: Select **Work Items** > **Read & Write**
+5. Copy the generated token
+
+<Tip>
+Store the PAT securely -- Azure DevOps only shows it once. If you lose it, you will need to create a new one.
+</Tip>
+
+### 2. Connect Azure DevOps
+
+1. Go to **Admin > Settings > Integrations > Azure DevOps**
+2. Enter your **Organization URL** in one of these formats:
+   - `https://dev.azure.com/\{your-org\}` (modern format)
+   - `https://\{your-org\}.visualstudio.com` (legacy format)
+3. Enter the **Personal Access Token** you created
+4. Click **Connect**
+
+Quackback validates the connection by listing your projects. If the credentials are invalid, you will see an error.
+
+### 3. Select a Project and Work Item Type
+
+After connecting:
+
+1. Choose the Azure DevOps project where work items should be created
+2. Select the work item type (e.g., User Story, Bug, Task, Feature) -- the list is fetched from the selected project
+
+The target is stored as a combination of project name and work item type.
+
+### 4. Configure Status Mappings
+
+Map Azure DevOps work item states to Quackback statuses:
+
+1. Go to the Azure DevOps integration settings
+2. Configure status mappings between work item states and Quackback statuses
+3. Azure DevOps states are project-specific (e.g., New, Active, Resolved, Closed) -- map each to the corresponding Quackback status, or set it to ignore
+
+Status sync works via Azure DevOps service hooks. When a linked work item changes state, the corresponding Quackback post status updates automatically.
+
+### 5. Configure Events
+
+Choose which events trigger Azure DevOps actions:
+
+| Event | Action |
+|-------|--------|
+| New post | Create a work item with the feedback details |
+
+<Note>
+The Azure DevOps integration currently creates work items only for `post.created` events. Status changes and comments are handled through the status sync mechanism rather than creating new work items.
+</Note>
+
+### 6. Save and Test
+
+1. Click **Save**
+2. Submit test feedback to verify a work item is created in the selected project
+
+## Work Item Format
+
+When a new feedback post triggers work item creation, the work item includes:
+
+- **Title** (System.Title): The feedback post title
+- **Description** (System.Description): The post content in HTML, followed by metadata including the author, board, vote count, and a link back to the post in Quackback
+
+The description uses HTML formatting, which Azure DevOps renders natively in the work item detail view.
+
+## Status Sync
+
+When status sync is configured, Quackback receives inbound webhooks from Azure DevOps when work items are updated. When a linked work item's state changes:
+
+1. Azure DevOps sends a `workitem.updated` webhook to Quackback
+2. Quackback verifies the request using Basic Authentication
+3. Quackback checks for a `System.State` field change in the payload
+4. If a status mapping exists for the new state, the linked feedback post's status is updated
+
+## Manage the integration
+
+### Pause
+
+Temporarily stop the integration:
+
+1. Go to **Admin > Settings > Integrations > Azure DevOps**
+2. Toggle **Enabled** off
+3. Work item creation and status sync pause, but the connection remains
+
+### Reconnect
+
+If your PAT expires or is revoked:
+
+1. Create a new Personal Access Token in Azure DevOps
+2. Update the token in **Admin > Settings > Integrations > Azure DevOps**
+
+### Disconnect
+
+To fully remove the integration:
+
+1. Go to **Admin > Settings > Integrations > Azure DevOps**
+2. Click **Disconnect**
+3. Confirm the action
+
+<Note>
+Disconnecting removes the connection from Quackback. The Personal Access Token is not revoked automatically -- revoke it manually in Azure DevOps if no longer needed.
+</Note>
+
+## Troubleshooting
+
+### Work Items Not Being Created
+
+1. **Check integration status** -- look for errors in settings
+2. **Verify project selection** -- ensure a project and work item type are selected
+3. **Check event mappings** -- confirm `post.created` is mapped
+4. **PAT permissions** -- the token must have Work Items Read & Write scope
+5. **PAT expiration** -- check that the token has not expired
+
+### Status Sync Not Working
+
+1. **Check status mappings** -- ensure Azure DevOps states are mapped to Quackback statuses
+2. **Verify service hook** -- confirm the Azure DevOps service hook is configured and pointing to the correct callback URL
+3. **Check authentication** -- the Basic Auth credentials must match
+
+### "Authentication Failed" or "Forbidden" Error
+
+The Personal Access Token may be expired or revoked:
+
+1. Check the token status in Azure DevOps
+2. Create a new token if needed
+3. Update the token in Quackback integration settings
+
+### "Organization Not Found" Error
+
+Verify the organization URL format:
+- Modern: `https://dev.azure.com/\{your-org\}`
+- Legacy: `https://\{your-org\}.visualstudio.com`
+
+Ensure the PAT has access to the specified organization.
+
+## Next Steps
+
+- [GitHub](/integrations/github) - GitHub issue integration
+- [Jira](/integrations/jira) - Jira issue integration
+- [Integrations Overview](/integrations/overview) - All integrations

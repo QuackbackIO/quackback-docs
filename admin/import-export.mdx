@@ -22,12 +22,11 @@ Import posts into any board:
 ### Import Process
 
 1. Go to **Admin → Settings → Boards**
-2. Select the target board from the dropdown
+2. Select the target board
 3. Click the **Import Data** tab
-4. Upload your CSV file
-5. Map columns to fields
-6. Review and confirm
-7. Import completes
+4. Drop a CSV file or click to browse
+5. Click **Import Data** to start the import
+6. Review the results
 
 ### CSV Format
 
@@ -36,26 +35,26 @@ Import posts into any board:
 | Column | Description |
 |--------|-------------|
 | `title` | Post title (required) |
+| `content` | Post body (required) |
 
 #### Optional Columns
 
 | Column | Description | Format |
 |--------|-------------|--------|
-| `content` | Post body | Plain text or markdown |
-| `status` | Status name | Must match existing status |
+| `status` | Status slug | Must match existing status slug |
 | `tags` | Tag names | Comma-separated |
-| `author_email` | Author email | Valid email |
+| `board` | Board slug | Must match existing board |
 | `author_name` | Author display name | Text |
+| `author_email` | Author email | Valid email |
 | `vote_count` | Number of votes | Integer |
 | `created_at` | Creation date | ISO 8601 |
 
 ### Example CSV
 
 ```csv
-title,content,status,tags,author_email,author_name,vote_count,created_at
-"Dark mode support","Add dark theme option for the dashboard","Planned","ui,accessibility",jane@example.com,Jane Doe,42,2024-01-15T10:30:00Z
-"Export to PDF","Allow exporting reports as PDF files","Under Review","reports,export",john@example.com,John Smith,18,2024-01-10T08:00:00Z
-"Mobile app","Native mobile application for iOS and Android","Planned","mobile",,,25,2024-01-01T00:00:00Z
+title,content,status,tags,board,author_name,author_email,vote_count,created_at
+"Add dark mode support","It would be great to have a dark mode option for the app.","open","feature,ui","","John Doe","john@example.com","5","2024-01-15T10:30:00Z"
+"Fix login timeout","Users are being logged out too quickly.","under_review","bug","","","","2",""
 ```
 
 ### Import Limits
@@ -66,22 +65,12 @@ title,content,status,tags,author_email,author_name,vote_count,created_at
 | Rows | 10,000 |
 | Columns | Unlimited |
 
-### Column Mapping
-
-During import, you'll map CSV columns to Quackback fields:
-
-1. Preview shows first few rows
-2. Select corresponding field for each column
-3. Skip columns you don't want to import
-4. Confirm mapping
-
 ### Handle statuses
 
 <Note>
-Statuses in CSV must match existing status names:
-- Case-insensitive matching
-- Unmatched statuses use default
-- You can create statuses beforehand
+Statuses in CSV must match existing status slugs (e.g., `open`, `under_review`, `planned`):
+- Unmatched statuses use the default status
+- Create any custom statuses before importing
 </Note>
 
 ### Handle tags
@@ -93,27 +82,21 @@ Tags are created automatically:
 
 ### Import Results
 
-After import, you'll see:
+After import, you'll see a summary showing:
 
-```
-Import Complete
-
-✓ 150 posts imported
-• 3 posts skipped (duplicate titles)
-• 5 new tags created
-• 2 rows had errors (see details)
-
-[View Imported Posts] [Download Error Report]
-```
+- Number of posts imported
+- Number of rows skipped
+- Number of new tags created
+- Any row-level errors (expandable to view details)
 
 ## CSV Export
 
 ### Export Process
 
 1. Go to **Admin → Settings → Boards**
-2. Select a board from the dropdown
+2. Select a board
 3. Click the **Export Data** tab
-4. Click the export button
+4. Click **Export CSV**
 5. Download starts automatically
 
 ### Export Format
@@ -122,18 +105,15 @@ Exported CSV includes:
 
 | Column | Description |
 |--------|-------------|
-| `id` | Post TypeID |
 | `title` | Post title |
 | `content` | Post content |
 | `status` | Status name |
 | `tags` | Comma-separated tags |
-| `board` | Board name |
+| `board` | Board slug |
 | `author_name` | Author display name |
 | `author_email` | Author email |
 | `vote_count` | Number of votes |
-| `comment_count` | Number of comments |
 | `created_at` | Creation timestamp |
-| `updated_at` | Last update timestamp |
 
 ### Export Scope
 
@@ -172,7 +152,7 @@ If you've been tracking feedback in a spreadsheet:
 
 1. Add column headers matching Quackback format
 2. Ensure dates are ISO 8601 format
-3. Clean up status names to match your statuses
+3. Clean up status values to match your status slugs
 4. Export as CSV (UTF-8 encoding)
 
 ## Best Practices
@@ -180,7 +160,7 @@ If you've been tracking feedback in a spreadsheet:
 ### Before Import
 
 <Tip>
-1. **Create statuses first** - Import matches by name
+1. **Create statuses first** - Import matches by slug
 2. **Clean your data** - Remove duplicates, fix formatting
 3. **Test with sample** - Import a few rows first
 4. **Backup existing data** - Export current posts

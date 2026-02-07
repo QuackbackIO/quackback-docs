@@ -48,11 +48,10 @@ Create a new comment on a post. Supports nested replies via `parentId`.
     postId: string
     content: string
     parentId: string | null
-    memberId: string | null
-    authorName: string | null
-    authorEmail: string | null
+    memberId: string
     isTeamMember: boolean
     createdAt: Date
+    deletedAt: Date | null
   }
   post: {
     id: string
@@ -65,7 +64,7 @@ Create a new comment on a post. Supports nested replies via `parentId`.
 **Example:**
 
 ```typescript
-import { createCommentFn } from '@/lib/server-functions/comments'
+import { createCommentFn } from '@/lib/server/functions/comments'
 
 // Create a root-level comment
 const result = await createCommentFn({
@@ -102,13 +101,13 @@ const reply = await createCommentFn({
 
 ### Update Comment (Admin)
 
-Update a comment as a team member.
+Update a comment as a team member or comment author.
 
 **Function:** `updateCommentFn`
 
 **Method:** `POST`
 
-**Authentication:** `admin` or `member` role required (or comment author)
+**Authentication:** Any authenticated user (`admin`, `member`, or `user` role). The service layer checks that the caller is either a team member or the comment author.
 
 **Parameters:**
 
@@ -120,7 +119,7 @@ Update a comment as a team member.
 **Example:**
 
 ```typescript
-import { updateCommentFn } from '@/lib/server-functions/comments'
+import { updateCommentFn } from '@/lib/server/functions/comments'
 
 const updated = await updateCommentFn({
   data: {
@@ -160,7 +159,7 @@ Team members can always edit any comment.
 **Example:**
 
 ```typescript
-import { userEditCommentFn } from '@/lib/server-functions/comments'
+import { userEditCommentFn } from '@/lib/server/functions/comments'
 
 const updated = await userEditCommentFn({
   data: {
@@ -180,7 +179,7 @@ Hard delete a comment. This permanently removes the comment and all its data.
 
 **Method:** `POST`
 
-**Authentication:** `admin` or `member` role required (or comment author)
+**Authentication:** Any authenticated user (`admin`, `member`, or `user` role). The service layer checks that the caller is either a team member or the comment author.
 
 **Parameters:**
 
@@ -219,7 +218,7 @@ Users can only delete their own comments when:
 **Example:**
 
 ```typescript
-import { userDeleteCommentFn } from '@/lib/server-functions/comments'
+import { userDeleteCommentFn } from '@/lib/server/functions/comments'
 
 const result = await userDeleteCommentFn({
   data: {
@@ -265,7 +264,7 @@ Add or remove an emoji reaction on a comment. If the user has already reacted wi
 **Example:**
 
 ```typescript
-import { toggleReactionFn } from '@/lib/server-functions/comments'
+import { toggleReactionFn } from '@/lib/server/functions/comments'
 
 const result = await toggleReactionFn({
   data: {
@@ -346,7 +345,7 @@ Set a comment as the official response for its post.
 **Example:**
 
 ```typescript
-import { pinCommentFn, canPinCommentFn } from '@/lib/server-functions/comments'
+import { pinCommentFn, canPinCommentFn } from '@/lib/server/functions/comments'
 
 // First check if the comment can be pinned
 const { canPin, reason } = await canPinCommentFn({
@@ -385,7 +384,7 @@ Remove the pinned comment from a post.
 **Example:**
 
 ```typescript
-import { unpinCommentFn } from '@/lib/server-functions/comments'
+import { unpinCommentFn } from '@/lib/server/functions/comments'
 
 await unpinCommentFn({
   data: { postId: 'post_01h455vb4pex5vsknk084sn02q' },
@@ -426,7 +425,7 @@ Check if the current user can edit or delete a comment.
 **Example:**
 
 ```typescript
-import { getCommentPermissionsFn } from '@/lib/server-functions/comments'
+import { getCommentPermissionsFn } from '@/lib/server/functions/comments'
 
 const permissions = await getCommentPermissionsFn({
   data: { commentId: 'comment_01h455vb4pex5vsknk084sn02q' },

@@ -146,18 +146,18 @@ Runs Playwright end-to-end tests in headless mode.
 ### E2E with UI
 
 ```bash
-bun run test:e2e:ui
+cd apps/web && bun run test:e2e:ui
 ```
 
-Opens Playwright's interactive test UI.
+Opens Playwright's interactive test UI. Must be run from `apps/web/` directory.
 
 ### E2E Headed
 
 ```bash
-bun run test:e2e:headed
+cd apps/web && bun run test:e2e:headed
 ```
 
-Runs E2E tests in visible browser windows.
+Runs E2E tests in visible browser windows. Must be run from `apps/web/` directory.
 
 ## Setup & Utilities
 

@@ -1,0 +1,176 @@
+---
+title: "Jira"
+description: "Create and sync Jira issues from feedback posts."
+icon: "jira"
+---
+
+import { Note, Tip } from '../../../components/docs/mdx-components'
+
+# Jira
+
+Push feedback into your Jira workflow. Automatically create Jira issues when feedback is submitted, choose the project and issue type, and keep statuses synchronized between Quackback and Jira. When an issue transitions through your Jira workflow, the linked feedback post updates too.
+
+## Overview
+
+The Jira integration enables:
+
+- **Create issues from feedback posts** -- automatically create a Jira issue with a configurable project and issue type when new feedback is submitted
+- **Link posts to issues** -- link feedback posts to Jira issues for traceability
+- **Status sync** -- map Jira workflow statuses to feedback post statuses and keep them in sync via inbound webhooks
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- A Jira Cloud site with admin access
+- An Atlassian OAuth application (created at [Atlassian Developer Console](https://developer.atlassian.com/console/myapps/))
+
+## Setup
+
+### 1. Create an Atlassian OAuth Application
+
+1. Go to [Atlassian Developer Console](https://developer.atlassian.com/console/myapps/)
+2. Create a new OAuth 2.0 (3LO) application
+3. Configure the callback URL to point to your Quackback instance
+4. Copy the **Client ID** and **Client Secret**
+
+### 2. Configure Platform Credentials
+
+1. Go to **Admin > Settings > Integrations > Jira**
+2. Enter the following credentials:
+   - **Client ID** from your Atlassian OAuth application
+   - **Client Secret** from your Atlassian OAuth application
+
+### 3. Connect Your Site
+
+1. Click **Connect to Jira**
+2. You'll be redirected to Atlassian to authorize the application
+3. Select the Jira site to connect
+4. Review the permissions and click **Accept**
+
+The app requests these OAuth scopes: `read:jira-work`, `write:jira-work`, `offline_access`.
+
+- `read:jira-work` -- read projects, issues, and workflow states
+- `write:jira-work` -- create and update issues
+- `offline_access` -- refresh the access token when it expires
+
+### 4. Select a Project
+
+Back in Quackback:
+
+1. Choose the Jira project where issues should be created
+2. Select the issue type (e.g., Task, Story, Bug) -- the list is fetched from the selected project
+
+### 5. Configure Status Mappings
+
+Map Jira workflow states to Quackback statuses:
+
+1. Go to the Jira integration settings
+2. Configure status mappings between Jira states and Quackback statuses
+3. Mappings are configurable per workspace -- map each Jira state name to the corresponding Quackback status, or set it to ignore
+
+Status sync works via Jira webhooks. When a linked Jira issue changes workflow state, the corresponding Quackback post status updates automatically.
+
+<Note>
+Jira Cloud webhooks expire after 30 days by default. Quackback handles webhook re-registration automatically.
+</Note>
+
+### 6. Configure Events
+
+Choose which events trigger Jira actions:
+
+| Event | Action |
+|-------|--------|
+| New post | Create a Jira issue with the feedback details |
+
+<Note>
+The Jira integration currently creates issues only for `post.created` events. Status changes and comments are handled through the status sync mechanism rather than creating new issues.
+</Note>
+
+### 7. Save and Test
+
+1. Click **Save**
+2. Submit test feedback to verify an issue is created in the selected Jira project
+
+## Issue Format
+
+When a new feedback post triggers issue creation, the Jira issue includes:
+
+- **Summary**: The feedback post title
+- **Description**: The post content in Atlassian Document Format (ADF), followed by metadata including the author, board, vote count, and a link back to the post in Quackback
+
+The description is formatted using Jira's native rich text format, so it renders correctly in the Jira UI.
+
+## Status Sync
+
+When status sync is configured, Quackback registers a webhook with Jira to receive issue update events. When a linked Jira issue's workflow state changes:
+
+1. Jira sends a `jira:issue_updated` webhook to Quackback
+2. Quackback verifies the signature using HMAC-SHA256 via the `X-Hub-Signature` header
+3. Quackback checks the changelog for a status field change
+4. If a status mapping exists for the new state, the linked feedback post's status is updated
+
+## Manage the integration
+
+### Pause
+
+Temporarily stop the integration:
+
+1. Go to **Admin > Settings > Integrations > Jira**
+2. Toggle **Enabled** off
+3. Issue creation and status sync pause, but the connection remains
+
+### Reconnect
+
+If you see connection errors:
+
+1. Click **Reconnect**
+2. Re-authorize in Jira
+3. Tokens are automatically refreshed when they expire (within 5 minutes of expiry)
+
+### Disconnect
+
+To fully remove the integration:
+
+1. Go to **Admin > Settings > Integrations > Jira**
+2. Click **Disconnect**
+3. Confirm the action
+
+<Note>
+Disconnecting removes the registered webhook. Jira does not support server-side token revocation, but the tokens become unusable once the connection is removed.
+</Note>
+
+## Troubleshooting
+
+### Issues Not Being Created
+
+1. **Check integration status** -- look for errors in settings
+2. **Verify project selection** -- ensure a Jira project is selected
+3. **Check issue type** -- confirm a valid issue type is configured
+4. **Check event mappings** -- confirm `post.created` is mapped
+5. **Admin permissions** -- the connected Jira account must have permission to create issues in the selected project
+
+### Status Sync Not Working
+
+1. **Check status mappings** -- ensure Jira workflow states are mapped to Quackback statuses
+2. **Verify webhook** -- the Jira webhook may need to be re-registered (webhooks expire after 30 days)
+3. **Check permissions** -- the connected account needs access to the project's issues
+
+### "Authentication Failed" Error
+
+Jira OAuth tokens expire and are automatically refreshed. If refresh fails:
+
+1. Click **Reconnect**
+2. Re-authorize the app in Jira
+
+### "Cloud ID Not Found" Error
+
+This usually means the Atlassian site was not properly selected during authorization:
+
+1. Click **Reconnect**
+2. Ensure you select a Jira site when authorizing
+
+## Next Steps
+
+- [GitHub](/integrations/github) - GitHub issue integration
+- [Webhooks](/integrations/webhooks) - Build custom integrations
+- [Integrations Overview](/integrations/overview) - All integrations

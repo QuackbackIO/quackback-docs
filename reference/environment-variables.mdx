@@ -19,6 +19,7 @@ These variables must be set for Quackback to run.
 | `DATABASE_URL` | PostgreSQL connection string | `postgresql://postgres:password@localhost:5432/quackback` |
 | `SECRET_KEY` | Secret key for authentication and encryption (32+ chars). Used for session signing and deriving encryption keys. | `openssl rand -base64 32` |
 | `BASE_URL` | Public URL for your instance (used for auth, emails, and OAuth callbacks) | `https://feedback.example.com` |
+| `REDIS_URL` | Redis/Dragonfly connection for background job queue (BullMQ). Dragonfly is included in docker-compose. | `redis://localhost:6379` |
 
 ## Email Configuration
 
@@ -74,42 +75,9 @@ Create at: [Google Cloud Console](https://console.cloud.google.com/apis/credenti
 
 Callback URL: `https://your-domain.com/api/auth/callback/google`
 
-### Microsoft / Azure AD
-
-| Variable | Description |
-|----------|-------------|
-| `MICROSOFT_CLIENT_ID` | Azure AD application ID |
-| `MICROSOFT_CLIENT_SECRET` | Azure AD client secret |
-| `MICROSOFT_TENANT_ID` | Azure AD tenant ID (default: `common`) |
-
-## Integrations
-
-### Slack
-
-| Variable | Description |
-|----------|-------------|
-| `SLACK_CLIENT_ID` | Slack App client ID |
-| `SLACK_CLIENT_SECRET` | Slack App client secret |
-
-Create at: [Slack API](https://api.slack.com/apps)
-
-Required scopes: `channels:read`, `chat:write`, `team:read`
-
-### Linear
-
-| Variable | Description |
-|----------|-------------|
-| `LINEAR_CLIENT_ID` | Linear OAuth client ID |
-| `LINEAR_CLIENT_SECRET` | Linear OAuth client secret |
-
-### GitHub App (Issue Sync)
-
-| Variable | Description |
-|----------|-------------|
-| `GITHUB_APP_ID` | GitHub App ID for issue sync |
-| `GITHUB_APP_PRIVATE_KEY` | GitHub App private key |
-
-Create at: [GitHub Apps](https://github.com/settings/apps)
+<Note>
+Integration credentials (Slack, Microsoft Teams, Linear, etc.) are configured through the admin UI and stored securely in the database, not as environment variables.
+</Note>
 
 ## AI
 
@@ -147,6 +115,7 @@ If not configured, image upload is disabled in the rich text editor. For local d
 DATABASE_URL="postgresql://postgres:password@localhost:5432/quackback"
 SECRET_KEY="your-32-character-minimum-secret-key-here"
 BASE_URL="https://feedback.yourcompany.com"
+REDIS_URL="redis://localhost:6379"
 
 # ===================
 # Email (choose one)
@@ -171,11 +140,6 @@ GITHUB_CLIENT_SECRET="your-github-client-secret"
 GOOGLE_CLIENT_ID="your-google-client-id"
 GOOGLE_CLIENT_SECRET="your-google-client-secret"
 
-# ===================
-# Integrations (optional)
-# ===================
-SLACK_CLIENT_ID="your-slack-client-id"
-SLACK_CLIENT_SECRET="your-slack-client-secret"
 ```
 
 ## Validation

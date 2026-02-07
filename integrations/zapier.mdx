@@ -1,0 +1,200 @@
+---
+title: "Zapier"
+description: "Connect Quackback to 6,000+ apps with Zapier automations."
+icon: "plug"
+---
+
+# Zapier
+
+Automate your feedback workflow. Connect Quackback to 6,000+ apps through Zapier, triggering Zaps when new feedback arrives, statuses change, or users comment. Push feedback data to spreadsheets, CRMs, project management tools, and more.
+
+## Overview
+
+The Zapier integration triggers webhooks when:
+- New feedback is submitted
+- Post status changes
+- New comments are posted
+
+Unlike other integrations, Zapier uses webhook URLs instead of OAuth. You create a Zap in Zapier, copy the webhook URL, and paste it into Quackback.
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- A [Zapier](https://zapier.com) account (free or paid)
+
+## Setup
+
+### 1. Create a Zap in Zapier
+
+1. Log in to [Zapier](https://zapier.com)
+2. Click **Create Zap**
+3. For the trigger, choose **Webhooks by Zapier**
+4. Select **Catch Hook** as the trigger event
+5. Zapier provides a webhook URL (starting with `https://hooks.zapier.com/...`)
+6. Copy this URL
+
+### 2. Connect in Quackback
+
+1. Go to **Admin > Settings > Integrations > Zapier**
+2. Paste the webhook URL from Zapier
+3. Click **Save**
+
+Quackback sends a test ping to the webhook URL to verify it is reachable. If the test fails, check that the URL is correct and that the Zap is active.
+
+### 3. Configure Your Zap
+
+Back in Zapier:
+
+1. Click **Test trigger** to receive the test event from Quackback
+2. Add an action step (e.g., create a Google Sheets row, send an email, create a Jira ticket)
+3. Map the fields from the Quackback payload to your action
+4. Turn on the Zap
+
+## Webhook Payload
+
+Quackback sends a structured JSON payload to the Zapier webhook. The payload format depends on the event type.
+
+**All payloads include:**
+
+| Field | Description |
+|-------|-------------|
+| `event` | Event type (`post.created`, `post.status_changed`, `comment.created`) |
+| `timestamp` | ISO 8601 timestamp |
+| `portal_url` | Your Quackback portal URL |
+| `post` | Post details (always present) |
+
+### post.created
+
+```json
+{
+  "event": "post.created",
+  "timestamp": "2025-01-15T10:30:00Z",
+  "portal_url": "https://feedback.example.com",
+  "post": {
+    "id": "post_abc123",
+    "title": "Add dark mode support",
+    "content": "It would be great to have a dark mode...",
+    "board": "feature-requests",
+    "url": "https://feedback.example.com/b/feature-requests/posts/post_abc123",
+    "author_name": "Jane Smith",
+    "author_email": "jane@example.com",
+    "vote_count": 1
+  }
+}
+```
+
+### post.status\_changed
+
+```json
+{
+  "event": "post.status_changed",
+  "timestamp": "2025-01-15T10:30:00Z",
+  "portal_url": "https://feedback.example.com",
+  "post": {
+    "id": "post_abc123",
+    "title": "Add dark mode support",
+    "board": "feature-requests",
+    "url": "https://feedback.example.com/b/feature-requests/posts/post_abc123"
+  },
+  "status_change": {
+    "previous": "Under Review",
+    "new": "Planned"
+  }
+}
+```
+
+### comment.created
+
+```json
+{
+  "event": "comment.created",
+  "timestamp": "2025-01-15T10:30:00Z",
+  "portal_url": "https://feedback.example.com",
+  "post": {
+    "id": "post_abc123",
+    "title": "Add dark mode support",
+    "board": "feature-requests",
+    "url": "https://feedback.example.com/b/feature-requests/posts/post_abc123"
+  },
+  "comment": {
+    "id": "comment_xyz789",
+    "content": "Great idea! We are considering this for Q2.",
+    "author_name": "Admin",
+    "author_email": "admin@example.com"
+  }
+}
+```
+
+## Example Zaps
+
+### New feedback to Google Sheets
+
+1. **Trigger**: Webhooks by Zapier > Catch Hook
+2. **Action**: Google Sheets > Create Spreadsheet Row
+3. Map: title, content, author\_email, board, url
+
+### Status change to Slack message
+
+1. **Trigger**: Webhooks by Zapier > Catch Hook
+2. **Filter**: Only continue if `event` equals `post.status_changed`
+3. **Action**: Slack > Send Channel Message
+
+### New post to Jira issue
+
+1. **Trigger**: Webhooks by Zapier > Catch Hook
+2. **Filter**: Only continue if `event` equals `post.created`
+3. **Action**: Jira > Create Issue
+4. Map: title to Summary, content to Description
+
+## Manage the integration
+
+### Update Webhook URL
+
+If you need to point to a different Zap:
+
+1. Go to **Admin > Settings > Integrations > Zapier**
+2. Enter the new webhook URL
+3. Click **Save**
+
+### Disconnect
+
+To remove the Zapier integration:
+
+1. Go to **Admin > Settings > Integrations > Zapier**
+2. Click **Disconnect**
+3. Confirm the action
+
+<Note>
+Disconnecting removes the webhook URL from Quackback. You should also disable or delete the Zap in Zapier to prevent failed webhook deliveries.
+</Note>
+
+## Troubleshooting
+
+### Zap Not Triggering
+
+1. **Check Zap status** -- ensure the Zap is turned on in Zapier
+2. **Verify webhook URL** -- confirm the URL starts with `https://hooks.zapier.com/`
+3. **Check integration status** -- look for errors in Quackback settings
+4. **Test the connection** -- resave the webhook URL to send a new test ping
+
+### "Zap is No Longer Active" Error
+
+The Zap may have been paused or deleted in Zapier:
+
+1. Log in to Zapier and check the Zap status
+2. Re-enable the Zap or create a new one
+3. Update the webhook URL in Quackback if needed
+
+### Webhook Delivery Failures
+
+If webhook deliveries fail with 5xx errors or timeouts, Quackback automatically retries the delivery. If failures persist, check the Zap's webhook configuration in Zapier.
+
+## Security
+
+Quackback only sends webhooks to `hooks.zapier.com` URLs. Webhook URLs pointing to any other domain are rejected to prevent data exfiltration.
+
+## Next Steps
+
+- [Webhooks](/integrations/webhooks) - Build custom integrations with generic webhooks
+- [Slack](/integrations/slack) - Direct Slack notification integration
+- [Integrations Overview](/integrations/overview) - All integrations

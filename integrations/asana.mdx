@@ -1,0 +1,159 @@
+---
+title: "Sync feedback with Asana"
+description: "Create Asana tasks from feedback and keep status in sync."
+icon: "plug"
+---
+
+# Asana
+
+Turn feedback into tasks. Automatically create Asana tasks when feedback is submitted, and keep statuses synchronized between Quackback and Asana. When a task moves between sections in your Asana project, the linked feedback post updates too.
+
+## Overview
+
+The Asana integration enables:
+
+- **Create Asana tasks from feedback posts** -- automatically create a task when new feedback is submitted
+- **Link posts to tasks** -- link feedback posts to Asana tasks for traceability
+- **Status sync** -- keep feedback status in sync with Asana task sections via inbound webhooks
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- An Asana account with access to the target workspace
+- An Asana OAuth application (created at [Asana Developer Console](https://developers.asana.com/docs/oauth))
+
+## Setup
+
+### 1. Create an Asana OAuth Application
+
+1. Go to [Asana Developer Console](https://developers.asana.com/docs/oauth)
+2. Create a new OAuth application
+3. Copy the **Client ID** and **Client Secret**
+
+### 2. Configure Platform Credentials
+
+1. Go to **Admin > Settings > Integrations > Asana**
+2. Enter the following credentials:
+   - **Client ID** from your Asana OAuth application
+   - **Client Secret** from your Asana OAuth application
+
+### 3. Connect Your Workspace
+
+1. Click **Connect to Asana**
+2. You'll be redirected to Asana to authorize the application
+3. Review the permissions and click **Allow**
+
+After authorization, Quackback automatically detects your Asana workspace.
+
+### 4. Select a Project
+
+Back in Quackback:
+
+1. Choose the Asana project where tasks should be created
+2. Only active (non-archived) projects are shown
+
+### 5. Configure Status Mappings
+
+Map Asana sections to Quackback statuses:
+
+1. Go to the Asana integration settings
+2. Configure status mappings between Asana section names and Quackback statuses
+3. Each Asana section name can be mapped to a corresponding Quackback status, or set to ignore
+
+Status sync works via Asana webhooks. When a linked Asana task is moved to a different section, the corresponding Quackback post status updates automatically.
+
+### 6. Configure Events
+
+Choose which events trigger Asana actions:
+
+| Event | Action |
+|-------|--------|
+| New post | Create an Asana task with the feedback details |
+
+<Note>
+The Asana integration currently creates tasks only for `post.created` events. Status changes and comments are handled through the status sync mechanism rather than creating new tasks.
+</Note>
+
+### 7. Save and Test
+
+1. Click **Save**
+2. Submit test feedback to verify a task is created in Asana
+
+## Task Format
+
+When a new feedback post triggers task creation, the Asana task includes:
+
+- **Name**: The feedback post title
+- **Notes** (HTML): The post content, followed by metadata including the author, board, vote count, and a link back to the post in Quackback
+
+The task is created in the selected project within your connected Asana workspace.
+
+## Status Sync
+
+When status sync is configured, Quackback registers a webhook with Asana to receive task change events. Asana uses sections within a project as status indicators. When a linked task is moved to a different section:
+
+1. Asana sends a compact webhook event to Quackback
+2. Quackback fetches the task details via the Asana API to determine the current section
+3. If a status mapping exists for that section name, the linked feedback post's status is updated
+
+The webhook uses Asana's handshake protocol -- the initial setup request includes an `X-Hook-Secret` header that Quackback echoes back. Subsequent events are verified using HMAC-SHA256 via the `X-Hook-Signature` header.
+
+The webhook is filtered to only receive task change events related to section membership, keeping traffic minimal.
+
+## Manage the integration
+
+### Pause
+
+Temporarily stop the integration:
+
+1. Go to **Admin > Settings > Integrations > Asana**
+2. Toggle **Enabled** off
+3. Task creation and status sync pause, but the connection remains
+
+### Reconnect
+
+If you see connection errors:
+
+1. Click **Reconnect**
+2. Re-authorize in Asana
+3. Tokens are automatically refreshed when they expire (Asana access tokens last approximately one hour)
+
+### Disconnect
+
+To fully remove the integration:
+
+1. Go to **Admin > Settings > Integrations > Asana**
+2. Click **Disconnect**
+3. Confirm the action
+
+<Note>
+Disconnecting revokes the OAuth token with Asana and removes the registered webhook.
+</Note>
+
+## Troubleshooting
+
+### Tasks Not Being Created
+
+1. **Check integration status** -- look for errors in settings
+2. **Verify project selection** -- ensure an Asana project is selected
+3. **Check event mappings** -- confirm `post.created` is mapped
+4. **Workspace access** -- the connected Asana account must have access to the selected project
+
+### Status Sync Not Working
+
+1. **Check status mappings** -- ensure Asana section names are mapped to Quackback statuses
+2. **Verify webhook** -- the Asana webhook may need to be re-registered
+3. **Section-based status** -- Asana uses sections (not custom fields) as the status indicator for sync
+
+### "Authentication Failed" Error
+
+Asana OAuth access tokens expire after approximately one hour and are automatically refreshed. If refresh fails:
+
+1. Click **Reconnect**
+2. Re-authorize the app in Asana
+
+## Next Steps
+
+- [Linear](/integrations/linear) - Linear issue sync integration
+- [Webhooks](/integrations/webhooks) - Build custom integrations
+- [Integrations Overview](/integrations/overview) - All integrations

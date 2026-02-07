@@ -47,6 +47,7 @@ Common issues and solutions for self-hosted Quackback deployments.
    ```bash
    # Must be set:
    DATABASE_URL
+   REDIS_URL
    SECRET_KEY
    BASE_URL
    ```
@@ -121,7 +122,7 @@ Only use `db:reset` in development environments. This will delete all data.
    ```yaml
    services:
      postgres:
-       image: pgvector/pgvector:pg17
+       image: pgvector/pgvector:pg18
    ```
 
 ## Authentication Problems
@@ -314,7 +315,7 @@ In development mode without email configuration, OTP codes are printed to the se
 1. **Check volume mount**
    ```yaml
    volumes:
-     - postgres_data:/var/lib/postgresql/data
+     - postgres_data:/var/lib/postgresql
    ```
 
 2. **Fix permissions**

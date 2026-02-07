@@ -1,12 +1,12 @@
 ---
 title: "Authentication"
-description: "Passwordless authentication with email codes, OAuth, and OIDC."
+description: "Passwordless authentication with email codes and OAuth."
 icon: "lock"
 ---
 
 # Authentication
 
-No more password resets. Quackback uses passwordless authentication (email codes, OAuth, or OIDC) so users sign in quickly and securely without another password to forget.
+No more password resets. Quackback uses passwordless authentication (email codes or OAuth) so users sign in quickly and securely without another password to forget.
 
 ## Authentication Flows
 
@@ -25,7 +25,6 @@ Regular users who submit and vote on feedback:
 |--------|-------------|
 | Email OTP | 6-digit code sent to email |
 | OAuth | GitHub, Google |
-| OIDC | Custom OpenID Connect identity provider |
 
 Configure in: **[Admin → Settings → Portal Authentication](/admin/portal-auth)**
 
@@ -37,7 +36,6 @@ Admins and staff who manage feedback in the admin dashboard:
 |--------|-------------|
 | Email OTP | 6-digit code sent to email (password auth is disabled) |
 | OAuth | GitHub, Google |
-| OIDC SSO | Connect to your identity provider |
 
 Configure in: **[Admin → Settings → Security](/admin/security)**
 
@@ -75,7 +73,7 @@ EMAIL_FROM="feedback@yourcompany.com"
 ### GitHub
 
 1. Create OAuth App at [GitHub Developer Settings](https://github.com/settings/developers)
-2. Set callback URL: `https://your-domain.com/api/auth/oauth/github`
+2. Set callback URL: `https://your-domain.com/api/auth/callback/github`
 3. Add to `.env`:
 
 ```bash
@@ -86,17 +84,13 @@ GITHUB_CLIENT_SECRET="your-client-secret"
 ### Google
 
 1. Create credentials at [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
-2. Set authorized redirect URI: `https://your-domain.com/api/auth/oauth/google`
+2. Set authorized redirect URI: `https://your-domain.com/api/auth/callback/google`
 3. Add to `.env`:
 
 ```bash
 GOOGLE_CLIENT_ID="your-client-id"
 GOOGLE_CLIENT_SECRET="your-client-secret"
 ```
-
-<Note>
-Microsoft OAuth is not currently supported.
-</Note>
 
 ## Sessions
 
@@ -109,7 +103,7 @@ Microsoft OAuth is not currently supported.
 ### Session Storage
 
 Sessions are stored in PostgreSQL:
-- `sessions` table for active sessions
+- `session` table for active sessions
 - Automatic cleanup of expired sessions
 
 ## Roles & Permissions
@@ -145,10 +139,10 @@ Better Auth provides automatic CSRF protection using trusted origin validation. 
 
 - OTP code length: 6 digits
 - OTP expiration: 10 minutes
-- Magic link expiration: 7 days (used for invitations)
+- Magic link expiration: 7 days (used for team member invitations)
 
 <Warning>
-Rate limiting is not currently implemented at the application level. Consider using a reverse proxy (nginx, Cloudflare) for rate limiting in production.
+Rate limiting for authentication is not currently implemented at the application level. The resend cooldown (60 seconds) is enforced client-side only. Consider using a reverse proxy (nginx, Cloudflare) for rate limiting in production.
 </Warning>
 
 ## Customization
@@ -158,8 +152,7 @@ Rate limiting is not currently implemented at the application level. Consider us
 Control what sign-in methods are available to portal users (customers):
 
 1. Go to **Admin → Settings → Portal Authentication**
-2. Toggle methods on/off (Email, GitHub, Google, OIDC)
-3. Configure custom OIDC if needed
+2. Toggle methods on/off (Email, GitHub, Google)
 
 See [Portal Authentication](/admin/portal-auth) for details.
 
@@ -169,7 +162,6 @@ Control what sign-in methods are available to team members (employees):
 
 1. Go to **Admin → Settings → Security**
 2. Toggle methods on/off (Email, GitHub, Google)
-3. Configure OIDC if needed
 
 See [Security](/admin/security) for details.
 
@@ -195,6 +187,5 @@ See [Security](/admin/security) for details.
 
 ## Next Steps
 
-- [Email OTP](/auth/email-otp) - Magic link setup
+- [Email OTP](/auth/email-otp) - Email code setup
 - [OAuth](/auth/oauth) - Social login configuration
-- [SSO](/auth/sso) - OIDC Single Sign-On

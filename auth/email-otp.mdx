@@ -113,8 +113,8 @@ The template is built with [React Email](https://react.email) components located
 
 Administrators can enable or disable email OTP for portal users:
 
-1. Navigate to **Admin > Settings > Authentication**
-2. Find the **Email** toggle under Portal Authentication
+1. Navigate to **Admin > Settings > Portal Authentication**
+2. Find the **Email** toggle
 3. Enable or disable as needed
 
 <Note>
@@ -144,14 +144,9 @@ At least one authentication method must remain enabled.
 2. **Typo in code** - Verify the 6-digit code matches exactly
 3. **Code already used** - Each code can only be used once
 
-### Rate Limiting
+### Resend Cooldown
 
-To prevent abuse, OTP requests are rate-limited:
-
-- **3 requests per minute** per email address
-- **Cooldown**: 60 seconds between resend attempts
-
-If rate limited, wait and try again.
+To prevent abuse, the UI enforces a **60 second cooldown** between resend attempts. This cooldown is client-side only; there is no server-side rate limiting on OTP requests. Consider using a reverse proxy (nginx, Cloudflare) for server-side rate limiting in production.
 
 ### SMTP Connection Issues
 
@@ -201,6 +196,5 @@ This allows testing the full authentication flow without email configuration.
 
 ## Related Documentation
 
-- [OAuth Providers](/auth/oauth) - Social login with GitHub, Google, Microsoft
-- [SSO](/auth/sso) - OIDC Single Sign-On
+- [OAuth Providers](/auth/oauth) - Social login with GitHub and Google
 - [Authentication Overview](/auth/overview) - General auth architecture

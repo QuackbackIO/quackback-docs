@@ -13,11 +13,11 @@ Don't check another dashboard. Send feedback notifications where your team alrea
 | Integration | Status | Description |
 |-------------|--------|-------------|
 | [Slack](/integrations/slack) | Available | Post notifications to Slack channels |
+| [Discord](/integrations/discord) | Available | Post notifications to Discord channels |
+| [Linear](/integrations/linear) | Available | Create issues and sync statuses with Linear |
 | [Webhooks](/integrations/webhooks) | Available | Send signed events to any HTTP endpoint |
 | [REST API](/api/overview) | Available | Full programmatic access to all resources |
 | [MCP](/getting-started/concepts#integrations) | Available | AI agent integration via Model Context Protocol |
-| [Discord](/integrations/discord) | Community | Community contribution welcome |
-| [Linear](/integrations/linear) | Community | Community contribution welcome |
 
 ## How Integrations Work
 
@@ -35,7 +35,6 @@ Integrations can respond to these events:
 |-------|-------------|
 | `post.created` | New feedback post submitted |
 | `post.status_changed` | Post status updated (e.g., Planned > Shipped) |
-| `post.vote_threshold` | Post reached a vote threshold |
 | `comment.created` | New comment on a post |
 
 ### Event Mappings
@@ -98,7 +97,7 @@ If an integration shows errors:
 ### OAuth Tokens
 
 Integration OAuth tokens are:
-- Encrypted at rest using AES-256-GCM with workspace-specific keys
+- Encrypted at rest using AES-256-GCM with purpose-specific keys derived via HKDF
 - Scoped to minimum required permissions
 - Revocable from both Quackback and the connected service
 

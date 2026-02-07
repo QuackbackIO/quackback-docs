@@ -1,10 +1,10 @@
 ---
-title: "Send events with webhooks"
+title: "Webhooks"
 description: "Send real-time event notifications to any HTTP endpoint."
 icon: "webhook"
 ---
 
-# Send events with webhooks
+# Webhooks
 
 Build any integration you need. Webhooks send real-time HTTP notifications to any endpoint when events occur in Quackback. Connect to Zapier, your data warehouse, custom bots, or internal tools.
 
@@ -58,7 +58,6 @@ Store the `secret` immediately. It cannot be retrieved again. If you lose it, us
 |-------|-------------|
 | `post.created` | New feedback post submitted |
 | `post.status_changed` | Post status updated |
-| `post.vote_threshold` | Post reached a vote threshold |
 | `comment.created` | New comment added to a post |
 
 ## Request Headers
@@ -68,9 +67,40 @@ Each webhook delivery includes these headers:
 | Header | Description |
 |--------|-------------|
 | `Content-Type` | `application/json` |
+| `User-Agent` | `Quackback-Webhook/1.0` |
 | `X-Quackback-Event` | Event type (e.g., `post.created`) |
 | `X-Quackback-Signature` | HMAC-SHA256 signature for verification |
 | `X-Quackback-Timestamp` | Unix timestamp of the request |
+
+## Payload Format
+
+Every webhook delivery sends a JSON body with this structure:
+
+```json
+{
+  "id": "evt_a1b2c3d4e5f6...",
+  "type": "post.created",
+  "createdAt": "2025-01-15T10:30:00.000Z",
+  "data": {
+    "post": {
+      "id": "post_01h455vb4pex5vsknk084sn02q",
+      "title": "Add dark mode support",
+      "content": "It would be great to have a dark mode...",
+      "boardId": "board_01h455vb4pex5vsknk084sn02q",
+      "boardSlug": "feature-requests",
+      "authorEmail": "jane@example.com",
+      "voteCount": 12
+    }
+  }
+}
+```
+
+| Field | Description |
+|-------|-------------|
+| `id` | Unique event ID (prefixed with `evt_`) |
+| `type` | Event type (e.g., `post.created`) |
+| `createdAt` | ISO 8601 timestamp of when the event occurred |
+| `data` | Event-specific payload (varies by event type) |
 
 ## Signature Verification
 
@@ -102,7 +132,7 @@ app.post('/webhook', (req, res) => {
   }
 
   // Process the event
-  console.log('Event:', req.body.event);
+  console.log('Event:', req.body.type);
   res.status(200).send('OK');
 });
 ```
@@ -171,9 +201,9 @@ Build a Slack bot with more control than the built-in integration:
 
 ```javascript
 app.post('/webhook', async (req, res) => {
-  const { event, data } = req.body;
+  const { type, data } = req.body;
 
-  if (event === 'post.created') {
+  if (type === 'post.created') {
     await slack.chat.postMessage({
       channel: '#feedback',
       text: `New feedback: ${data.post.title}`,
@@ -197,11 +227,11 @@ Log events to your analytics platform:
 
 ```javascript
 app.post('/webhook', async (req, res) => {
-  const { event, timestamp, data } = req.body;
+  const { type, createdAt, data } = req.body;
 
   await db.insert('feedback_events', {
-    event_type: event,
-    event_time: timestamp,
+    event_type: type,
+    event_time: createdAt,
     post_id: data.post?.id,
     raw_payload: JSON.stringify(data),
   });
@@ -209,6 +239,17 @@ app.post('/webhook', async (req, res) => {
   res.sendStatus(200);
 });
 ```
+
+## Retry Behavior
+
+Failed webhook deliveries are retried automatically:
+
+- **Attempts**: Up to 3 delivery attempts per event
+- **Backoff**: Exponential backoff starting at 1 second
+- **Retryable errors**: Server errors (5xx), rate limits (429), and network timeouts
+- **Non-retryable errors**: Client errors (4xx except 429) are not retried
+- **Timeout**: Each delivery attempt has a 5-second timeout
+- **Auto-disable**: After 50 consecutive permanent failures, the webhook is automatically disabled. The failure counter resets on each successful delivery.
 
 ## Security Best Practices
 

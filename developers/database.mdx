@@ -28,10 +28,13 @@ packages/db/src/schema/
 ├── posts.ts              # Posts, comments, votes, tags
 ├── boards.ts             # Boards
 ├── statuses.ts           # Post statuses
-├── integrations.ts       # Integration configs, webhooks
+├── integrations.ts       # Integration configs
 ├── notifications.ts      # Notifications, subscriptions
 ├── sentiment.ts          # AI sentiment data
-└── changelog.ts          # Changelog entries
+├── changelog.ts          # Changelog entries
+├── api-keys.ts           # API key management
+├── webhooks.ts           # Webhook configurations
+└── external-links.ts     # External link tracking
 ```
 
 ## Core Tables
@@ -143,12 +146,12 @@ postTags: {
 ### Importing
 
 <Note>
-Always import from the app's db module to ensure proper tenant context handling.
+Always import from the app's db module to ensure proper connection management.
 </Note>
 
 ```typescript
 // ✅ Correct
-import { db, posts, eq, and, desc } from '@/lib/db'
+import { db, posts, eq, and, desc } from '@/lib/server/db'
 
 // ❌ Wrong - bypasses tenant context
 import { db } from '@quackback/db'
@@ -235,11 +238,13 @@ const id: PostId = createId('post')
 // => "post_01h455vb4pex5vsknk084sn02q"
 
 // Column definition in schema
-import { typeId } from '@quackback/ids/drizzle'
+import { typeIdWithDefault, typeIdColumn } from '@quackback/ids/drizzle'
 
 export const posts = pgTable('posts', {
-  id: typeId('post').primaryKey(),
-  boardId: typeId('board').references(() => boards.id),
+  // Primary key with auto-generated TypeID
+  id: typeIdWithDefault('post')('id').primaryKey(),
+  // Foreign key column
+  boardId: typeIdColumn('board')('board_id').references(() => boards.id),
 })
 ```
 

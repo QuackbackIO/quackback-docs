@@ -6,13 +6,13 @@ icon: "circle-dot"
 
 # Track progress with statuses
 
-Keep users in the loop. Statuses show what's happening with their feedback, from "Under Review" all the way to "Shipped".
+Keep users in the loop. Statuses show what's happening with their feedback, from "Open" all the way to "Complete".
 
 When you change a status, subscribers get notified automatically. It's the easiest way to close the feedback loop without sending individual emails.
 
 ## Default Statuses
 
-Quackback comes with five statuses organized into three categories:
+Quackback comes with six statuses organized into three categories:
 
 ### Active
 
@@ -20,7 +20,8 @@ Statuses for posts that need attention or are being worked on:
 
 | Status | What it means |
 |--------|---------------|
-| Under Review | New feedback being evaluated |
+| Open | New feedback (default for new posts) |
+| Under Review | Feedback being evaluated |
 | Planned | Approved and scheduled |
 | In Progress | Currently being worked on |
 
@@ -30,7 +31,7 @@ For posts that have been successfully addressed:
 
 | Status | What it means |
 |--------|---------------|
-| Shipped | Released to users |
+| Complete | Released to users |
 
 ### Closed
 
@@ -38,10 +39,10 @@ For posts that won't be implemented:
 
 | Status | What it means |
 |--------|---------------|
-| Declined | Won't be implemented |
+| Closed | Won't be implemented |
 
 <Tip>
-Completed posts are deprioritized when suggesting similar posts to new users so old shipped features don't clog up the suggestions.
+Completed and closed posts are deprioritized when suggesting similar posts to new users so old resolved items don't clog up the suggestions.
 </Tip>
 
 ## Create a status
@@ -69,7 +70,7 @@ Use the toggle next to each status to control whether posts with that status app
 You must select exactly 3 statuses to show on the roadmap. The counter at the top shows how many are currently selected.
 </Note>
 
-Most teams show: **Planned → In Progress → Shipped**
+Most teams show: **Planned → In Progress → Complete**
 
 ## Reorder statuses
 
@@ -95,7 +96,7 @@ All posts with this status will reflect the changes immediately.
 3. Confirm deletion
 
 <Warning>
-You cannot delete the default status (marked with a lock icon). Each category must have at least one status.
+You cannot delete the default status for new posts (marked with a lock icon). Each category must have at least one status.
 </Warning>
 
 ## Communicate status changes
@@ -108,13 +109,13 @@ When you update a status, add a comment so users know why. Here are templates yo
 **Moving to In Progress:**
 > "We're actively working on this now. Stay tuned for updates!"
 
-**Moving to Shipped:**
+**Moving to Complete:**
 > "This is now live! Thanks for suggesting it. Let us know how it works for you."
 
-**Moving to Declined:**
+**Moving to Closed:**
 > "After reviewing, we've decided to go a different direction. [Brief reason]. We really appreciate you taking the time to share this idea."
 
-**Reverting to Under Review:**
+**Reverting to Open:**
 > "We're putting this back under review. Priorities shifted, but we haven't forgotten about it."
 
 <Tip>
@@ -126,25 +127,25 @@ Switching status back and forth? That's fine. Priorities change. Just add a quic
 ### Simple Workflow
 
 ```
-Under Review → Planned → In Progress → Shipped
-      ↓
-   Declined
+Open → Under Review → Planned → In Progress → Complete
+                ↓
+              Closed
 ```
 
 ### Detailed Workflow (with custom statuses)
 
 ```
-Under Review → Planned → In Design → In Development → In Beta → Shipped
-      ↓
-   Declined
+Open → Under Review → Planned → In Design → In Development → In Beta → Complete
+              ↓
+            Closed
 ```
 
 ### With Blocking States
 
 ```
-Under Review → Planned → In Progress → Blocked → In Progress → Shipped
-      ↓
-   Declined
+Open → Under Review → Planned → In Progress → Blocked → In Progress → Complete
+              ↓
+            Closed
 ```
 
 ## Best Practices
@@ -164,14 +165,14 @@ Too many statuses:
 
 Use action-oriented names that describe the current state:
 - "In Progress" not "Development"
-- "Shipped" not "Done"
-- "Under Review" not "New"
+- "Complete" not "Done"
+- "Open" not "New"
 
 ### Roadmap Visibility
 
 Only show meaningful statuses on the roadmap. Users don't need to see:
 - Internal review stages
-- Declined items
+- Closed items
 - Duplicates
 
 ## Notifications

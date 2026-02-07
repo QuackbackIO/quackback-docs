@@ -19,7 +19,7 @@ Quackback uses [TanStack Start's server functions](https://tanstack.com/start/la
 
 ## Create a server function
 
-Server functions are located in `apps/web/src/lib/server-functions/`. Each file typically groups related operations (e.g., `posts.ts`, `boards.ts`, `comments.ts`).
+Server functions are located in `apps/web/src/lib/server/functions/`. Each file typically groups related operations (e.g., `posts.ts`, `boards.ts`, `comments.ts`).
 
 ### Basic Structure
 
@@ -135,7 +135,7 @@ export const updateBoardFn = createServerFn({ method: 'POST' })
 
 ## Authentication with requireAuth
 
-The `requireAuth` helper in `auth-helpers.ts` handles authentication and authorization:
+The `requireAuth` helper in `server/functions/auth-helpers.ts` handles authentication and authorization:
 
 ### Require any team member
 
@@ -273,7 +273,7 @@ Server functions are called from React components using TanStack Query for data 
 
 ```typescript
 import { useQuery } from '@tanstack/react-query'
-import { fetchBoards } from '@/lib/server-functions/boards'
+import { fetchBoards } from '@/lib/server/functions/boards'
 
 export function useBoardsQuery() {
   return useQuery({
@@ -288,7 +288,7 @@ export function useBoardsQuery() {
 
 ```typescript
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { createBoardFn } from '@/lib/server-functions/boards'
+import { createBoardFn } from '@/lib/server/functions/boards'
 
 export function useCreateBoard() {
   const queryClient = useQueryClient()
@@ -330,10 +330,10 @@ function BoardList() {
 
 ### Query Hook Patterns
 
-Quackback organizes query/mutation hooks in `apps/web/src/lib/hooks/`. Here's a typical pattern:
+Quackback organizes query/mutation hooks in `apps/web/src/lib/client/hooks/` and mutations in `apps/web/src/lib/client/mutations/`. Here's a typical pattern:
 
 ```typescript
-// apps/web/src/lib/hooks/use-post-actions.ts
+// apps/web/src/lib/client/mutations/portal-post-actions.ts
 
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 
@@ -427,25 +427,31 @@ export const fetchPostFn = createServerFn({ method: 'GET' })
 
 ## File Organization
 
-Server functions are organized by domain in `apps/web/src/lib/server-functions/`:
+Server functions are organized by domain in `apps/web/src/lib/server/functions/`:
 
 ```
-server-functions/
-  auth.ts           # Authentication functions
-  auth-helpers.ts   # requireAuth, getOptionalAuth helpers
-  boards.ts         # Board CRUD operations
-  posts.ts          # Post CRUD operations (admin)
-  public-posts.ts   # Post operations (public portal)
-  comments.ts       # Comment operations
-  statuses.ts       # Status management
-  tags.ts           # Tag management
-  settings.ts       # Workspace settings
-  workspace.ts      # Workspace utilities
-  notifications.ts  # Notification operations
-  subscriptions.ts  # Post subscription operations
-  integrations.ts   # Integration management
-  roadmaps.ts       # Roadmap operations
-  user.ts           # User profile operations
+server/functions/
+  auth.ts              # Authentication functions
+  auth-helpers.ts      # requireAuth, getOptionalAuth helpers
+  boards.ts            # Board CRUD operations
+  posts.ts             # Post CRUD operations (admin)
+  public-posts.ts      # Post operations (public portal)
+  comments.ts          # Comment operations
+  statuses.ts          # Status management
+  tags.ts              # Tag management
+  settings.ts          # Workspace settings
+  workspace.ts         # Workspace utilities
+  notifications.ts     # Notification operations
+  subscriptions.ts     # Post subscription operations
+  integrations.ts      # Integration management
+  roadmaps.ts          # Roadmap operations
+  user.ts              # User profile operations
+  api-keys.ts          # API key management
+  changelog.ts         # Changelog operations
+  webhooks.ts          # Webhook management
+  uploads.ts           # File upload operations
+  onboarding.ts        # Setup wizard
+  invitations.ts       # Team invitations
 ```
 
 ## Best Practices
@@ -457,7 +463,7 @@ server-functions/
 5. **Handle errors gracefully** - Wrap handlers in try/catch when needed
 6. **Serialize dates** - Convert Date objects to ISO strings for responses
 7. **Export types** - Export input types for use in components
-8. **Keep handlers thin** - Delegate complex logic to service functions in `@/lib/\{feature\}/`
+8. **Keep handlers thin** - Delegate complex logic to service functions in `@/lib/server/domains/\{feature\}/`
 
 ## Related Documentation
 

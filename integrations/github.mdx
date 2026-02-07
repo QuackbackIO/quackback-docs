@@ -1,0 +1,165 @@
+---
+title: "GitHub"
+description: "Create GitHub issues from feedback and sync status updates."
+icon: "github"
+---
+
+import { Note, Tip } from '../../../components/docs/mdx-components'
+
+# GitHub
+
+Turn feedback into trackable issues. Automatically create GitHub issues when feedback is submitted, and keep statuses synchronized between Quackback and GitHub. When an issue is closed or reopened in GitHub, the linked feedback post updates too.
+
+## Overview
+
+The GitHub integration enables:
+
+- **Create issues from feedback posts** -- automatically create a GitHub issue when new feedback is submitted
+- **Link posts to issues** -- link feedback posts to GitHub issues for traceability
+- **Status sync** -- update feedback status when GitHub issues are closed or reopened via inbound webhooks
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- A GitHub account with access to the target repositories
+- A GitHub OAuth application (created at [GitHub Developer Settings](https://github.com/settings/developers))
+
+## Setup
+
+### 1. Create a GitHub OAuth Application
+
+1. Go to [GitHub Developer Settings](https://github.com/settings/developers)
+2. Click **New OAuth App**
+3. Fill in the application details (set the callback URL to your Quackback instance)
+4. Copy the **Client ID** and **Client Secret**
+
+### 2. Configure Platform Credentials
+
+1. Go to **Admin > Settings > Integrations > GitHub**
+2. Enter the following credentials:
+   - **Client ID** from your GitHub OAuth application
+   - **Client Secret** from your GitHub OAuth application
+
+### 3. Connect Your Account
+
+1. Click **Connect to GitHub**
+2. You'll be redirected to GitHub to authorize the application
+3. Review the permissions and click **Authorize**
+
+The app requests the `repo` OAuth scope, which grants read and write access to repositories (needed to create issues and register webhooks).
+
+### 4. Select a Repository
+
+Back in Quackback:
+
+1. Choose the GitHub repository where issues should be created
+2. The repository list shows up to 100 repositories you have access to, sorted by most recently updated
+
+### 5. Configure Status Mappings
+
+Map GitHub issue states to Quackback statuses:
+
+1. Go to the GitHub integration settings
+2. Configure status mappings between GitHub states and Quackback statuses
+3. GitHub uses two states: **Open** and **Closed** -- map each to the corresponding Quackback status, or set it to ignore
+
+Status sync works via GitHub webhooks. When a linked GitHub issue is closed or reopened, the corresponding Quackback post status updates automatically.
+
+### 6. Configure Events
+
+Choose which events trigger GitHub actions:
+
+| Event | Action |
+|-------|--------|
+| New post | Create a GitHub issue with the feedback details |
+
+<Note>
+The GitHub integration currently creates issues only for `post.created` events. Status changes and comments are handled through the status sync mechanism rather than creating new issues.
+</Note>
+
+### 7. Save and Test
+
+1. Click **Save**
+2. Submit test feedback to verify an issue is created in the selected repository
+
+## Issue Format
+
+When a new feedback post triggers issue creation, the GitHub issue includes:
+
+- **Title**: The feedback post title
+- **Body**: The post content in Markdown, followed by metadata including the author, board, vote count, and a link back to the post in Quackback
+
+## Status Sync
+
+When status sync is configured, Quackback registers a webhook with GitHub to receive issue events. When a linked GitHub issue is closed or reopened:
+
+1. GitHub sends a webhook to Quackback
+2. Quackback verifies the signature using HMAC-SHA256 via the `X-Hub-Signature-256` header
+3. Quackback looks up the status mapping for the new state (Open or Closed)
+4. If a mapping exists, the linked feedback post's status is updated
+
+The webhook listens for the `issues` event and handles the `closed` and `reopened` actions.
+
+## Manage the integration
+
+### Pause
+
+Temporarily stop the integration:
+
+1. Go to **Admin > Settings > Integrations > GitHub**
+2. Toggle **Enabled** off
+3. Issue creation and status sync pause, but the connection remains
+
+### Reconnect
+
+If you see connection errors:
+
+1. Click **Reconnect**
+2. Re-authorize in GitHub
+
+### Disconnect
+
+To fully remove the integration:
+
+1. Go to **Admin > Settings > Integrations > GitHub**
+2. Click **Disconnect**
+3. Confirm the action
+
+<Note>
+Disconnecting revokes the OAuth token with GitHub and removes the registered webhook.
+</Note>
+
+## Troubleshooting
+
+### Issues Not Being Created
+
+1. **Check integration status** -- look for errors in settings
+2. **Verify repository** -- ensure a repository is selected and accessible
+3. **Check event mappings** -- confirm `post.created` is mapped
+4. **Repository permissions** -- the connected GitHub account must have write access to the repository
+
+### Status Sync Not Working
+
+1. **Check status mappings** -- ensure GitHub states are mapped to Quackback statuses
+2. **Verify webhook** -- the GitHub webhook may need to be re-registered
+3. **Repository access** -- the connected account needs admin access to register webhooks
+
+### "Authentication Failed" Error
+
+GitHub OAuth tokens do not expire, but they can be revoked:
+
+1. Click **Reconnect**
+2. Re-authorize the app in GitHub
+
+### "Repository Not Found" Error
+
+The repository may have been:
+- Deleted or renamed
+- Made private (if the connected account lost access)
+- Transferred to a different owner
+
+## Next Steps
+
+- [Jira](/integrations/jira) - Jira issue integration
+- [Webhooks](/integrations/webhooks) - Build custom integrations
+- [Integrations Overview](/integrations/overview) - All integrations

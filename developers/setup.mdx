@@ -77,9 +77,10 @@ openssl rand -base64 32
 
 Edit `.env`:
 ```bash
-DATABASE_URL="postgresql://postgres:postgres@localhost:5432/quackback"
+DATABASE_URL="postgresql://postgres:password@localhost:5432/quackback"
 SECRET_KEY="your-generated-secret-here"
 BASE_URL="http://localhost:3000"
+REDIS_URL="redis://localhost:6379"
 ```
 
 ### 3. Start PostgreSQL
@@ -129,15 +130,16 @@ quackback/
 │   ├── src/
 │   │   ├── routes/           # File-based routing
 │   │   ├── components/       # React components
-│   │   ├── lib/              # Business logic & utilities
-│   │   └── server.ts         # Server entry point
+│   │   └── lib/              # Business logic & utilities
 │   ├── e2e/                  # Playwright E2E tests
 │   └── public/               # Static assets
 │
 ├── packages/                 # Shared packages
 │   ├── db/                   # Database schema & migrations
 │   ├── ids/                  # TypeID system
-│   └── email/                # Email service & templates
+│   ├── email/                # Email service & templates
+│   ├── core/                 # Shared core utilities
+│   └── integrations/         # Integration connectors
 │
 ├── deploy/                   # Deployment configurations
 ├── scripts/                  # Utility scripts
@@ -165,7 +167,7 @@ bun run lint             # ESLint + Prettier check
 bun run test             # Run Vitest tests
 bun run test <file>      # Run single test file
 bun run test:e2e         # Playwright E2E tests
-bun run test:e2e:ui      # E2E with interactive UI
+cd apps/web && bun run test:e2e:ui   # E2E with interactive UI
 ```
 
 ## IDE Setup
@@ -176,7 +178,6 @@ Recommended extensions:
 - ESLint
 - Prettier
 - Tailwind CSS IntelliSense
-- TypeScript Vue Plugin (Volar)
 
 Settings (`.vscode/settings.json`):
 ```json
@@ -280,7 +281,7 @@ bun run db:migrate
 
 ```bash
 # Clear and reinstall
-rm -rf node_modules bun.lockb
+rm -rf node_modules bun.lock
 bun install
 ```
 

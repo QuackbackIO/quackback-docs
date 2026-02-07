@@ -28,14 +28,12 @@ Quackback has two team member roles:
 | View admin dashboard | ✓ | ✓ |
 | Manage posts & comments | ✓ | ✓ |
 | Change post statuses | ✓ | ✓ |
-| Add tags to posts | ✓ | ✓ |
+| Manage boards | ✓ | ✓ |
+| Manage statuses & tags | ✓ | ✓ |
 | Pin official responses | ✓ | ✓ |
-| Manage boards | | ✓ |
-| Manage statuses & tags | | ✓ |
-| Workspace settings | | ✓ |
 | Branding & customization | | ✓ |
+| Portal authentication | | ✓ |
 | Team management | | ✓ |
-| Integrations | | ✓ |
 | Import/export data | | ✓ |
 
 ## Invite team members
@@ -69,7 +67,7 @@ The member count is displayed at the top of the list.
 
 1. Find the member in the list
 2. Click the **...** menu button on the right
-3. Select **Change role** or the appropriate option
+3. Select **Make admin** or **Make member**
 4. Confirm the change
 
 Changes take effect immediately.
@@ -78,12 +76,13 @@ Changes take effect immediately.
 
 1. Find the member in the list
 2. Click the **...** menu button
-3. Select **Remove**
+3. Select **Remove from team**
 4. Confirm removal
 
 Removed members:
+- Are converted to a portal user
 - Lose access to the admin dashboard
-- Can still access the public portal
+- Can still interact with the public feedback portal
 - Their comments and activity history remain
 
 <Warning>
@@ -101,17 +100,8 @@ By default, team members sign in with email OTP (magic link).
 If configured, team members can sign in with:
 - GitHub
 - Google
-- Microsoft
 
 See [OAuth Setup](/auth/oauth) for configuration.
-
-### SSO (OIDC)
-
-Connect your corporate identity provider for single sign-on:
-- Single Sign-On with Okta, Azure AD, Auth0, Keycloak, etc.
-- Centralized access control
-
-See [SSO Setup](/auth/sso) for configuration.
 
 ## Best Practices
 
@@ -137,24 +127,6 @@ Periodically review team access:
 <Note>
 Only grant Admin access to those who need it. Members can handle most day-to-day feedback management.
 </Note>
-
-## Team Activity
-
-Track what your team is doing:
-
-- **Post updates** - Who changed statuses
-- **Comments** - Official responses from team
-- **Settings changes** - Configuration updates (Admin only)
-
-Activity is logged for accountability and audit purposes.
-
-## Transfer ownership
-
-To transfer workspace ownership:
-
-1. Ensure the new owner is an Admin
-2. Contact support for ownership transfer
-3. Verify the transfer via email
 
 ## Next Steps
 

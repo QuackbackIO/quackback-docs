@@ -15,10 +15,11 @@ Before writing code, understand where each piece goes:
 | Layer | Location | Purpose |
 |-------|----------|---------|
 | Schema | `packages/db/src/schema/` | Database tables and relations |
-| Service | `apps/web/src/lib/\{feature\}/` | Business logic and validation |
-| Server Functions | `apps/web/src/lib/server-functions/` | API endpoints (RPC) |
-| Queries | `apps/web/src/lib/queries/` | TanStack Query factories |
-| Hooks | `apps/web/src/lib/hooks/` | React hooks for mutations |
+| Service | `apps/web/src/lib/server/domains/\{feature\}/` | Business logic and validation |
+| Server Functions | `apps/web/src/lib/server/functions/` | API endpoints (RPC) |
+| Queries | `apps/web/src/lib/client/queries/` | TanStack Query factories |
+| Hooks | `apps/web/src/lib/client/hooks/` | React hooks for mutations |
+| Mutations | `apps/web/src/lib/client/mutations/` | TanStack mutation hooks |
 | Components | `apps/web/src/components/` | UI components |
 | Routes | `apps/web/src/routes/` | Page components with loaders |
 
@@ -166,9 +167,9 @@ Services contain business logic, validation, and database operations. They throw
 ### Create a service
 
 ```typescript
-// apps/web/src/lib/reactions/reaction.service.ts
+// apps/web/src/lib/server/domains/reactions/reaction.service.ts
 
-import { db, reactions, posts, eq, and } from '@/lib/db'
+import { db, reactions, posts, eq, and } from '@/lib/server/db'
 import { toUuid, type PostId, type MemberId } from '@quackback/ids'
 import { NotFoundError, ValidationError, ConflictError } from '@/lib/shared/errors'
 import type { CreateReactionInput, ReactionResult } from './reaction.types'
@@ -284,7 +285,7 @@ throw new InternalError('DATABASE_ERROR', 'Database operation failed')
 Define types in a separate file:
 
 ```typescript
-// apps/web/src/lib/reactions/reaction.types.ts
+// apps/web/src/lib/server/domains/reactions/reaction.types.ts
 
 import type { PostId, MemberId } from '@quackback/ids'
 
@@ -309,7 +310,7 @@ Server functions provide the API layer using TanStack Start's `createServerFn`. 
 ### Create server functions
 
 ```typescript
-// apps/web/src/lib/server-functions/reactions.ts
+// apps/web/src/lib/server/functions/reactions.ts
 
 import { z } from 'zod'
 import { createServerFn } from '@tanstack/react-start'
@@ -319,7 +320,7 @@ import {
   addReaction,
   removeReaction,
   getReactionsForPost,
-} from '@/lib/reactions/reaction.service'
+} from '@/lib/server/domains/reactions/reaction.service'
 
 // ============================================
 // Schemas
@@ -354,7 +355,7 @@ export type RemoveReactionInput = z.infer<typeof removeReactionSchema>
  * Add a reaction to a post (requires authentication)
  */
 export const addReactionFn = createServerFn({ method: 'POST' })
-  .validator(addReactionSchema)
+  .inputValidator(addReactionSchema)
   .handler(async ({ data }) => {
     // Require any authenticated user
     const auth = await requireAuth()
@@ -377,7 +378,7 @@ export const addReactionFn = createServerFn({ method: 'POST' })
  * Remove a reaction from a post
  */
 export const removeReactionFn = createServerFn({ method: 'POST' })
-  .validator(removeReactionSchema)
+  .inputValidator(removeReactionSchema)
   .handler(async ({ data }) => {
     const auth = await requireAuth()
 
@@ -394,7 +395,7 @@ export const removeReactionFn = createServerFn({ method: 'POST' })
  * Get reactions for a post (public, but shows user's reactions if logged in)
  */
 export const getReactionsFn = createServerFn({ method: 'GET' })
-  .validator(getReactionsSchema)
+  .inputValidator(getReactionsSchema)
   .handler(async ({ data }) => {
     const auth = await getOptionalAuth()
 
@@ -436,11 +437,11 @@ auth.settings.id  // WorkspaceId
 Use TanStack Query factories for consistent caching:
 
 ```typescript
-// apps/web/src/lib/queries/reactions.ts
+// apps/web/src/lib/client/queries/reactions.ts
 
 import { queryOptions } from '@tanstack/react-query'
 import type { PostId } from '@quackback/ids'
-import { getReactionsFn } from '@/lib/server-functions/reactions'
+import { getReactionsFn } from '@/lib/server/functions/reactions'
 
 export const reactionQueries = {
   /**
@@ -460,10 +461,10 @@ export const reactionQueries = {
 Create mutation hooks with optimistic updates:
 
 ```typescript
-// apps/web/src/lib/hooks/use-reactions.ts
+// apps/web/src/lib/client/hooks/use-reactions.ts
 
 import { useMutation, useQueryClient } from '@tanstack/react-query'
-import { addReactionFn, removeReactionFn } from '@/lib/server-functions/reactions'
+import { addReactionFn, removeReactionFn } from '@/lib/server/functions/reactions'
 import type { PostId } from '@quackback/ids'
 
 export const reactionKeys = {
@@ -603,7 +604,7 @@ import {
   FormLabel,
   FormMessage,
 } from '@/components/ui/form'
-import { useCreateBoard } from '@/lib/hooks/use-board-actions'
+import { useCreateBoard } from '@/lib/client/hooks/use-board-actions'
 
 const createBoardSchema = z.object({
   name: z.string().min(1, 'Board name is required').max(100),
@@ -699,7 +700,7 @@ TanStack Router uses file-based routing. Routes are in `apps/web/src/routes/`.
 
 import { createFileRoute } from '@tanstack/react-router'
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { reactionQueries } from '@/lib/queries/reactions'
+import { reactionQueries } from '@/lib/client/queries/reactions'
 import { ReactionsList } from '@/components/admin/reactions/reactions-list'
 
 export const Route = createFileRoute('/admin/reactions')({
@@ -737,7 +738,7 @@ function ReactionsPage() {
 
 import { createFileRoute } from '@tanstack/react-router'
 import { ensureTypeId, type PostId } from '@quackback/ids'
-import { adminQueries } from '@/lib/queries/admin'
+import { adminQueries } from '@/lib/client/queries/admin'
 
 export const Route = createFileRoute('/admin/posts/$postId')({
   loader: async ({ params, context }) => {
@@ -860,8 +861,8 @@ bun run db:migrate
 ### 4. Create Service Layer
 
 ```typescript
-// apps/web/src/lib/bookmarks/bookmark.service.ts
-import { db, bookmarks, posts, eq, and, desc } from '@/lib/db'
+// apps/web/src/lib/server/domains/bookmarks/bookmark.service.ts
+import { db, bookmarks, posts, eq, and, desc } from '@/lib/server/db'
 import type { PostId, MemberId, BookmarkId } from '@quackback/ids'
 import { NotFoundError, ConflictError } from '@/lib/shared/errors'
 
@@ -941,7 +942,7 @@ export async function isBookmarked(
 ### 5. Create Server Functions
 
 ```typescript
-// apps/web/src/lib/server-functions/bookmarks.ts
+// apps/web/src/lib/server/functions/bookmarks.ts
 import { z } from 'zod'
 import { createServerFn } from '@tanstack/react-start'
 import type { PostId } from '@quackback/ids'
@@ -951,19 +952,19 @@ import {
   removeBookmark,
   listBookmarks,
   isBookmarked,
-} from '@/lib/bookmarks/bookmark.service'
+} from '@/lib/server/domains/bookmarks/bookmark.service'
 
 const postIdSchema = z.object({ postId: z.string() })
 
 export const addBookmarkFn = createServerFn({ method: 'POST' })
-  .validator(postIdSchema)
+  .inputValidator(postIdSchema)
   .handler(async ({ data }) => {
     const auth = await requireAuth()
     return addBookmark(data.postId as PostId, auth.member.id)
   })
 
 export const removeBookmarkFn = createServerFn({ method: 'POST' })
-  .validator(postIdSchema)
+  .inputValidator(postIdSchema)
   .handler(async ({ data }) => {
     const auth = await requireAuth()
     await removeBookmark(data.postId as PostId, auth.member.id)
@@ -981,7 +982,7 @@ export const listBookmarksFn = createServerFn({ method: 'GET' })
   })
 
 export const isBookmarkedFn = createServerFn({ method: 'GET' })
-  .validator(postIdSchema)
+  .inputValidator(postIdSchema)
   .handler(async ({ data }) => {
     const auth = await requireAuth()
     return { bookmarked: await isBookmarked(data.postId as PostId, auth.member.id) }
@@ -991,7 +992,7 @@ export const isBookmarkedFn = createServerFn({ method: 'GET' })
 ### 6. Create React Hook
 
 ```typescript
-// apps/web/src/lib/hooks/use-bookmarks.ts
+// apps/web/src/lib/client/hooks/use-bookmarks.ts
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query'
 import type { PostId } from '@quackback/ids'
 import {
@@ -999,7 +1000,7 @@ import {
   removeBookmarkFn,
   listBookmarksFn,
   isBookmarkedFn,
-} from '@/lib/server-functions/bookmarks'
+} from '@/lib/server/functions/bookmarks'
 
 export const bookmarkKeys = {
   all: ['bookmarks'] as const,
@@ -1054,7 +1055,7 @@ export function useToggleBookmark() {
 import { BookmarkIcon } from '@heroicons/react/24/outline'
 import { BookmarkIcon as BookmarkSolidIcon } from '@heroicons/react/24/solid'
 import { Button } from '@/components/ui/button'
-import { useBookmarkStatus, useToggleBookmark } from '@/lib/hooks/use-bookmarks'
+import { useBookmarkStatus, useToggleBookmark } from '@/lib/client/hooks/use-bookmarks'
 import type { PostId } from '@quackback/ids'
 
 interface BookmarkButtonProps {
@@ -1101,7 +1102,7 @@ export function BookmarkButton({ postId }: BookmarkButtonProps) {
 import { createFileRoute } from '@tanstack/react-router'
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { queryOptions } from '@tanstack/react-query'
-import { listBookmarksFn } from '@/lib/server-functions/bookmarks'
+import { listBookmarksFn } from '@/lib/server/functions/bookmarks'
 import { PostCard } from '@/components/public/post-card'
 
 const bookmarksQuery = queryOptions({
@@ -1152,9 +1153,9 @@ When adding a feature to Quackback:
 2. **Schema**: Add tables in `packages/db/src/schema/`
 3. **TypeID**: Add prefix in `packages/ids/src/prefixes.ts`
 4. **Migrate**: Run `bun run db:generate && bun run db:migrate`
-5. **Service**: Add business logic in `apps/web/src/lib/\{feature\}/`
-6. **Server Functions**: Add API in `apps/web/src/lib/server-functions/`
-7. **Hooks**: Add React hooks in `apps/web/src/lib/hooks/`
+5. **Service**: Add business logic in `apps/web/src/lib/server/domains/\{feature\}/`
+6. **Server Functions**: Add API in `apps/web/src/lib/server/functions/`
+7. **Hooks**: Add React hooks in `apps/web/src/lib/client/hooks/`
 8. **Components**: Build UI in `apps/web/src/components/`
 9. **Routes**: Add pages in `apps/web/src/routes/`
 10. **Test**: Run `bun run test` and `bun run typecheck`

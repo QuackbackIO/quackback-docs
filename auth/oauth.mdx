@@ -1,12 +1,12 @@
 ---
 title: "Set up OAuth providers"
-description: "Let users sign in with GitHub, Google, or Microsoft."
+description: "Let users sign in with GitHub or Google."
 icon: "key"
 ---
 
 # Set up OAuth providers
 
-One-click sign-in. Let users authenticate with GitHub, Google, or Microsoft instead of managing another set of credentials. Works for both portal users (customers) and team members (your employees).
+One-click sign-in. Let users authenticate with GitHub or Google instead of managing another set of credentials. Works for both portal users (customers) and team members (your employees).
 
 ## Overview
 
@@ -18,7 +18,6 @@ OAuth lets users sign in with accounts they already have. No new passwords, no v
 |----------|--------------|--------------|---------------|
 | GitHub | Yes | Yes | Environment variables |
 | Google | Yes | Yes | Environment variables |
-| Microsoft | Yes | Yes | Environment variables |
 
 ### How It Works
 
@@ -126,66 +125,6 @@ https://YOUR_DOMAIN/api/auth/callback/google
 - `email` - User email address
 - `profile` - Basic profile information
 
-## Microsoft / Azure AD Setup
-
-### Step 1: Register Application
-
-**[Azure Portal]**
-
-1. Go to [Azure Portal](https://portal.azure.com/)
-2. Navigate to **Microsoft Entra ID** (formerly Azure AD)
-3. Go to **App registrations** > **New registration**
-4. Configure the application:
-
-| Field | Value |
-|-------|-------|
-| Name | `Quackback` |
-| Supported account types | Choose based on your needs* |
-| Redirect URI | Web: `https://feedback.yourcompany.com/api/auth/callback/microsoft` |
-
-*Account type options:
-- **Single tenant** - Only your organization
-- **Multitenant** - Any Microsoft work/school account
-- **Multitenant + personal** - Work, school, and personal Microsoft accounts
-
-### Step 2: Configure Client Secret
-
-**[Azure Portal]**
-
-1. Go to **Certificates & secrets**
-2. Click **New client secret**
-3. Add a description and expiration
-4. Copy the **Value** (shown only once)
-
-### Step 3: Note Application IDs
-
-From the **Overview** page:
-- **Application (client) ID** - This is your `MICROSOFT_CLIENT_ID`
-- **Directory (tenant) ID** - This is your `MICROSOFT_TENANT_ID`
-
-### Step 4: Configure Environment
-
-```bash
-MICROSOFT_CLIENT_ID="your-application-id"
-MICROSOFT_CLIENT_SECRET="your-client-secret-value"
-MICROSOFT_TENANT_ID="your-tenant-id"  # Or "common" for multi-tenant
-```
-
-### Tenant ID Options
-
-| Value | Description |
-|-------|-------------|
-| `your-tenant-id` | Single organization only |
-| `common` | Any Microsoft account |
-| `organizations` | Work/school accounts only |
-| `consumers` | Personal Microsoft accounts only |
-
-### Callback URL Format
-
-```
-https://YOUR_DOMAIN/api/auth/callback/microsoft
-```
-
 ## Enable OAuth in Quackback
 
 After configuring environment variables, OAuth providers are automatically available. To enable/disable them for portal users:
@@ -194,53 +133,14 @@ After configuring environment variables, OAuth providers are automatically avail
 
 **[Dashboard]**
 
-1. Navigate to **Admin > Settings > Authentication**
-2. Under **Portal Authentication**, toggle the providers:
+1. Navigate to **Admin > Settings > Portal Authentication**
+2. Toggle the providers:
    - **GitHub** - Enable/disable GitHub sign-in
    - **Google** - Enable/disable Google sign-in
 
 ### Environment-Based Control
 
 OAuth buttons only appear if the corresponding environment variables are set. To disable a provider entirely, remove its environment variables.
-
-## Custom OIDC Provider
-
-For identity providers not listed above, Quackback supports custom OpenID Connect (OIDC) configuration.
-
-### Supported Providers
-
-Any OIDC-compliant provider works:
-- Okta
-- Auth0
-- Keycloak
-- OneLogin
-- Azure AD B2C
-- Custom OIDC servers
-
-### Configuration
-
-**[Dashboard]**
-
-1. Navigate to **Admin > Settings > Authentication**
-2. Click the gear icon next to **Custom OpenID Connect**
-3. Fill in the configuration:
-
-| Field | Description | Example |
-|-------|-------------|---------|
-| Button Label | Text shown on login button | "Acme Corp SSO" |
-| Issuer URL | OIDC discovery endpoint base | `https://acme.okta.com` |
-| Client ID | OAuth client identifier | `0oa1234567890abcdef` |
-| Client Secret | OAuth client secret | `secret_...` |
-| Email Domain | Optional domain restriction | `acme.com` |
-
-4. Click **Test** to verify the issuer URL
-5. Click **Save & Enable**
-
-### Callback URL for OIDC
-
-```
-https://YOUR_DOMAIN/api/auth/callback/oidc
-```
 
 ## Common Issues
 
@@ -268,7 +168,6 @@ http://localhost:3000/api/auth/callback/github
 1. Verify the credentials are copied correctly (no extra spaces)
 2. Ensure the OAuth app is not deleted or disabled
 3. For Google, check if the OAuth consent screen is in testing mode
-4. For Microsoft, verify the client secret hasn't expired
 
 ### "Popup blocked"
 
@@ -288,11 +187,6 @@ Quackback uses popup windows for OAuth. If blocked:
 - If consent screen is in testing mode, add test users
 - Submit app for verification for production use
 - Check if domain restrictions apply
-
-**Microsoft:**
-- Verify tenant ID matches your configuration
-- Check if admin consent is required
-- Review application policies
 
 ### "Unable to get email from provider"
 
@@ -354,14 +248,8 @@ GITHUB_CLIENT_SECRET=""
 GOOGLE_CLIENT_ID=""
 GOOGLE_CLIENT_SECRET=""
 
-# Microsoft
-MICROSOFT_CLIENT_ID=""
-MICROSOFT_CLIENT_SECRET=""
-MICROSOFT_TENANT_ID="common"
-
 # Required for all OAuth
 SECRET_KEY=""
-BASE_URL=""
 BASE_URL=""
 ```
 
@@ -386,5 +274,4 @@ BASE_URL=""
 ## Related Documentation
 
 - [Email OTP](/auth/email-otp) - Magic code authentication
-- [SSO](/auth/sso) - OIDC Single Sign-On for teams
 - [Authentication Overview](/auth/overview) - General auth concepts

@@ -108,11 +108,12 @@ bun run test path/to/test.ts
 
 ### Write tests
 
-Unit tests go next to the code:
+Unit tests go in `__tests__` directories next to the code they test:
 ```
-lib/posts/
-├── post.service.ts
-└── post.service.test.ts
+packages/ids/src/
+├── core.ts
+└── __tests__/
+    └── core.test.ts
 ```
 
 E2E tests are in `apps/web/e2e/`.

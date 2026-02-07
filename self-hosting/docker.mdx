@@ -13,7 +13,7 @@ The fastest way to get Quackback into production. Docker handles dependencies, d
 - Docker Engine 20.10+
 - Docker Compose v2+
 - 1 GB RAM minimum (2 GB recommended)
-- PostgreSQL 17+ (included in docker-compose, or bring your own)
+- PostgreSQL 18+ (included in docker-compose, or bring your own)
 
 ## Quick Deploy
 
@@ -41,6 +41,7 @@ docker run -d \
   --name quackback \
   -p 3000:3000 \
   -e DATABASE_URL="postgresql://user:pass@host:5432/quackback" \
+  -e REDIS_URL="redis://your-redis-host:6379" \
   -e SECRET_KEY="your-32-char-secret" \
   -e BASE_URL="https://feedback.yourcompany.com" \
   ghcr.io/quackbackio/quackback:latest
@@ -54,7 +55,7 @@ The Quackback Docker image uses a multi-stage build:
 - **Production stage** runs as a non-root `quackback` user for security
 - **Entrypoint** (`docker-entrypoint.sh`) runs database migrations automatically on every startup, then starts the server
 - **Optional seeding** with `SEED_DATABASE=true` to populate demo data
-- **Health endpoints** at `/api/health` (app) and `/api/ready` (app + database)
+- **Health endpoint** at `/api/health`
 
 <Tip>
 Because migrations run on every startup, upgrading is as simple as pulling the latest image and restarting. No manual migration step needed.
@@ -67,6 +68,9 @@ Because migrations run on every startup, upgrading is as simple as pulling the l
 ```bash
 # Database connection
 DATABASE_URL="postgresql://postgres:postgres@postgres:5432/quackback"
+
+# Redis/Dragonfly connection for background job queue (BullMQ)
+REDIS_URL="redis://localhost:6379"
 
 # Authentication (generate with: openssl rand -base64 32)
 SECRET_KEY="your-32-character-minimum-secret-key"
@@ -120,7 +124,7 @@ See [Environment Variables Reference](/docs/reference/environment-variables) for
 
 ## Docker Compose Configuration
 
-The included `docker-compose.yml` uses a custom PostgreSQL image with required extensions:
+The included `docker-compose.yml` uses a custom PostgreSQL image with required extensions, plus MinIO for file storage and Dragonfly for the background job queue:
 
 ```yaml
 services:
@@ -138,19 +142,46 @@ services:
       - '5432:5432'
     volumes:
       - postgres_data:/var/lib/postgresql
-    command: postgres -c shared_preload_libraries=pg_cron -c cron.database_name=quackback
+      - ./docker/postgres/init-pgcron.sql:/docker-entrypoint-initdb.d/init-pgcron.sql
+    command: postgres -c shared_preload_libraries=pg_cron -c cron.database_name=quackback -c max_connections=200
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U postgres']
       interval: 5s
       timeout: 5s
       retries: 5
 
+  minio:
+    image: minio/minio:latest
+    container_name: quackback-minio
+    restart: unless-stopped
+    environment:
+      MINIO_ROOT_USER: minioadmin
+      MINIO_ROOT_PASSWORD: minioadmin
+    ports:
+      - '9000:9000'
+      - '9001:9001'
+    volumes:
+      - minio_data:/data
+    command: server /data --console-address ":9001"
+
+  dragonfly:
+    image: docker.dragonflydb.io/dragonflydb/dragonfly:v1.27.1
+    container_name: quackback-dragonfly
+    restart: unless-stopped
+    command: dragonfly --cluster_mode=emulated --lock_on_hashtags
+    ports:
+      - '6379:6379'
+    volumes:
+      - dragonfly_data:/data
+
 volumes:
   postgres_data:
+  minio_data:
+  dragonfly_data:
 ```
 
 <Tip>
-The custom Dockerfile (`docker/postgres/Dockerfile`) installs `pg_cron` and `pgvector` extensions on top of PostgreSQL.
+The custom Dockerfile (`docker/postgres/Dockerfile`) installs `pg_cron` and `pgvector` extensions on top of PostgreSQL 18. Dragonfly is a Redis-compatible in-memory store used by BullMQ for background job processing. MinIO provides S3-compatible file storage for image uploads.
 </Tip>
 
 ## Database Setup
@@ -163,7 +194,7 @@ The docker-compose setup includes PostgreSQL with the required extensions (`pgve
 
 **[Database Provider]** For managed databases (AWS RDS, Supabase, Neon, etc.):
 
-1. Create a PostgreSQL 17+ database
+1. Create a PostgreSQL 18+ database
 2. Enable the `pgvector` extension
 3. Set `DATABASE_URL` in your `.env`
 
@@ -220,9 +251,6 @@ docker compose up -d app
 ```bash
 # Application health
 curl http://localhost:3000/api/health
-
-# Ready check (includes database)
-curl http://localhost:3000/api/ready
 ```
 
 ## Troubleshooting

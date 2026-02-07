@@ -168,8 +168,8 @@ Replace `feedback.example.com` with your instance URL and `qb_your_api_key_here`
 | Method | Endpoint | Auth | Description |
 |--------|----------|------|-------------|
 | GET | `/api/v1/users` | Team | List portal users |
-| GET | `/api/v1/users/:userId` | Team | Get a single user |
-| DELETE | `/api/v1/users/:userId` | Admin | Delete a portal user |
+| GET | `/api/v1/users/:memberId` | Team | Get a single user |
+| DELETE | `/api/v1/users/:memberId` | Admin | Delete a portal user |
 
 ## Request Format
 
@@ -312,7 +312,7 @@ The prefix tells you the resource type at a glance. TypeIDs are globally unique 
 
 ## OpenAPI Specification
 
-An OpenAPI specification is available at `/api/v1/openapi.json` and interactive documentation at `/api/v1/docs`.
+An OpenAPI specification is available at `/api/v1/openapi/json` and interactive documentation at `/api/v1/docs`.
 
 ## Next Steps
 

@@ -1,0 +1,158 @@
+---
+title: "Enrich feedback with Zendesk"
+description: "Link Zendesk tickets to feedback posts and surface customer context."
+icon: "zendesk"
+---
+
+# Zendesk
+
+Connect support data to product decisions. Link Zendesk to enrich feedback posts with user data, organization information, and tags -- so you can see the support context behind every feature request.
+
+## Overview
+
+The Zendesk integration provides:
+
+- **Capture feedback** -- turn Zendesk tickets into feedback posts directly from the agent interface
+- **Customer context** -- enrich feedback with Zendesk user data like organization, tags, and ticket history
+
+<Note>
+Zendesk is an enrichment integration. It pulls user and organization data into Quackback to give you context on the customers behind your feedback. It does not create tickets or send notifications to Zendesk.
+</Note>
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- A Zendesk account with admin access
+- A Zendesk OAuth application (created in [Zendesk Admin Center](https://developer.zendesk.com/))
+- Your Zendesk subdomain (the `your-company` part of `your-company.zendesk.com`)
+
+## Setup
+
+### 1. Create a Zendesk OAuth Application
+
+1. Go to [Zendesk Admin Center > Apps and Integrations > APIs > OAuth Clients](https://developer.zendesk.com/)
+2. Create a new OAuth client
+3. Copy the **Client ID** and **Client Secret**
+4. Add your Quackback OAuth callback URL as a redirect URI
+
+### 2. Configure Platform Credentials
+
+1. Go to **Admin > Settings > Integrations > Zendesk**
+2. Enter the following credentials:
+   - **Client ID** from your Zendesk OAuth client
+   - **Client Secret** from your Zendesk OAuth client
+
+### 3. Enter Your Subdomain
+
+Before connecting, you'll be prompted to enter your **Zendesk subdomain**. This is the subdomain part of your Zendesk URL:
+
+```
+https://your-company.zendesk.com
+         ^^^^^^^^^^^^
+         This is your subdomain
+```
+
+The subdomain must be lowercase alphanumeric characters and hyphens only (e.g., `acme-corp`).
+
+### 4. Connect Your Account
+
+1. Click **Connect to Zendesk**
+2. You'll be redirected to your Zendesk instance to authorize the application
+3. Review the permissions and click **Allow**
+
+The app requests these OAuth scopes:
+
+| Scope | Purpose |
+|-------|---------|
+| `read` | Search users and read organization data |
+| `write` | Required for full API access |
+
+### 5. Verify the Connection
+
+Once connected, Quackback stores your Zendesk subdomain and account name. Verify the integration shows as active in the settings.
+
+## How It Works
+
+### User Lookup
+
+When you view a feedback post, Quackback can look up the author's email in Zendesk and display:
+
+- **Name** -- the user's full name
+- **Email** -- the user's email address
+- **Role** -- the user's Zendesk role (end-user, agent, admin)
+- **Organization** -- the associated organization name and ID
+- **Tags** -- all tags applied to the user in Zendesk
+
+<Tip>
+Tags in Zendesk are often used to segment customers by plan, region, or priority level. This data appears alongside feedback posts to help you prioritize by customer segment.
+</Tip>
+
+### Organization Enrichment
+
+When a Zendesk user has an associated organization, Quackback automatically fetches the organization details. This lets you see which company a requester belongs to, even if the feedback was submitted with a personal email.
+
+### No Token Expiration
+
+Zendesk OAuth tokens do not expire. Once connected, the integration stays active without requiring token refreshes.
+
+## Manage the Integration
+
+### Pause
+
+Temporarily stop the integration:
+
+1. Go to **Admin > Settings > Integrations > Zendesk**
+2. Toggle **Enabled** off
+3. User lookups pause, but the connection remains
+
+### Reconnect
+
+If you see connection errors:
+
+1. Click **Reconnect**
+2. Re-enter your subdomain if prompted
+3. Re-authorize in Zendesk
+
+### Disconnect
+
+To fully remove the integration:
+
+1. Go to **Admin > Settings > Integrations > Zendesk**
+2. Click **Disconnect**
+3. Confirm the action
+
+<Note>
+Disconnecting revokes the OAuth token with Zendesk and removes the stored credentials from Quackback.
+</Note>
+
+## Troubleshooting
+
+### User Not Found
+
+1. **Check the email** -- the lookup matches by searching for the email address
+2. **Verify the user exists** -- confirm the user is in your Zendesk instance
+3. **Check permissions** -- the connected Zendesk account must have access to search users
+
+### Organization Data Missing
+
+1. **Check user association** -- the user must be associated with an organization in Zendesk
+2. **Verify organization exists** -- confirm the organization has not been deleted
+
+### "Subdomain Not Configured" Error
+
+The Zendesk subdomain is stored during the initial connection. If it is missing:
+
+1. Disconnect the integration
+2. Reconnect and enter your subdomain when prompted
+
+### "Authentication Failed" Error
+
+1. Verify your Client ID and Client Secret are correct
+2. Click **Reconnect** and re-authorize the app
+3. Check that the OAuth client has not been revoked in Zendesk Admin Center
+
+## Next Steps
+
+- [HubSpot](/integrations/hubspot) -- Enrich feedback with HubSpot contact and deal data
+- [Intercom](/integrations/intercom) -- Enrich feedback with Intercom contact data
+- [Integrations Overview](/integrations/overview) -- All integrations

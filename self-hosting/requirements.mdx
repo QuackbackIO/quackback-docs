@@ -15,18 +15,27 @@ Hardware, software, and infrastructure requirements for self-hosting Quackback.
 | CPU | 1 core | 2+ cores |
 | RAM | 1 GB | 2+ GB |
 | Storage | 10 GB | 20+ GB |
-| PostgreSQL | 17+ | 17+ |
+| PostgreSQL | 18+ | 18+ |
 
 ## Software Requirements
 
 ### PostgreSQL
 
-**Version**: 17 or higher (required)
+**Version**: 18 or higher (required)
 
 **Required Extensions**:
 - `pgvector` - Vector similarity search
 - `pg_cron` - Scheduled jobs (optional)
 
+
+### Redis or Dragonfly
+
+Required for background job processing (BullMQ).
+
+| Component | Version |
+|-----------|---------|
+| Redis | 7+ |
+| Dragonfly (alternative) | 1.x+ |
 
 ### Docker (Recommended)
 
@@ -51,6 +60,7 @@ If running without Docker:
 |------|---------|----------|
 | 3000 | Application (default) | Yes |
 | 5432 | PostgreSQL | Internal only |
+| 6379 | Redis/Dragonfly | Internal only |
 | 443 | HTTPS (via proxy) | Production |
 | 80 | HTTP redirect | Optional |
 

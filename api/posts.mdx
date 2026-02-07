@@ -78,7 +78,7 @@ Retrieve a paginated list of public posts with filtering and sorting.
 **Example:**
 
 ```typescript
-import { listPublicPostsFn } from '@/lib/server-functions/public-posts'
+import { listPublicPostsFn } from '@/lib/server/functions/public-posts'
 
 // List top posts from the "feature-requests" board
 const result = await listPublicPostsFn({
@@ -130,7 +130,7 @@ Array<{
 **Example:**
 
 ```typescript
-import { findSimilarPostsFn } from '@/lib/server-functions/public-posts'
+import { findSimilarPostsFn } from '@/lib/server/functions/public-posts'
 
 // Find posts similar to a potential new post
 const similar = await findSimilarPostsFn({
@@ -163,7 +163,7 @@ Create a new post as an admin or team member. The post is attributed to the auth
 | Parameter | Type | Required | Description |
 |-----------|------|----------|-------------|
 | `title` | `string` | Yes | Post title (1-200 chars) |
-| `content` | `string` | Yes | Post content (1-10,000 chars) |
+| `content` | `string` | No | Post content (max 10,000 chars, defaults to empty string) |
 | `contentJson` | `TiptapContent` | No | Rich text content as Tiptap JSON |
 | `boardId` | `string` | Yes | Board ID to post to |
 | `statusId` | `string` | No | Initial status (defaults to "Open") |
@@ -181,8 +181,7 @@ Create a new post as an admin or team member. The post is attributed to the auth
   voteCount: number
   boardId: string
   memberId: string
-  authorName: string
-  authorEmail: string
+  boardSlug: string
   createdAt: string
   updatedAt: string
   deletedAt: string | null
@@ -193,7 +192,7 @@ Create a new post as an admin or team member. The post is attributed to the auth
 **Example:**
 
 ```typescript
-import { createPostFn } from '@/lib/server-functions/posts'
+import { createPostFn } from '@/lib/server/functions/posts'
 
 const post = await createPostFn({
   data: {
@@ -223,7 +222,7 @@ Create a post from the public feedback portal. Requires authentication as any us
 |-----------|------|----------|-------------|
 | `boardId` | `string` | Yes | Board ID (must be a public board) |
 | `title` | `string` | Yes | Post title (1-200 chars) |
-| `content` | `string` | Yes | Post content (max 10,000 chars) |
+| `content` | `string` | No | Post content (max 10,000 chars, defaults to empty string) |
 | `contentJson` | `TiptapContent` | No | Rich text content |
 
 **Response:**
@@ -247,7 +246,7 @@ Create a post from the public feedback portal. Requires authentication as any us
 **Example:**
 
 ```typescript
-import { createPublicPostFn } from '@/lib/server-functions/public-posts'
+import { createPublicPostFn } from '@/lib/server/functions/public-posts'
 
 const post = await createPublicPostFn({
   data: {
@@ -284,7 +283,7 @@ Update an existing post. Team members can update any post.
 **Example:**
 
 ```typescript
-import { updatePostFn } from '@/lib/server-functions/posts'
+import { updatePostFn } from '@/lib/server/functions/posts'
 
 const updated = await updatePostFn({
   data: {
@@ -345,7 +344,7 @@ Change the status of a post.
 **Example:**
 
 ```typescript
-import { changePostStatusFn } from '@/lib/server-functions/posts'
+import { changePostStatusFn } from '@/lib/server/functions/posts'
 
 const result = await changePostStatusFn({
   data: {
@@ -461,7 +460,7 @@ Vote or unvote on a post. If the user has already voted, the vote is removed.
 **Example:**
 
 ```typescript
-import { toggleVoteFn } from '@/lib/server-functions/public-posts'
+import { toggleVoteFn } from '@/lib/server/functions/public-posts'
 
 const result = await toggleVoteFn({
   data: {
@@ -497,7 +496,7 @@ Get all post IDs that the current user has voted on.
 **Example:**
 
 ```typescript
-import { getVotedPostsFn } from '@/lib/server-functions/public-posts'
+import { getVotedPostsFn } from '@/lib/server/functions/public-posts'
 
 const { votedPostIds } = await getVotedPostsFn()
 const votedSet = new Set(votedPostIds)
