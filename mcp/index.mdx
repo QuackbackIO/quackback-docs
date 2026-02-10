@@ -1,0 +1,180 @@
+---
+title: "MCP Server"
+description: "Connect AI agents to your feedback. Quackback's MCP server gives agents full access to search, triage, create, and respond to feedback."
+order: 1
+---
+
+# MCP Server
+
+Quackback includes an MCP server that gives AI agents direct access to your feedback data. Agents connect over HTTP, authenticate with an API key or OAuth, and call tools to search, triage, and respond to feedback.
+
+## What agents can do
+
+- **Search and filter** feedback across boards, statuses, and tags
+- **Triage posts** — update status, assign owners, tag, write official responses
+- **Create new posts** and changelog entries
+- **Comment and vote** on feedback
+- **Read resources** — boards, statuses, tags, roadmaps, and team members
+
+See the [MCP Reference](/docs/mcp/reference) for the full tool and resource documentation.
+
+## Setup
+
+### 1. Enable MCP
+
+Navigate to **Admin > Settings > MCP Server** and toggle the server on.
+
+### 2. Create an API key
+
+Navigate to **Admin > Settings > API Keys**. Create a key with a descriptive name (e.g., "Claude Code"). The key starts with `qb_` and is only shown once — copy it immediately.
+
+### 3. Connect your agent
+
+Choose your client below. Replace `feedback.example.com` with your instance URL.
+
+#### Claude Code
+
+Add to `.mcp.json` in your project root. Set the `QUACKBACK_API_KEY` environment variable to your API key.
+
+```json
+{
+  "mcpServers": {
+    "quackback": {
+      "type": "http",
+      "url": "https://feedback.example.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${QUACKBACK_API_KEY}"
+      }
+    }
+  }
+}
+```
+
+Or use the CLI:
+
+```bash
+claude mcp add --transport http quackback https://feedback.example.com/mcp \
+  --header "Authorization: Bearer $QUACKBACK_API_KEY"
+```
+
+#### Cursor
+
+Add to `.cursor/mcp.json` in your project root. Set the `QUACKBACK_API_KEY` environment variable to your API key.
+
+```json
+{
+  "mcpServers": {
+    "quackback": {
+      "url": "https://feedback.example.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:QUACKBACK_API_KEY}"
+      }
+    }
+  }
+}
+```
+
+<Tip>
+Cursor uses `${env:VAR}` syntax for environment variables. Requires Cursor v0.48.0+.
+</Tip>
+
+#### VS Code
+
+Add to `.vscode/mcp.json` in your project root. VS Code will prompt you for the API key on first use and store it securely.
+
+```json
+{
+  "inputs": [
+    {
+      "type": "promptString",
+      "id": "quackback-api-key",
+      "description": "Quackback API Key (qb_...)",
+      "password": true
+    }
+  ],
+  "servers": {
+    "quackback": {
+      "type": "http",
+      "url": "https://feedback.example.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${input:quackback-api-key}"
+      }
+    }
+  }
+}
+```
+
+<Note>
+VS Code uses `servers` (not `mcpServers`) as the top-level key.
+</Note>
+
+#### Windsurf
+
+Add to `~/.codeium/windsurf/mcp_config.json`. Set the `QUACKBACK_API_KEY` environment variable to your API key.
+
+```json
+{
+  "mcpServers": {
+    "quackback": {
+      "serverUrl": "https://feedback.example.com/mcp",
+      "headers": {
+        "Authorization": "Bearer ${env:QUACKBACK_API_KEY}"
+      }
+    }
+  }
+}
+```
+
+<Note>
+Windsurf uses `serverUrl` instead of `url`.
+</Note>
+
+#### Claude Desktop
+
+Claude Desktop doesn't support custom HTTP headers natively. Use `mcp-remote` as a bridge. Add to `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "quackback": {
+      "command": "npx",
+      "args": [
+        "mcp-remote@latest",
+        "--http",
+        "https://feedback.example.com/mcp",
+        "--header",
+        "Authorization: Bearer qb_YOUR_API_KEY"
+      ]
+    }
+  }
+}
+```
+
+Replace `qb_YOUR_API_KEY` with your actual API key. Requires Node.js.
+
+## Authentication
+
+Two authentication methods are supported:
+
+- **API keys** (`qb_` prefix) — Full access to all scopes. Available to team members (admin or member role). Create them in **Admin > Settings > API Keys**.
+- **OAuth 2.1** — Scoped access. Supports MCP OAuth discovery so clients like Claude Code can authenticate automatically without manual key setup.
+
+## Scopes
+
+| Scope | Grants |
+|-------|--------|
+| `read:feedback` | Search posts and changelogs, get details, read resources |
+| `write:feedback` | Create posts, vote, comment, triage |
+| `write:changelog` | Create changelog entries |
+
+API keys get all three scopes. OAuth tokens get only the scopes the user approved.
+
+## Service principals
+
+Every API key gets its own identity. When an agent triages a post, the audit trail shows which key did it. Create descriptive key names like "GitHub Actions" or "Claude Code" to keep attribution clear.
+
+## Next steps
+
+- [MCP Reference](/docs/mcp/reference) — Full tool and resource documentation
+- [API Overview](/docs/api/overview) — REST API for programmatic integrations
+- [Webhooks](/docs/integrations/webhooks) — Receive real-time event notifications

@@ -1,0 +1,188 @@
+---
+title: "MCP Reference"
+description: "Complete reference for Quackback's MCP tools and resources. Parameters, return values, and examples for all 7 tools and 5 resources."
+order: 2
+---
+
+# MCP Reference
+
+Quackback's MCP server exposes 7 tools and 5 resources. Tools perform actions (search, create, update). Resources provide lookup data (boards, statuses, tags) that tools reference by ID.
+
+## Tools
+
+### search
+
+Search feedback posts or changelog entries. Returns paginated results with a cursor for the next page.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `entity` | `"posts"` \| `"changelogs"` | `"posts"` | Entity type to search |
+| `query` | string | — | Text search across titles and content |
+| `boardId` | string | — | Filter posts by board TypeID (ignored for changelogs) |
+| `status` | string | — | Filter by status slug. Posts: `"open"`, `"in_progress"`, etc. Changelogs: `"draft"`, `"published"`, `"scheduled"`, `"all"` |
+| `tagIds` | string[] | — | Filter posts by tag TypeIDs (ignored for changelogs) |
+| `sort` | `"newest"` \| `"oldest"` \| `"votes"` | `"newest"` | Sort order. `"votes"` only applies to posts |
+| `limit` | number (1–100) | `20` | Max results per page |
+| `cursor` | string | — | Pagination cursor from a previous response |
+
+**Scope:** `read:feedback`
+
+```
+search({ query: "dark mode", sort: "votes", limit: 10 })
+search({ entity: "changelogs", status: "published" })
+search({ boardId: "board_01abc...", status: "open" })
+```
+
+---
+
+### get_details
+
+Get full details for any entity by TypeID. The entity type is auto-detected from the ID prefix — no need to specify whether it's a post or changelog.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | string | TypeID of the entity (e.g., `post_01abc...`, `changelog_01xyz...`) |
+
+**Scope:** `read:feedback`
+
+Returns all fields including comments (for posts), linked posts (for changelogs), tags, official response, and timestamps.
+
+```
+get_details({ id: "post_01abc..." })
+get_details({ id: "changelog_01xyz..." })
+```
+
+---
+
+### triage_post
+
+Update a post's status, tags, owner, or official response. All fields except `postId` are optional — only provided fields are updated.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `postId` | string | Post TypeID to update |
+| `statusId` | string | New status TypeID |
+| `tagIds` | string[] | Replace all tags with these TypeIDs |
+| `ownerPrincipalId` | string \| null | Assign to a team member TypeID, or `null` to unassign |
+| `officialResponse` | string \| null | Set official response text (max 5,000 chars), or `null` to clear |
+
+**Scope:** `write:feedback` + team role (admin or member)
+
+```
+triage_post({ postId: "post_01abc...", statusId: "status_01xyz..." })
+triage_post({
+  postId: "post_01abc...",
+  ownerPrincipalId: "principal_01xyz...",
+  officialResponse: "We're working on this!"
+})
+triage_post({ postId: "post_01abc...", tagIds: ["tag_01a...", "tag_01b..."] })
+```
+
+---
+
+### vote_post
+
+Toggle a vote on a feedback post. Call once to vote, call again to unvote. Idempotent.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `postId` | string | Post TypeID to vote on |
+
+**Scope:** `write:feedback`
+
+Returns the current vote state and total vote count.
+
+```
+vote_post({ postId: "post_01abc..." })
+```
+
+---
+
+### add_comment
+
+Post a comment on a feedback post. Supports threaded replies via `parentId`.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `postId` | string | Post TypeID to comment on |
+| `content` | string | Comment text (max 5,000 characters) |
+| `parentId` | string | Parent comment TypeID for a threaded reply |
+
+**Scope:** `write:feedback`
+
+```
+add_comment({ postId: "post_01abc...", content: "Thanks for the feedback!" })
+add_comment({
+  postId: "post_01abc...",
+  content: "Good point.",
+  parentId: "comment_01xyz..."
+})
+```
+
+---
+
+### create_post
+
+Submit new feedback on a board. Requires a board ID and title. Content, status, and tags are optional.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `boardId` | string | Board TypeID (use `quackback://boards` resource to find IDs) |
+| `title` | string | Post title (max 200 characters) |
+| `content` | string | Post body (max 10,000 characters) |
+| `statusId` | string | Initial status TypeID (defaults to board default) |
+| `tagIds` | string[] | Tag TypeIDs to apply |
+
+**Scope:** `write:feedback`
+
+<Tip>
+Use the `quackback://boards` resource to look up board IDs before calling `create_post`.
+</Tip>
+
+```
+create_post({ boardId: "board_01abc...", title: "Add dark mode" })
+create_post({
+  boardId: "board_01abc...",
+  title: "Add dark mode",
+  content: "Would love a dark theme option.",
+  statusId: "status_01xyz...",
+  tagIds: ["tag_01a..."]
+})
+```
+
+---
+
+### create_changelog
+
+Create a changelog entry. Saves as a draft by default — set `publish: true` to publish immediately.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `title` | string | — | Changelog entry title (max 200 characters) |
+| `content` | string | — | Changelog content, markdown supported (max 50,000 characters) |
+| `publish` | boolean | `false` | Set to `true` to publish immediately |
+
+**Scope:** `write:changelog` + team role (admin or member)
+
+```
+create_changelog({ title: "v2.1 Release", content: "## New features\n- Dark mode..." })
+create_changelog({ title: "v2.1 Release", content: "...", publish: true })
+```
+
+## Resources
+
+Resources provide lookup data for boards, statuses, tags, roadmaps, and team members. Use them to find IDs before calling tools like `triage_post` or `create_post`.
+
+All resources require the `read:feedback` scope.
+
+| URI | Returns | Fields |
+|-----|---------|--------|
+| `quackback://boards` | All boards | `id`, `name`, `slug` |
+| `quackback://statuses` | All statuses | `id`, `name`, `slug`, `color` |
+| `quackback://tags` | All tags | `id`, `name`, `color` |
+| `quackback://roadmaps` | All roadmaps | `id`, `name`, `slug` |
+| `quackback://members` | Team members | `id`, `name`, `role` |
+
+<Tip>
+A typical workflow: read `quackback://statuses` to find the "planned" status ID, then call `triage_post` with that status ID.
+</Tip>
