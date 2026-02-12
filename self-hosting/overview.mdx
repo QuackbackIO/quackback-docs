@@ -1,0 +1,33 @@
+---
+title: "Self-Hosting"
+description: "Run Quackback on your own infrastructure."
+icon: "server"
+---
+
+# Self-Hosting
+
+Quackback is designed to be self-hosted. Pick the deployment method that fits your setup.
+
+## Choose your path
+
+| Method | Best for | Time |
+|--------|----------|------|
+| [Railway](/docs/self-hosting/railway) | Fastest start, no server needed | 2 min |
+| [Docker](/docs/self-hosting/docker) | Most deployments | 10 min |
+| [Manual](/docs/self-hosting/manual) | Full control, no containers | 30 min |
+
+<Tip>
+If you're not sure, start with Docker. It handles dependencies, migrations, and updates automatically.
+</Tip>
+
+## Before you start
+
+Check the [system requirements](/docs/self-hosting/requirements) — you need PostgreSQL 18+, Redis or Dragonfly, and about 1 GB of RAM.
+
+## What's in this section
+
+- [Deploy with Docker](/docs/self-hosting/docker) — Docker Compose setup, configuration, upgrades
+- [Install without Docker](/docs/self-hosting/manual) — Bun, systemd, process management
+- [System Requirements](/docs/self-hosting/requirements) — Hardware, software, cloud providers
+- [Reverse Proxy](/docs/self-hosting/reverse-proxy) — Caddy, Nginx, Traefik configs for HTTPS
+- [Troubleshooting](/docs/self-hosting/troubleshooting) — Common issues and solutions

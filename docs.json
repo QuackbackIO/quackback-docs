@@ -1,7 +1,7 @@
 {
   "tabs": [
     { "id": "getting-started", "label": "Getting Started", "icon": "book-open", "sections": ["getting-started"], "defaultSlug": "getting-started/introduction" },
-    { "id": "self-hosting", "label": "Self Hosting", "icon": "server", "sections": ["self-hosting"], "defaultSlug": "self-hosting/docker" },
+    { "id": "self-hosting", "label": "Self Hosting", "icon": "server", "sections": ["self-hosting"], "defaultSlug": "self-hosting/overview" },
     { "id": "users", "label": "Users", "icon": "users", "sections": ["users"], "defaultSlug": "users/submitting-feedback" },
     { "id": "admin", "label": "Admin", "icon": "settings", "sections": ["admin"], "defaultSlug": "admin/inbox" },
     { "id": "auth", "label": "Auth", "icon": "shield", "sections": ["auth"], "defaultSlug": "auth/overview" },
