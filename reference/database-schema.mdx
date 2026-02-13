@@ -238,7 +238,7 @@ Application settings and branding configuration. Single row in self-hosted deplo
 `portal_config`:
 ```json
 {
-  "oauth": { "google": boolean, "github": boolean },
+  "oauth": { "password": boolean, "email": boolean, "google": boolean, "github": boolean },
   "features": { "publicView": boolean, "submissions": boolean, "comments": boolean, "voting": boolean }
 }
 ```
@@ -320,6 +320,7 @@ Feedback posts submitted by users or team members.
 | `official_response_member_id` | TypeID (member) | FK -> member.id ON DELETE SET NULL | Response author |
 | `official_response_at` | timestamptz | | Response timestamp |
 | `pinned_comment_id` | TypeID (comment) | | Pinned comment as official response |
+| `is_comments_locked` | boolean | NOT NULL, DEFAULT false | Prevent portal users from commenting (team members bypass) |
 | `moderation_state` | text | NOT NULL, DEFAULT 'published' | State: published, pending, spam, archived, closed, deleted |
 | `canonical_post_id` | TypeID (post) | | Canonical post this was merged into |
 | `merged_at` | timestamptz | | When this post was merged |
@@ -370,6 +371,8 @@ Comments on feedback posts, supporting nested replies.
 | `member_id` | TypeID (member) | NOT NULL, FK -> member.id ON DELETE RESTRICT | Author member |
 | `content` | text | NOT NULL | Comment text |
 | `is_team_member` | boolean | NOT NULL, DEFAULT false | Team member flag |
+| `status_change_from_id` | TypeID (status) | FK -> post_statuses.id ON DELETE SET NULL | Previous status (for status changes recorded with comments) |
+| `status_change_to_id` | TypeID (status) | FK -> post_statuses.id ON DELETE SET NULL | New status (for status changes recorded with comments) |
 | `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
 | `deleted_at` | timestamptz | | Soft delete timestamp |
 
@@ -381,7 +384,7 @@ Comments on feedback posts, supporting nested replies.
 - `comments_post_created_at_idx` on `(post_id, created_at)`
 
 **Relations:**
-- Belongs to: post, member (author), comment (parent)
+- Belongs to: post, member (author), comment (parent), post_status (statusChangeFrom), post_status (statusChangeTo)
 - Has many: comments (replies), comment_reactions
 
 ---

@@ -8,6 +8,10 @@ icon: "envelope"
 
 Skip the password. Users enter their email, get a 6-digit code, and they're in. No password to remember, no reset links to click. Just a quick code that expires in 10 minutes.
 
+<Note>
+Email OTP is **disabled by default** for new installations. Password sign-in is the default method. Enable Email OTP from **Admin → Settings → Portal Authentication** if you prefer passwordless login.
+</Note>
+
 ## How It Works
 
 1. **User enters email** - On the login or signup page, the user enters their email address
@@ -114,11 +118,11 @@ The template is built with [React Email](https://react.email) components located
 Administrators can enable or disable email OTP for portal users:
 
 1. Navigate to **Admin > Settings > Portal Authentication**
-2. Find the **Email** toggle
+2. Find the **Email OTP** toggle
 3. Enable or disable as needed
 
 <Note>
-At least one authentication method must remain enabled.
+At least one authentication method must remain enabled. Email OTP is disabled by default — enable it if you want to offer passwordless sign-in alongside or instead of password authentication.
 </Note>
 
 ## Troubleshooting

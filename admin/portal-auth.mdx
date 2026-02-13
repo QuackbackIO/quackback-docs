@@ -1,12 +1,12 @@
 ---
 title: "Set up portal sign-in"
-description: "Choose how users sign in: email magic links or OAuth."
+description: "Choose how users sign in: password, email OTP, or OAuth."
 icon: "lock"
 ---
 
 # Set up portal sign-in
 
-Let users sign in the way they prefer. Enable email magic links for simplicity, or OAuth with GitHub and Google for convenience.
+Let users sign in the way they prefer. Password sign-in is enabled by default for simplicity. Add email OTP for passwordless login, or OAuth with GitHub and Google for convenience.
 
 ## Overview
 
@@ -18,13 +18,28 @@ Portal Authentication controls **portal user** sign-in (customers submitting fee
 
 ## Authentication Methods
 
-### Email (Magic Link)
+### Password
+
+Allow users to sign in with their email and password.
+
+- **How it works**: User enters email + password → signed in
+- **Best for**: Familiar sign-in experience, self-hosted deployments
+- **Enabled by default**: Yes
+- **Password requirements**: 8-128 characters
+
+Users can reset their password through a forgot password flow that sends a verification code to their email.
+
+### Email OTP (Magic Link)
 
 Allow users to sign in using magic link codes sent to their email.
 
 - **How it works**: User enters email → receives 6-digit code → enters code to sign in
-- **Best for**: Maximum accessibility, no third-party accounts needed
-- **Enabled by default**: Yes
+- **Best for**: Passwordless login, maximum simplicity
+- **Enabled by default**: No
+
+<Tip>
+When both Password and Email OTP are enabled, users can switch between methods on the sign-in form.
+</Tip>
 
 ### GitHub
 
@@ -61,15 +76,16 @@ At least one authentication method must remain enabled. The last enabled method 
 <Tip>
 Consider your user base when selecting authentication methods:
 
+- **Most deployments** → Keep Password enabled (default)
 - **Developer products** → Enable GitHub
 - **Business products** → Enable Google
-- **Maximum accessibility** → Keep Email enabled
+- **Passwordless preference** → Enable Email OTP
 </Tip>
 
 ### Security Recommendations
 
 1. **Enable multiple methods** - Provides fallback if one method has issues
-2. **Keep Email enabled** - Ensures all users can access the portal regardless of OAuth provider availability
+2. **Keep Password enabled** - Ensures all users can access the portal regardless of OAuth provider availability
 
 ### User Experience
 
