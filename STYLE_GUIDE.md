@@ -2,7 +2,7 @@
 
 This guide establishes writing patterns for all Quackback documentation. Follow these principles to create docs that are welcoming, practical, and user-focused.
 
-Inspired by the best developer documentation (Stripe, Vercel, Linear) — adapted for Quackback's voice.
+Inspired by the best developer documentation (Stripe, Vercel, Linear), adapted for Quackback's voice.
 
 ---
 
@@ -138,7 +138,7 @@ Link concepts **inline within sentences**, not just in "Next Steps" sections. Wh
 **Don't:**
 > "Posts move through statuses as your team works on them. (See: Managing Statuses)"
 
-Keep "Next Steps" sections too — but inline links are the primary discovery mechanism.
+Keep "Next Steps" sections too, but inline links are the primary discovery mechanism.
 
 ### Inline Tips and Guidance
 
@@ -216,7 +216,7 @@ icon: "[icon-name]"
 
 ## Prerequisites
 
-[Only what's immediately needed — not a general knowledge dump]
+[Only what's immediately needed, not a general knowledge dump]
 
 ## [Step-oriented sections with imperative headings]
 
@@ -253,7 +253,7 @@ icon: "[icon-name]"
 ## [Core concept sections]
 
 [Explain each concept briefly. Link to the full guide page for details.]
-[Don't duplicate content from guide pages — summarize and link.]
+[Don't duplicate content from guide pages. Summarize and link.]
 
 ## Next steps
 
@@ -280,7 +280,7 @@ icon: "[icon-name]"
 ## [Grouped sections]
 
 [Tables, code examples, specifications]
-[Minimal prose — let the data speak]
+[Minimal prose. Let the data speak]
 ```
 
 ### Hub Page (navigation-oriented)
@@ -300,11 +300,11 @@ icon: "[icon-name]"
 
 ## [Category groupings]
 
-[Card-style links: **Bold title** — single sentence description]
+[Card-style links: **Bold title**: single sentence description]
 [Organize by user intent, not by product taxonomy]
 ```
 
-Hub pages should contain **almost no tutorial content** — they're curated navigation. If you're writing more than 2-3 sentences of explanation per link, the content belongs on the linked page instead.
+Hub pages should contain **almost no tutorial content**. They're curated navigation. If you're writing more than 2-3 sentences of explanation per link, the content belongs on the linked page instead.
 
 ---
 
@@ -421,7 +421,7 @@ For optional but valuable information. Use for best practices and shortcuts.
 
 ```markdown
 <Tip>
-**Start simple** — Begin with the default statuses. Add custom ones only when you feel limited.
+**Start simple.** Begin with the default statuses. Add custom ones only when you feel limited.
 </Tip>
 ```
 
@@ -525,4 +525,4 @@ Before publishing any doc, verify:
 - [ ] API code examples include curl + JavaScript + Python tabs
 - [ ] "Next Steps" section links to 2-3 related pages
 - [ ] Page follows the correct template (guide / concept / reference / hub)
-- [ ] No words that don't earn their place — every sentence passes the "can I cut this?" test
+- [ ] No words that don't earn their place, every sentence passes the "can I cut this?" test

@@ -1,0 +1,105 @@
+---
+title: "Freshdesk"
+description: "Enrich feedback with support ticket data from Freshdesk."
+icon: "freshdesk"
+---
+
+# Freshdesk
+
+See the support story behind every request. Automatically match feedback authors to Freshdesk contacts and surface their support history, open tickets, and satisfaction scores alongside their feedback.
+
+## Overview
+
+The Freshdesk integration enables:
+
+- **Ticket enrichment** -- automatically match feedback authors to Freshdesk contacts and display their support history
+- **Contact lookup** -- look up contacts by email to see open tickets, satisfaction scores, and account details
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- A Freshdesk account with API access
+- Your Freshdesk subdomain and an API key
+
+## Setup
+
+### 1. Get Your Freshdesk API Key
+
+1. Log in to your Freshdesk account
+2. Click your profile icon in the top-right
+3. Go to **Profile Settings**
+4. Copy the **API Key** from the right sidebar
+
+### 2. Connect to Freshdesk
+
+1. Go to **Admin > Settings > Integrations > Freshdesk**
+2. Click **Connect to Freshdesk**
+3. Enter your **Freshdesk subdomain** (e.g., `yourcompany` from `yourcompany.freshdesk.com`)
+4. Enter your **API key**
+5. Click **Connect**
+
+<Note>
+Freshdesk uses API key authentication rather than OAuth. Your API key is encrypted at rest and only used to query the Freshdesk API.
+</Note>
+
+### 3. Save and Test
+
+1. Click **Save**
+2. Submit test feedback with an email address that matches a Freshdesk contact
+3. The feedback post will be enriched with the contact's data
+
+## How Enrichment Works
+
+When new feedback is submitted, Quackback:
+
+1. Looks up the author's email in Freshdesk via the Contacts API
+2. If a match is found, links the feedback post to the Freshdesk contact
+3. Displays the contact's support context alongside the feedback
+
+This gives your team immediate visibility into whether a feedback author has open support tickets, their satisfaction history, and account details.
+
+## Manage the Integration
+
+### Pause
+
+Temporarily stop enrichment:
+
+1. Go to **Admin > Settings > Integrations > Freshdesk**
+2. Toggle **Enabled** off
+3. Enrichment pauses, but the connection remains
+
+### Reconnect
+
+If you see connection errors:
+
+1. Verify your API key is still valid in Freshdesk
+2. Update the credentials in Quackback if needed
+
+### Disconnect
+
+To fully remove the integration:
+
+1. Go to **Admin > Settings > Integrations > Freshdesk**
+2. Click **Disconnect**
+3. Confirm the action
+
+## Troubleshooting
+
+### Contacts Not Being Matched
+
+1. **Check email addresses** -- the feedback author's email must exactly match a Freshdesk contact
+2. **Verify API key** -- ensure the key has permission to read contacts
+3. **Check integration status** -- look for errors in settings
+
+### "Authentication Failed" Error
+
+Your API key may have been revoked or expired:
+
+1. Generate a new API key in Freshdesk
+2. Update the key in Quackback's integration settings
+
+## Next Steps
+
+- [Zendesk](/integrations/zendesk) -- Zendesk support integration
+- [Intercom](/integrations/intercom) -- Intercom support integration
+- [Integrations Overview](/integrations/overview) -- All integrations

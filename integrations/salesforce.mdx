@@ -1,0 +1,122 @@
+---
+title: "Salesforce"
+description: "Enrich feedback with CRM data and create cases from Salesforce."
+icon: "salesforce"
+---
+
+# Salesforce
+
+Know who's asking. Automatically match feedback authors to Salesforce contacts and surface account names, opportunity stages, and deal values alongside their requests. Prioritize feedback from your most valuable customers.
+
+## Overview
+
+The Salesforce integration enables:
+
+- **Account enrichment** -- see account name, opportunity stage, and deal value alongside feedback
+- **Contact lookup** -- automatically match feedback authors to Salesforce contacts by email address
+- **Case creation** -- create Salesforce cases from feedback posts for tracking in your CRM
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- A Salesforce account with API access
+- A Salesforce Connected App (see [Create a Connected App](https://help.salesforce.com/s/articleView?id=sf.connected_app_create.htm))
+
+## Setup
+
+### 1. Create a Salesforce Connected App
+
+1. Go to **Setup > App Manager** in Salesforce
+2. Click **New Connected App**
+3. Enable OAuth Settings
+4. Add these OAuth scopes:
+   - `api` -- Access and manage your data
+   - `refresh_token` -- Perform requests at any time
+5. Set the **Callback URL** to your Quackback OAuth callback URL
+6. Save and copy the **Consumer Key** and **Consumer Secret**
+
+<Note>
+It may take up to 10 minutes for a new Connected App to become active in Salesforce.
+</Note>
+
+### 2. Configure Platform Credentials
+
+1. Go to **Admin > Settings > Integrations > Salesforce**
+2. Enter the following credentials:
+   - **Consumer Key** from your Connected App
+   - **Consumer Secret** from your Connected App
+
+### 3. Connect Your Account
+
+1. Click **Connect to Salesforce**
+2. You'll be redirected to Salesforce to authorize the application
+3. Log in and click **Allow**
+
+### 4. Save and Test
+
+1. Click **Save**
+2. Submit test feedback with an email address that matches a Salesforce contact
+3. The feedback post will be enriched with the contact's account data
+
+## How Enrichment Works
+
+When new feedback is submitted, Quackback:
+
+1. Queries Salesforce for a Contact matching the author's email
+2. If found, retrieves the Contact's Account name and details
+3. Links the feedback post to the Salesforce contact with a direct link to the Lightning contact view
+
+This helps your team see the revenue impact of feature requests and prioritize feedback from key accounts.
+
+## Manage the Integration
+
+### Pause
+
+Temporarily stop enrichment:
+
+1. Go to **Admin > Settings > Integrations > Salesforce**
+2. Toggle **Enabled** off
+3. Enrichment pauses, but the connection remains
+
+### Reconnect
+
+If you see connection errors:
+
+1. Click **Reconnect**
+2. Re-authorize in Salesforce
+3. Tokens are automatically refreshed when they expire
+
+### Disconnect
+
+To fully remove the integration:
+
+1. Go to **Admin > Settings > Integrations > Salesforce**
+2. Click **Disconnect**
+3. Confirm the action
+
+## Troubleshooting
+
+### Contacts Not Being Matched
+
+1. **Check email addresses** -- the feedback author's email must exactly match a Salesforce Contact's email field
+2. **Verify permissions** -- the connected account needs read access to Contacts and Accounts
+3. **Check integration status** -- look for errors in settings
+
+### "Authentication Failed" Error
+
+Salesforce OAuth tokens expire and are automatically refreshed. If refresh fails:
+
+1. Click **Reconnect**
+2. Re-authorize the app in Salesforce
+
+### Connected App Not Working
+
+1. Verify the Connected App is active (can take up to 10 minutes after creation)
+2. Check that the OAuth scopes include `api` and `refresh_token`
+3. Confirm the callback URL matches your Quackback instance
+
+## Next Steps
+
+- [HubSpot](/integrations/hubspot) -- HubSpot CRM integration
+- [Stripe](/integrations/stripe) -- Stripe revenue integration
+- [Integrations Overview](/integrations/overview) -- All integrations

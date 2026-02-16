@@ -1,0 +1,111 @@
+---
+title: "Stripe"
+description: "Enrich feedback with customer revenue and subscription data."
+icon: "stripe"
+---
+
+# Stripe
+
+Prioritize by revenue. Automatically match feedback authors to Stripe customers and see MRR, plan tier, and subscription status alongside their requests. Know which feature requests come from your highest-value customers.
+
+## Overview
+
+The Stripe integration enables:
+
+- **Revenue enrichment** -- see MRR, plan tier, and billing status alongside feedback to prioritize high-value customers
+- **Customer lookup** -- automatically match feedback authors to Stripe customers by email address
+- **Subscription context** -- view subscription status, plan name, and lifetime value for each feedback author
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- A Stripe account
+- A Stripe API key with read access to customers
+
+## Setup
+
+### 1. Get Your Stripe API Key
+
+1. Go to the [Stripe Dashboard > API Keys](https://dashboard.stripe.com/apikeys)
+2. Copy your **Secret key** (starts with `sk_live_` or `sk_test_`)
+
+<Tip>
+Use a **restricted key** with read-only access to Customers for better security. Go to **API Keys > Create restricted key** and enable only "Customers: Read".
+</Tip>
+
+### 2. Connect to Stripe
+
+1. Go to **Admin > Settings > Integrations > Stripe**
+2. Click **Connect to Stripe**
+3. Enter your **Stripe API key**
+4. Click **Connect**
+
+<Note>
+Stripe uses API key authentication rather than OAuth. Your API key is encrypted at rest and only used to query the Stripe API.
+</Note>
+
+### 3. Save and Test
+
+1. Click **Save**
+2. Submit test feedback with an email address that matches a Stripe customer
+3. The feedback post will be enriched with the customer's revenue data
+
+## How Enrichment Works
+
+When new feedback is submitted, Quackback:
+
+1. Searches Stripe for a customer matching the author's email
+2. If found, retrieves subscription and revenue data
+3. Links the feedback post to the Stripe customer with a direct link to their dashboard profile
+
+This helps your team prioritize feature requests from paying customers and understand the revenue impact of feedback.
+
+## Manage the Integration
+
+### Pause
+
+Temporarily stop enrichment:
+
+1. Go to **Admin > Settings > Integrations > Stripe**
+2. Toggle **Enabled** off
+3. Enrichment pauses, but the connection remains
+
+### Reconnect
+
+If you see connection errors:
+
+1. Verify your API key is still valid in the Stripe Dashboard
+2. Update the key in Quackback if needed
+
+### Disconnect
+
+To fully remove the integration:
+
+1. Go to **Admin > Settings > Integrations > Stripe**
+2. Click **Disconnect**
+3. Confirm the action
+
+## Troubleshooting
+
+### Customers Not Being Matched
+
+1. **Check email addresses** -- the feedback author's email must match a Stripe customer's email
+2. **Verify API key** -- ensure the key has permission to read customers
+3. **Check integration status** -- look for errors in settings
+
+### "Authentication Failed" Error
+
+Your API key may have been revoked or rotated:
+
+1. Get a new API key from the Stripe Dashboard
+2. Update the key in Quackback's integration settings
+
+### Test vs. Live Mode
+
+Stripe test keys (`sk_test_`) only match test customers. Use a live key (`sk_live_`) to match real customers.
+
+## Next Steps
+
+- [Salesforce](/integrations/salesforce) -- Salesforce CRM integration
+- [HubSpot](/integrations/hubspot) -- HubSpot CRM integration
+- [Integrations Overview](/integrations/overview) -- All integrations

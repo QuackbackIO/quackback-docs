@@ -1,0 +1,112 @@
+---
+title: "Monday.com"
+description: "Create items in Monday.com from feedback and sync statuses."
+icon: "monday"
+---
+
+# Monday.com
+
+Feedback straight to your board. Automatically create Monday.com items when feedback is submitted, and keep statuses synchronized between Quackback and Monday.com. Select which board and group to use, with rich descriptions that include all the context your team needs.
+
+## Overview
+
+The Monday.com integration enables:
+
+- **Create items from feedback** -- automatically create a Monday.com item when new feedback is submitted
+- **Two-way status sync** -- status changes in Monday.com update the feedback status in Quackback and vice versa
+- **Board integration** -- select which board and group to create items in, with rich descriptions
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- A Monday.com account with admin access
+- A Monday.com app (created at [Monday Developer Portal](https://developer.monday.com/apps/manage))
+
+## Setup
+
+### 1. Create a Monday.com App
+
+1. Go to the [Monday Developer Portal](https://developer.monday.com/apps/manage)
+2. Create a new app
+3. Copy the **Client ID** and **Client Secret**
+
+### 2. Configure Platform Credentials
+
+1. Go to **Admin > Settings > Integrations > Monday.com**
+2. Enter the following credentials:
+   - **Client ID** from your Monday.com app
+   - **Client Secret** from your Monday.com app
+
+### 3. Connect Your Workspace
+
+1. Click **Connect to Monday.com**
+2. You'll be redirected to Monday.com to authorize the application
+3. Review the permissions and click **Authorize**
+
+### 4. Select a Board and Group
+
+Back in Quackback:
+
+1. Choose the Monday.com board where items should be created
+2. Optionally select a specific group within the board
+3. Items will be created in this location when new feedback is submitted
+
+### 5. Configure Status Mappings
+
+Map Monday.com statuses to Quackback statuses. Status sync works bidirectionally -- changes in either platform update the other.
+
+### 6. Save and Test
+
+1. Click **Save**
+2. Submit test feedback to verify an item is created in Monday.com
+
+## Item Format
+
+When feedback triggers item creation, the Monday.com item includes:
+
+- **Item name**: The feedback post title
+- **Update (comment)**: The post content with feedback details, author info, and a link back to the post in Quackback
+
+## Manage the Integration
+
+### Pause
+
+Temporarily stop the integration:
+
+1. Go to **Admin > Settings > Integrations > Monday.com**
+2. Toggle **Enabled** off
+3. Item creation pauses, but the connection remains
+
+### Reconnect
+
+If you see connection errors:
+
+1. Click **Reconnect**
+2. Re-authorize in Monday.com
+
+### Disconnect
+
+To fully remove the integration:
+
+1. Go to **Admin > Settings > Integrations > Monday.com**
+2. Click **Disconnect**
+3. Confirm the action
+
+## Troubleshooting
+
+### Items Not Being Created
+
+1. **Check integration status** -- look for errors in settings
+2. **Verify board selection** -- ensure a Monday.com board is selected
+3. **Check permissions** -- the connected account needs write access to the board
+
+### "Authentication Failed" Error
+
+1. Click **Reconnect**
+2. Re-authorize the app in Monday.com
+
+## Next Steps
+
+- [Linear](/integrations/linear) -- Linear issue integration
+- [Webhooks](/integrations/webhooks) -- Build custom integrations
+- [Integrations Overview](/integrations/overview) -- All integrations

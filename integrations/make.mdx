@@ -1,0 +1,119 @@
+---
+title: "Make"
+description: "Connect Quackback to Make (formerly Integromat) automation scenarios."
+icon: "make"
+---
+
+# Make
+
+Automate your feedback workflow. Connect Quackback to Make (formerly Integromat) to trigger visual automation scenarios when feedback is submitted, statuses change, or comments are added. Route feedback data to 1,500+ apps without writing code.
+
+## Overview
+
+The Make integration enables:
+
+- **Trigger scenarios** -- trigger Make scenarios when feedback is submitted, statuses change, or comments are added
+- **Visual automation** -- build visual automation flows connecting feedback to 1,500+ apps in Make
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- A [Make](https://www.make.com) account
+
+## Setup
+
+### 1. Create a Webhook in Make
+
+1. Log in to Make and create a new scenario
+2. Add a **Webhooks > Custom webhook** module as the trigger
+3. Click **Add** to create a new webhook
+4. Copy the **webhook URL** (it will look like `https://hook.make.com/...`)
+
+### 2. Connect in Quackback
+
+1. Go to **Admin > Settings > Integrations > Make**
+2. Click **Connect**
+3. Paste the Make webhook URL
+4. Click **Save**
+
+### 3. Configure Events
+
+Choose which events trigger your Make scenario:
+
+| Event | Description |
+|-------|-------------|
+| New post | Someone submits new feedback |
+| Status change | Post status is updated |
+| New comment | Comment added to a post |
+
+### 4. Test the Connection
+
+1. Go back to Make and click **Run once** on your scenario
+2. Submit test feedback in Quackback
+3. Make should receive the webhook payload and display the data structure
+4. Use this to configure the rest of your scenario
+
+## Payload Format
+
+Quackback sends a JSON payload to your Make webhook. The payload includes event details, post data, author information, and board context. Use Make's data mapping to route fields to downstream modules.
+
+## Example Scenarios
+
+### Send Feedback to Google Sheets
+
+1. **Trigger**: Quackback webhook (new post)
+2. **Action**: Google Sheets > Add a Row
+3. Map fields: title, description, author email, board name
+
+### Create Jira Tickets from High-Priority Feedback
+
+1. **Trigger**: Quackback webhook (new post)
+2. **Filter**: Check if board equals "Bug Reports"
+3. **Action**: Jira > Create an Issue
+
+### Notify a Slack Channel for Status Changes
+
+1. **Trigger**: Quackback webhook (status change)
+2. **Action**: Slack > Send a Message
+3. Map fields: post title, old status, new status
+
+## Manage the Integration
+
+### Pause
+
+Temporarily stop sending events:
+
+1. Go to **Admin > Settings > Integrations > Make**
+2. Toggle **Enabled** off
+3. Events stop, but the webhook URL is preserved
+
+### Disconnect
+
+To fully remove the integration:
+
+1. Go to **Admin > Settings > Integrations > Make**
+2. Click **Disconnect**
+3. Confirm the action
+
+<Note>
+Disconnecting in Quackback does not delete the webhook in Make. You can clean it up in your Make scenario settings.
+</Note>
+
+## Troubleshooting
+
+### Events Not Arriving in Make
+
+1. **Check integration status** -- look for errors in Quackback settings
+2. **Verify webhook URL** -- ensure the URL is a valid `make.com` or `integromat.com` address
+3. **Check Make scenario** -- ensure the scenario is active (not paused)
+4. **Review Make execution history** -- check for errors in the scenario log
+
+### Invalid Webhook URL
+
+The webhook URL must be an HTTPS URL on a `make.com` or `integromat.com` domain. Custom domains are not supported.
+
+## Next Steps
+
+- [Zapier](/integrations/zapier) -- Zapier automation integration
+- [n8n](/integrations/n8n) -- Self-hosted automation with n8n
+- [Webhooks](/integrations/webhooks) -- Build custom integrations

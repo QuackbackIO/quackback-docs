@@ -1,0 +1,128 @@
+---
+title: "n8n"
+description: "Connect Quackback to your self-hosted n8n automation workflows."
+icon: "n8n"
+---
+
+# n8n
+
+Automate on your terms. Connect Quackback to your self-hosted n8n instance to trigger workflows when feedback is submitted, statuses change, or comments are added. Keep your automation pipelines on your own infrastructure with full control.
+
+## Overview
+
+The n8n integration enables:
+
+- **Trigger workflows** -- trigger n8n workflows when feedback is submitted, statuses change, or comments are added
+- **Self-hosted automation** -- keep your automation pipelines on your own infrastructure with full control
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- An [n8n](https://n8n.io) instance (self-hosted or cloud)
+- A webhook node set up in n8n
+
+## Setup
+
+### 1. Create a Webhook in n8n
+
+1. Open n8n and create a new workflow
+2. Add a **Webhook** node as the trigger
+3. Set the HTTP method to **POST**
+4. Copy the **webhook URL** (production URL, not the test URL)
+
+<Tip>
+Use the **production webhook URL** from n8n, not the test URL. The test URL only works when n8n is in listening mode, while the production URL works whenever the workflow is active.
+</Tip>
+
+### 2. Connect in Quackback
+
+1. Go to **Admin > Settings > Integrations > n8n**
+2. Click **Connect**
+3. Paste the n8n webhook URL
+4. Click **Save**
+
+### 3. Configure Events
+
+Choose which events trigger your n8n workflow:
+
+| Event | Description |
+|-------|-------------|
+| New post | Someone submits new feedback |
+| Status change | Post status is updated |
+| New comment | Comment added to a post |
+
+### 4. Test the Connection
+
+1. Activate your n8n workflow
+2. Submit test feedback in Quackback
+3. Check the n8n execution history to verify the webhook was received
+4. Use the received data to configure the rest of your workflow
+
+## Payload Format
+
+Quackback sends a JSON payload to your n8n webhook. The payload includes event details, post data, author information, and board context. Use n8n's expression editor to map fields to downstream nodes.
+
+## Example Workflows
+
+### Feedback to Database
+
+1. **Trigger**: Quackback webhook (new post)
+2. **Action**: Postgres/MySQL node > Insert row
+3. Map fields: title, description, author email, board name
+
+### Slack Alert for Bug Reports
+
+1. **Trigger**: Quackback webhook (new post)
+2. **Filter**: IF node checking board name equals "Bug Reports"
+3. **Action**: Slack node > Send message
+
+### Sync to Airtable
+
+1. **Trigger**: Quackback webhook (all events)
+2. **Action**: Airtable node > Create/Update record
+3. Map fields and use the event type to determine the action
+
+## Manage the Integration
+
+### Pause
+
+Temporarily stop sending events:
+
+1. Go to **Admin > Settings > Integrations > n8n**
+2. Toggle **Enabled** off
+3. Events stop, but the webhook URL is preserved
+
+### Disconnect
+
+To fully remove the integration:
+
+1. Go to **Admin > Settings > Integrations > n8n**
+2. Click **Disconnect**
+3. Confirm the action
+
+<Note>
+Disconnecting in Quackback does not affect your n8n workflow. You can deactivate or delete it separately in n8n.
+</Note>
+
+## Troubleshooting
+
+### Events Not Arriving in n8n
+
+1. **Check integration status** -- look for errors in Quackback settings
+2. **Verify webhook URL** -- ensure the URL is HTTPS
+3. **Check workflow status** -- ensure the n8n workflow is active (not just saved)
+4. **Check n8n logs** -- review execution history for errors
+
+### Using a Test URL
+
+If you pasted the n8n **test URL** (contains `/webhook-test/`), events will only arrive when n8n is in listening mode. Switch to the **production URL** (contains `/webhook/`) for reliable delivery.
+
+### Self-Hosted n8n Not Reachable
+
+Your n8n instance must be accessible from the internet for Quackback to send webhooks. If self-hosting behind a firewall, ensure the webhook endpoint is exposed via a reverse proxy or tunnel.
+
+## Next Steps
+
+- [Make](/integrations/make) -- Make automation integration
+- [Zapier](/integrations/zapier) -- Zapier automation integration
+- [Webhooks](/integrations/webhooks) -- Build custom integrations

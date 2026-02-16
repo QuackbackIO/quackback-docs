@@ -17,13 +17,13 @@ Search feedback posts or changelog entries. Returns paginated results with a cur
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
 | `entity` | `"posts"` \| `"changelogs"` | `"posts"` | Entity type to search |
-| `query` | string | — | Text search across titles and content |
-| `boardId` | string | — | Filter posts by board TypeID (ignored for changelogs) |
-| `status` | string | — | Filter by status slug. Posts: `"open"`, `"in_progress"`, etc. Changelogs: `"draft"`, `"published"`, `"scheduled"`, `"all"` |
-| `tagIds` | string[] | — | Filter posts by tag TypeIDs (ignored for changelogs) |
+| `query` | string | - | Text search across titles and content |
+| `boardId` | string | - | Filter posts by board TypeID (ignored for changelogs) |
+| `status` | string | - | Filter by status slug. Posts: `"open"`, `"in_progress"`, etc. Changelogs: `"draft"`, `"published"`, `"scheduled"`, `"all"` |
+| `tagIds` | string[] | - | Filter posts by tag TypeIDs (ignored for changelogs) |
 | `sort` | `"newest"` \| `"oldest"` \| `"votes"` | `"newest"` | Sort order. `"votes"` only applies to posts |
 | `limit` | number (1–100) | `20` | Max results per page |
-| `cursor` | string | — | Pagination cursor from a previous response |
+| `cursor` | string | - | Pagination cursor from a previous response |
 
 **Scope:** `read:feedback`
 
@@ -37,7 +37,7 @@ search({ boardId: "board_01abc...", status: "open" })
 
 ### get_details
 
-Get full details for any entity by TypeID. The entity type is auto-detected from the ID prefix — no need to specify whether it's a post or changelog.
+Get full details for any entity by TypeID. The entity type is auto-detected from the ID prefix. No need to specify whether it's a post or changelog.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -56,7 +56,7 @@ get_details({ id: "changelog_01xyz..." })
 
 ### triage_post
 
-Update a post's status, tags, owner, or official response. All fields except `postId` are optional — only provided fields are updated.
+Update a post's status, tags, owner, or official response. All fields except `postId` are optional. Only provided fields are updated.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -154,12 +154,12 @@ create_post({
 
 ### create_changelog
 
-Create a changelog entry. Saves as a draft by default — set `publish: true` to publish immediately.
+Create a changelog entry. Saves as a draft by default. Set `publish: true` to publish immediately.
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `title` | string | — | Changelog entry title (max 200 characters) |
-| `content` | string | — | Changelog content, markdown supported (max 50,000 characters) |
+| `title` | string | - | Changelog entry title (max 200 characters) |
+| `content` | string | - | Changelog content, markdown supported (max 50,000 characters) |
 | `publish` | boolean | `false` | Set to `true` to publish immediately |
 
 **Scope:** `write:changelog` + team role (admin or member)

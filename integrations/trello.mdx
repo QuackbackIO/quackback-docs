@@ -1,0 +1,134 @@
+---
+title: "Trello"
+description: "Create cards in Trello from feedback and sync statuses."
+icon: "trello"
+---
+
+# Trello
+
+Feedback on your board. Automatically create Trello cards when feedback is submitted, and keep statuses synchronized -- when cards move between lists in Trello, the linked feedback post updates too.
+
+## Overview
+
+The Trello integration enables:
+
+- **Create cards from feedback** -- automatically create a Trello card when new feedback is submitted
+- **Two-way status sync** -- moving cards between lists in Trello updates the feedback status in Quackback
+- **Rich descriptions** -- cards include feedback details, author info, and direct links back to your portal
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- A Trello account
+- A Trello Power-Up (created at [Trello Power-Ups Admin](https://trello.com/power-ups/admin))
+
+## Setup
+
+### 1. Create a Trello Power-Up
+
+1. Go to the [Trello Power-Ups Admin](https://trello.com/power-ups/admin)
+2. Create a new Power-Up
+3. Copy the **API Key** and **API Secret**
+
+### 2. Configure Platform Credentials
+
+1. Go to **Admin > Settings > Integrations > Trello**
+2. Enter the following credentials:
+   - **API Key** from your Trello Power-Up
+   - **API Secret** from your Trello Power-Up
+
+### 3. Connect Your Account
+
+1. Click **Connect to Trello**
+2. You'll be redirected to Trello to authorize the application
+3. The app requests `read` and `write` permissions with no expiration
+4. Click **Allow**
+
+### 4. Select a Board and List
+
+Back in Quackback:
+
+1. Choose the Trello board where cards should be created
+2. Select the list within the board (e.g., "Incoming" or "To Do")
+3. New cards appear at the top of the selected list
+
+### 5. Configure Status Mappings
+
+Map Trello lists to Quackback statuses. When a card moves to a different list, the linked feedback post's status updates to match.
+
+### 6. Save and Test
+
+1. Click **Save**
+2. Submit test feedback to verify a card is created in Trello
+
+## Card Format
+
+When feedback triggers card creation, the Trello card includes:
+
+- **Name**: The feedback post title
+- **Description**: The post content, author details, board name, vote count, and a link back to the post in Quackback
+
+Cards are created at the top of the selected list.
+
+## Status Sync
+
+Quackback registers a webhook with Trello to receive card updates. When a linked card moves between lists:
+
+1. Trello sends a webhook to Quackback
+2. The webhook signature is verified using HMAC-SHA1
+3. The destination list name is mapped to a Quackback status
+4. The linked feedback post's status is updated
+
+<Note>
+Status sync responds to `updateCard` actions where a card moves between lists. Other card changes (description edits, label updates) are ignored.
+</Note>
+
+## Manage the Integration
+
+### Pause
+
+Temporarily stop the integration:
+
+1. Go to **Admin > Settings > Integrations > Trello**
+2. Toggle **Enabled** off
+3. Card creation and status sync pause, but the connection remains
+
+### Reconnect
+
+If you see connection errors:
+
+1. Click **Reconnect**
+2. Re-authorize in Trello
+
+### Disconnect
+
+To fully remove the integration:
+
+1. Go to **Admin > Settings > Integrations > Trello**
+2. Click **Disconnect**
+3. Confirm the action
+
+## Troubleshooting
+
+### Cards Not Being Created
+
+1. **Check integration status** -- look for errors in settings
+2. **Verify board and list selection** -- ensure both are selected
+3. **Check permissions** -- the connected account needs write access to the board
+
+### Status Sync Not Working
+
+1. **Check status mappings** -- ensure Trello lists are mapped to Quackback statuses
+2. **Verify webhook** -- the Trello webhook may need to be re-registered
+3. **Check board access** -- the connected account needs access to the board
+
+### "Authentication Failed" Error
+
+1. Click **Reconnect**
+2. Re-authorize the app in Trello
+
+## Next Steps
+
+- [Asana](/integrations/asana) -- Asana task integration
+- [Webhooks](/integrations/webhooks) -- Build custom integrations
+- [Integrations Overview](/integrations/overview) -- All integrations

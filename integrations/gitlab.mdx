@@ -1,0 +1,138 @@
+---
+title: "GitLab"
+description: "Create issues in GitLab from feedback and sync statuses."
+icon: "gitlab"
+---
+
+# GitLab
+
+Turn feedback into tracked issues. Automatically create GitLab issues when feedback arrives, and keep statuses synchronized -- when an issue is closed or reopened in GitLab, the linked feedback post updates too.
+
+## Overview
+
+The GitLab integration enables:
+
+- **Create issues from feedback** -- automatically create a GitLab issue when new feedback is submitted
+- **Two-way status sync** -- closing or reopening issues in GitLab updates the feedback status in Quackback via webhooks
+- **Rich descriptions** -- issues include feedback details, author info, and direct links back to your portal
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- A GitLab account with access to the target project
+- A GitLab OAuth application (created at [User Settings > Applications](https://gitlab.com/-/user_settings/applications))
+
+## Setup
+
+### 1. Create a GitLab OAuth Application
+
+1. Go to [GitLab User Settings > Applications](https://gitlab.com/-/user_settings/applications)
+2. Create a new application
+3. Set the **Redirect URI** to your Quackback callback URL
+4. Select the `api` scope
+5. Copy the **Application ID** and **Secret**
+
+### 2. Configure Platform Credentials
+
+1. Go to **Admin > Settings > Integrations > GitLab**
+2. Enter the following credentials:
+   - **Application ID** from your GitLab OAuth application
+   - **Secret** from your GitLab OAuth application
+
+### 3. Connect Your Account
+
+1. Click **Connect to GitLab**
+2. You'll be redirected to GitLab to authorize the application
+3. Review the permissions and click **Authorize**
+
+### 4. Select a Project
+
+Back in Quackback:
+
+1. Choose the GitLab project where issues should be created
+2. Issues will be created in this project when new feedback is submitted
+
+### 5. Configure Status Mappings
+
+Map GitLab issue states to Quackback statuses:
+
+| GitLab State | Default Mapping |
+|--------------|-----------------|
+| `opened` | Open |
+| `closed` | Closed |
+
+You can customize these mappings to match your workflow.
+
+### 6. Save and Test
+
+1. Click **Save**
+2. Submit test feedback to verify an issue is created in GitLab
+
+## Issue Format
+
+When feedback triggers issue creation, the GitLab issue includes:
+
+- **Title**: The feedback post title
+- **Description**: The post content, author details, board name, vote count, and a link back to the post in Quackback
+
+## Status Sync
+
+Quackback registers a webhook with GitLab to receive issue updates. When a linked issue's state changes:
+
+1. GitLab sends a webhook to Quackback
+2. The webhook signature is verified via the `X-Gitlab-Token` header
+3. If the issue state changed (opened, closed, or reopened), the linked feedback post's status is updated
+
+<Note>
+Status sync responds to issue `update`, `close`, and `reopen` actions. Other issue changes (label updates, assignments) are ignored.
+</Note>
+
+## Manage the Integration
+
+### Pause
+
+Temporarily stop the integration:
+
+1. Go to **Admin > Settings > Integrations > GitLab**
+2. Toggle **Enabled** off
+3. Issue creation and status sync pause, but the connection remains
+
+### Reconnect
+
+If you see connection errors:
+
+1. Click **Reconnect**
+2. Re-authorize in GitLab
+
+### Disconnect
+
+To fully remove the integration:
+
+1. Go to **Admin > Settings > Integrations > GitLab**
+2. Click **Disconnect**
+3. Confirm the action
+
+## Troubleshooting
+
+### Issues Not Being Created
+
+1. **Check integration status** -- look for errors in settings
+2. **Verify project selection** -- ensure a GitLab project is selected
+3. **Check permissions** -- the connected account needs write access to the project
+
+### Status Sync Not Working
+
+1. **Check status mappings** -- ensure GitLab states are mapped to Quackback statuses
+2. **Verify webhook** -- the GitLab webhook may need to be re-registered
+3. **Check project permissions** -- the connected account needs admin access to manage webhooks
+
+### "Authentication Failed" Error
+
+1. Click **Reconnect**
+2. Re-authorize the app in GitLab
+
+## Next Steps
+
+- [GitHub](/integrations/github) -- GitHub issue integration
+- [Webhooks](/integrations/webhooks) -- Build custom integrations
+- [Integrations Overview](/integrations/overview) -- All integrations

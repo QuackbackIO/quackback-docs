@@ -1,0 +1,125 @@
+---
+title: "Notion"
+description: "Create database items in Notion from feedback and sync statuses."
+icon: "notion"
+---
+
+# Notion
+
+Feedback in your workspace. Automatically create pages in a Notion database when feedback is submitted. Each page includes rich content with feedback details, author info, and direct links back to your portal.
+
+## Overview
+
+The Notion integration enables:
+
+- **Create database items from feedback** -- automatically create a page in a Notion database when new feedback is submitted
+- **Two-way status sync** -- keep feedback statuses in sync between Notion and Quackback
+- **Rich content** -- feedback details, author info, and direct links are included in the Notion page
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- A Notion workspace with admin access
+- A Notion integration (created at [Notion Developers](https://developers.notion.com/docs/create-a-notion-integration))
+
+## Setup
+
+### 1. Create a Notion Integration
+
+1. Go to [Notion Developers](https://developers.notion.com/docs/create-a-notion-integration)
+2. Create a new integration
+3. Copy the **OAuth Client ID** and **OAuth Client Secret**
+
+<Note>
+You need a public integration with OAuth capabilities, not an internal integration. Internal integrations use API keys, which won't work with Quackback's OAuth flow.
+</Note>
+
+### 2. Configure Platform Credentials
+
+1. Go to **Admin > Settings > Integrations > Notion**
+2. Enter the following credentials:
+   - **OAuth Client ID** from your Notion integration
+   - **OAuth Client Secret** from your Notion integration
+
+### 3. Connect Your Workspace
+
+1. Click **Connect to Notion**
+2. You'll be redirected to Notion to authorize the integration
+3. Select which pages and databases to share with Quackback
+4. Click **Allow access**
+
+<Tip>
+During authorization, Notion lets you choose exactly which pages and databases the integration can access. Select at least the database you want to use for feedback items.
+</Tip>
+
+### 4. Select a Database
+
+Back in Quackback:
+
+1. Choose the Notion database where pages should be created
+2. Pages will be created in this database when new feedback is submitted
+
+### 5. Configure Status Mappings
+
+Map Notion status properties to Quackback statuses. Status sync works bidirectionally -- changes in either platform update the other.
+
+### 6. Save and Test
+
+1. Click **Save**
+2. Submit test feedback to verify a page is created in your Notion database
+
+## Page Format
+
+When feedback triggers page creation, the Notion page includes:
+
+- **Title**: The feedback post title
+- **Content blocks**: The post content, author details, board name, vote count, and a link back to the post in Quackback
+
+## Manage the Integration
+
+### Pause
+
+Temporarily stop the integration:
+
+1. Go to **Admin > Settings > Integrations > Notion**
+2. Toggle **Enabled** off
+3. Page creation pauses, but the connection remains
+
+### Reconnect
+
+If you see connection errors:
+
+1. Click **Reconnect**
+2. Re-authorize in Notion
+3. Reselect the pages and databases to share
+
+### Disconnect
+
+To fully remove the integration:
+
+1. Go to **Admin > Settings > Integrations > Notion**
+2. Click **Disconnect**
+3. Confirm the action
+
+## Troubleshooting
+
+### Pages Not Being Created
+
+1. **Check integration status** -- look for errors in settings
+2. **Verify database selection** -- ensure a Notion database is selected
+3. **Check access** -- the integration must have access to the selected database (granted during OAuth authorization)
+
+### "Authentication Failed" Error
+
+1. Click **Reconnect**
+2. Re-authorize the integration in Notion
+
+### Database Not Appearing
+
+The database must be shared with the integration during the OAuth authorization step. Reconnect and select the database when prompted.
+
+## Next Steps
+
+- [Linear](/integrations/linear) -- Linear issue integration
+- [Webhooks](/integrations/webhooks) -- Build custom integrations
+- [Integrations Overview](/integrations/overview) -- All integrations
