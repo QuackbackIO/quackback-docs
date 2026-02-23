@@ -1,0 +1,192 @@
+---
+title: "Deploy to Railway"
+description: "Deploy Quackback to Railway with one click. No server to manage, automatic SSL, and built-in PostgreSQL and Redis."
+icon: "railway"
+---
+
+import { Note, Tip, Warning } from '../../../components/docs/mdx-components'
+
+
+# Deploy to Railway
+
+Railway handles infrastructure so you can focus on collecting feedback. One click gives you Quackback, PostgreSQL, and Redis with automatic SSL, deployments on push, and no server management.
+
+## Prerequisites
+
+- A [Railway](https://railway.app) account (free tier available)
+- A domain or subdomain for your instance (e.g., `feedback.yourcompany.com`)
+
+## One-Click Deploy
+
+Click the button below to deploy Quackback to Railway:
+
+[![Deploy on Railway](https://railway.app/button.svg)](https://railway.com/deploy/quackback)
+
+The template provisions three services:
+
+| Service | Purpose |
+|---------|---------|
+| **Quackback** | The application server |
+| **PostgreSQL** | Database with `pgvector` extension |
+| **Redis** | Background job queue (BullMQ) |
+
+## Manual Setup
+
+If you prefer to configure each service yourself:
+
+### 1. Create a New Project
+
+1. Go to [railway.app/new](https://railway.app/new)
+2. Click **Empty Project**
+
+### 2. Add PostgreSQL
+
+1. Click **+ New** → **Database** → **PostgreSQL**
+2. Railway provisions a PostgreSQL instance automatically
+
+<Note>
+Quackback requires the `pgvector` extension. Railway's PostgreSQL supports it. Run `CREATE EXTENSION IF NOT EXISTS vector;` via the Railway console if migrations don't create it automatically.
+</Note>
+
+### 3. Add Redis
+
+1. Click **+ New** → **Database** → **Redis**
+2. Railway provisions a Redis instance automatically
+
+### 4. Deploy Quackback
+
+1. Click **+ New** → **GitHub Repo**
+2. Connect the `quackbackio/quackback` repository (or your fork)
+3. Railway detects the Dockerfile and builds automatically
+
+### 5. Configure Environment Variables
+
+In the Quackback service settings, add these variables:
+
+```bash
+# Railway injects DATABASE_URL and REDIS_URL automatically if you link the services.
+# If not linked, set them manually:
+DATABASE_URL=${{Postgres.DATABASE_URL}}
+REDIS_URL=${{Redis.REDIS_URL}}
+
+# Authentication (generate with: openssl rand -base64 32)
+SECRET_KEY="your-32-character-minimum-secret-key"
+
+# Public URL (set after assigning a domain)
+BASE_URL="https://feedback.yourcompany.com"
+```
+
+### 6. Link Services
+
+1. Go to the Quackback service → **Variables**
+2. Click **Add Reference** to link `DATABASE_URL` from the PostgreSQL service
+3. Click **Add Reference** to link `REDIS_URL` from the Redis service
+
+### 7. Add a Domain
+
+1. Go to the Quackback service → **Settings** → **Networking**
+2. Click **Generate Domain** for a Railway subdomain, or **Custom Domain** for your own
+3. If using a custom domain, add a CNAME record pointing to Railway
+4. Update `BASE_URL` to match
+
+<Tip>
+Railway provides automatic SSL for all domains. No certificate configuration needed.
+</Tip>
+
+## Email Configuration
+
+Without email, OTP codes are printed to Railway logs. For production, configure SMTP or Resend:
+
+```bash
+# SMTP
+EMAIL_SMTP_HOST="smtp.example.com"
+EMAIL_SMTP_PORT="587"
+EMAIL_SMTP_USER="your-username"
+EMAIL_SMTP_PASS="your-password"
+EMAIL_FROM="feedback@yourcompany.com"
+
+# Or Resend
+EMAIL_RESEND_API_KEY="re_xxxxxxxxxxxx"
+EMAIL_FROM="feedback@yourcompany.com"
+```
+
+## File Storage
+
+For image uploads, configure S3-compatible storage:
+
+```bash
+S3_ENDPOINT="https://your-s3-endpoint"
+S3_BUCKET="quackback-uploads"
+S3_ACCESS_KEY="your-access-key"
+S3_SECRET_KEY="your-secret-key"
+S3_REGION="us-east-1"
+```
+
+<Tip>
+Railway doesn't provide persistent file storage. Use an external S3-compatible service like AWS S3, Cloudflare R2, or Backblaze B2 for file uploads.
+</Tip>
+
+## Upgrades
+
+Railway rebuilds and redeploys automatically when you push to the connected branch. Migrations run on every startup, so schema changes are applied automatically.
+
+To upgrade a template deployment:
+
+1. Fork the Quackback repository if you haven't already
+2. Pull the latest changes from upstream
+3. Push to your fork — Railway redeploys automatically
+
+## Monitoring
+
+### Logs
+
+View real-time logs in the Railway dashboard:
+
+1. Go to your Quackback service
+2. Click **Deployments** → select the active deployment
+3. Click **View Logs**
+
+### Health Check
+
+Railway can restart the service if it becomes unhealthy:
+
+1. Go to **Settings** → **Deploy**
+2. Set the health check path to `/api/health`
+
+## Cost
+
+Railway bills based on usage. A typical Quackback instance costs $5–20/month depending on traffic:
+
+| Resource | Estimate |
+|----------|----------|
+| Quackback (512 MB RAM) | ~$5/mo |
+| PostgreSQL | ~$5/mo |
+| Redis | ~$2/mo |
+
+<Note>
+Railway's free trial includes $5 of usage. After that, the Hobby plan starts at $5/month with $5 of included usage.
+</Note>
+
+## Troubleshooting
+
+### Build Fails
+
+Check the build logs for errors. Common causes:
+- Missing environment variables — ensure `DATABASE_URL` and `SECRET_KEY` are set
+- Docker build issues — Railway uses the repository's Dockerfile
+
+### Database Connection Failed
+
+1. Verify the PostgreSQL service is running
+2. Check that `DATABASE_URL` references the correct service
+3. Try restarting the Quackback service
+
+### "Port Already in Use"
+
+Railway assigns a port via the `PORT` environment variable. Quackback reads this automatically. Do not hardcode a port.
+
+## Next Steps
+
+- [Configuration Reference](/docs/reference/environment-variables) - All environment variables
+- [Reverse Proxy](/docs/self-hosting/reverse-proxy) - Custom proxy configurations
+- [Docker Deployment](/docs/self-hosting/docker) - Alternative deployment with Docker

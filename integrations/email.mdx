@@ -1,0 +1,187 @@
+---
+title: "Email Notifications"
+description: "Notify users and teams by email when feedback is submitted, statuses change, or comments are posted. Configure SMTP or Resend."
+icon: "email"
+---
+
+import { Note, Tip } from '../../../components/docs/mdx-components'
+
+
+# Email Notifications
+
+Quackback sends email notifications to keep users and admins informed. Voters are notified when their requested features ship. Admins get alerts when new feedback arrives. No third-party notification service required — configure SMTP or Resend and emails send automatically.
+
+## Overview
+
+Email notifications cover two audiences:
+
+**For end users (voters and authors):**
+- Status change notifications when a post they voted on or authored changes status
+- Comment notifications when someone replies to their post
+- Subscription updates for posts they're watching
+
+**For admins and team members:**
+- New feedback alerts when a post is submitted
+- Daily or weekly digest of new feedback activity
+- Mentions when tagged in a comment
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- An SMTP server or Resend API key
+
+## Setup
+
+### Option 1: SMTP (Recommended)
+
+SMTP works with any email provider: Gmail, SendGrid, Postmark, Mailgun, Amazon SES, or your own mail server.
+
+Set these environment variables:
+
+```bash
+EMAIL_SMTP_HOST="smtp.example.com"
+EMAIL_SMTP_PORT="587"
+EMAIL_SMTP_USER="your-username"
+EMAIL_SMTP_PASS="your-password"
+EMAIL_FROM="feedback@yourcompany.com"
+```
+
+Common provider settings:
+
+| Provider | Host | Port |
+|----------|------|------|
+| SendGrid | `smtp.sendgrid.net` | 587 |
+| Postmark | `smtp.postmarkapp.com` | 587 |
+| Mailgun | `smtp.mailgun.org` | 587 |
+| Amazon SES | `email-smtp.{region}.amazonaws.com` | 587 |
+| Gmail | `smtp.gmail.com` | 587 |
+
+### Option 2: Resend
+
+[Resend](https://resend.com) provides a developer-focused email API. Set one environment variable:
+
+```bash
+EMAIL_RESEND_API_KEY="re_xxxxxxxxxxxx"
+EMAIL_FROM="feedback@yourcompany.com"
+```
+
+<Note>
+If neither SMTP nor Resend is configured, OTP codes are printed to the server console instead of emailed. All other email notifications are skipped.
+</Note>
+
+## How Notifications Work
+
+### User Notifications
+
+Users receive email when events occur on posts they're connected to:
+
+| Event | Who gets notified |
+|-------|-------------------|
+| Status change (e.g., "Planned" → "Shipped") | All voters and the post author |
+| New comment on a post | Post author and users watching the post |
+| Admin reply to a post | Post author |
+
+Users can unsubscribe from individual posts or all notifications from their account settings.
+
+### Admin Notifications
+
+Admins receive email for workspace-level events:
+
+| Event | Who gets notified |
+|-------|-------------------|
+| New post submitted | Admins with new-post alerts enabled |
+| Daily/weekly digest | Admins who opted into digest emails |
+| @mention in a comment | The mentioned admin |
+
+Configure admin notification preferences in **Admin → Settings → Notifications**.
+
+### Authentication Emails
+
+Quackback uses email for passwordless authentication:
+
+- **OTP codes** — six-digit codes sent when a user signs in with email
+- **Magic links** — one-click sign-in links (when enabled)
+
+These are sent regardless of notification preferences.
+
+## Configuration
+
+### Sender Identity
+
+The `EMAIL_FROM` address appears in the "From" field of all emails. Use a domain you own and have configured with SPF, DKIM, and DMARC records. This improves deliverability and prevents emails from landing in spam.
+
+<Tip>
+Use a subdomain like `feedback@mail.yourcompany.com` to separate feedback notifications from your primary email domain's reputation.
+</Tip>
+
+### Custom Branding
+
+Emails automatically use your workspace branding:
+
+- **Logo** — displayed in the email header
+- **Workspace name** — used in email subjects and footers
+- **Accent color** — applied to buttons and links
+
+Configure branding in **Admin → Settings → Branding**.
+
+### Digest Emails
+
+Digest emails summarize feedback activity over a period:
+
+1. Go to **Admin → Settings → Notifications**
+2. Enable **Digest emails**
+3. Choose frequency: **Daily** or **Weekly**
+4. Select which boards to include
+
+Digests include:
+- New posts submitted since the last digest
+- Top posts by vote count
+- Status changes
+
+## Testing
+
+After configuring email, verify it works:
+
+1. Go to **Admin → Settings → Email**
+2. Click **Send Test Email**
+3. Check your inbox for the test message
+
+If the test email doesn't arrive:
+- Check the server logs for SMTP errors
+- Verify your SMTP credentials
+- Ensure the `EMAIL_FROM` domain has valid DNS records
+
+## Deliverability
+
+To ensure emails reach inboxes:
+
+1. **Set up SPF** — add your email provider to your domain's SPF record
+2. **Enable DKIM** — sign outgoing emails with your domain's DKIM key
+3. **Configure DMARC** — set a DMARC policy for your sending domain
+4. **Use a dedicated sending domain** — avoid sharing reputation with marketing emails
+
+## Troubleshooting
+
+### Emails Not Sending
+
+1. Check that `EMAIL_SMTP_HOST` or `EMAIL_RESEND_API_KEY` is set
+2. Review server logs for connection errors
+3. Verify the SMTP port is not blocked by your hosting provider
+
+### Emails Going to Spam
+
+1. Verify SPF, DKIM, and DMARC records for your sending domain
+2. Avoid using free email providers (gmail.com, outlook.com) as the `EMAIL_FROM` address
+3. Check your sender reputation with [mail-tester.com](https://www.mail-tester.com)
+
+### Users Not Receiving Notifications
+
+1. Check the user's notification preferences in their account settings
+2. Verify they haven't unsubscribed from the post
+3. Check the admin inbox for delivery errors
+
+## Next Steps
+
+- [Slack Integration](/docs/integrations/slack) - Real-time Slack notifications
+- [Discord Integration](/docs/integrations/discord) - Discord channel notifications
+- [Webhooks](/docs/integrations/webhooks) - Build custom notification pipelines
