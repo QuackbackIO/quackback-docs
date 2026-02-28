@@ -1,12 +1,12 @@
 ---
 title: "MCP Reference"
-description: "Complete reference for Quackback's MCP tools and resources. Parameters, return values, and examples for all 7 tools and 5 resources."
+description: "Complete reference for Quackback's MCP tools and resources. Parameters, return values, and examples for all 17 tools and 5 resources."
 order: 2
 ---
 
 # MCP Reference
 
-Quackback's MCP server exposes 7 tools and 5 resources. Tools perform actions (search, create, update). Resources provide lookup data (boards, statuses, tags) that tools reference by ID.
+Quackback's MCP server exposes 17 tools and 5 resources. Tools perform actions (search, create, update, delete). Resources provide lookup data (boards, statuses, tags) that tools reference by ID.
 
 ## Tools
 
@@ -22,7 +22,10 @@ Search feedback posts or changelog entries. Returns paginated results with a cur
 | `status` | string | - | Filter by status slug. Posts: `"open"`, `"in_progress"`, etc. Changelogs: `"draft"`, `"published"`, `"scheduled"`, `"all"` |
 | `tagIds` | string[] | - | Filter posts by tag TypeIDs (ignored for changelogs) |
 | `sort` | `"newest"` \| `"oldest"` \| `"votes"` | `"newest"` | Sort order. `"votes"` only applies to posts |
-| `limit` | number (1–100) | `20` | Max results per page |
+| `showDeleted` | boolean | `false` | Show soft-deleted posts (team only, last 30 days) |
+| `dateFrom` | string | - | ISO 8601 date. Filter posts created on or after this date |
+| `dateTo` | string | - | ISO 8601 date. Filter posts created on or before this date |
+| `limit` | number (1-100) | `20` | Max results per page |
 | `cursor` | string | - | Pagination cursor from a previous response |
 
 **Scope:** `read:feedback`
@@ -31,6 +34,8 @@ Search feedback posts or changelog entries. Returns paginated results with a cur
 search({ query: "dark mode", sort: "votes", limit: 10 })
 search({ entity: "changelogs", status: "published" })
 search({ boardId: "board_01abc...", status: "open" })
+search({ dateFrom: "2026-01-01", dateTo: "2026-02-01" })
+search({ showDeleted: true })
 ```
 
 ---
@@ -56,7 +61,7 @@ get_details({ id: "changelog_01xyz..." })
 
 ### triage_post
 
-Update a post's status, tags, owner, or official response. All fields except `postId` are optional. Only provided fields are updated.
+Update a post's status, tags, or owner. All fields except `postId` are optional. Only provided fields are updated.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -64,17 +69,12 @@ Update a post's status, tags, owner, or official response. All fields except `po
 | `statusId` | string | New status TypeID |
 | `tagIds` | string[] | Replace all tags with these TypeIDs |
 | `ownerPrincipalId` | string \| null | Assign to a team member TypeID, or `null` to unassign |
-| `officialResponse` | string \| null | Set official response text (max 5,000 chars), or `null` to clear |
 
 **Scope:** `write:feedback` + team role (admin or member)
 
 ```
 triage_post({ postId: "post_01abc...", statusId: "status_01xyz..." })
-triage_post({
-  postId: "post_01abc...",
-  ownerPrincipalId: "principal_01xyz...",
-  officialResponse: "We're working on this!"
-})
+triage_post({ postId: "post_01abc...", ownerPrincipalId: "principal_01xyz..." })
 triage_post({ postId: "post_01abc...", tagIds: ["tag_01a...", "tag_01b..."] })
 ```
 
@@ -82,7 +82,7 @@ triage_post({ postId: "post_01abc...", tagIds: ["tag_01a...", "tag_01b..."] })
 
 ### vote_post
 
-Toggle a vote on a feedback post. Call once to vote, call again to unvote. Idempotent.
+Toggle a vote on a feedback post. Call once to vote, call again to unvote.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
@@ -121,6 +121,62 @@ add_comment({
 
 ---
 
+### update_comment
+
+Edit a comment's content. Team members can edit any comment. Authors can edit their own.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `commentId` | string | Comment TypeID to edit |
+| `content` | string | New comment text (max 5,000 characters) |
+
+**Scope:** `write:feedback`
+
+```
+update_comment({ commentId: "comment_01abc...", content: "Updated response." })
+```
+
+---
+
+### delete_comment
+
+Hard-delete a comment and all its replies. This cannot be undone. Authors can delete their own comments. Team members can delete any comment.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `commentId` | string | Comment TypeID to delete |
+
+**Scope:** `write:feedback`
+
+<Warning>
+Deleting a comment also deletes all replies. This action is permanent.
+</Warning>
+
+```
+delete_comment({ commentId: "comment_01abc..." })
+```
+
+---
+
+### react_to_comment
+
+Add or remove an emoji reaction on a comment.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `action` | `"add"` \| `"remove"` | Whether to add or remove the reaction |
+| `commentId` | string | Comment TypeID to react to |
+| `emoji` | string | Emoji character (e.g., `"👍"`, `"❤️"`, `"🎉"`) |
+
+**Scope:** `write:feedback`
+
+```
+react_to_comment({ action: "add", commentId: "comment_01abc...", emoji: "👍" })
+react_to_comment({ action: "remove", commentId: "comment_01abc...", emoji: "👍" })
+```
+
+---
+
 ### create_post
 
 Submit new feedback on a board. Requires a board ID and title. Content, status, and tags are optional.
@@ -152,6 +208,101 @@ create_post({
 
 ---
 
+### delete_post
+
+Soft-delete a feedback post. The post is hidden from public views but can be restored within 30 days.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `postId` | string | Post TypeID to delete |
+
+**Scope:** `write:feedback` + team role (admin or member)
+
+```
+delete_post({ postId: "post_01abc..." })
+```
+
+---
+
+### restore_post
+
+Restore a soft-deleted post. Posts can only be restored within 30 days of deletion.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `postId` | string | Post TypeID to restore |
+
+**Scope:** `write:feedback` + team role (admin or member)
+
+```
+restore_post({ postId: "post_01abc..." })
+```
+
+---
+
+### merge_post
+
+Merge a duplicate post into a canonical post. Votes are combined. Reversible via `unmerge_post`.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `duplicatePostId` | string | Post TypeID of the duplicate to merge away |
+| `canonicalPostId` | string | Post TypeID of the canonical post to merge into |
+
+**Scope:** `write:feedback` + team role (admin or member)
+
+<Tip>
+Use `search` to find potential duplicates first, then merge them to consolidate votes.
+</Tip>
+
+```
+merge_post({
+  duplicatePostId: "post_01abc...",
+  canonicalPostId: "post_01xyz..."
+})
+```
+
+---
+
+### unmerge_post
+
+Restore a merged post to independent state. Recalculates vote counts for both posts.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `postId` | string | Post TypeID of the merged post to restore |
+
+**Scope:** `write:feedback` + team role (admin or member)
+
+```
+unmerge_post({ postId: "post_01abc..." })
+```
+
+---
+
+### manage_roadmap_post
+
+Add or remove a post from a roadmap.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `action` | `"add"` \| `"remove"` | Whether to add or remove the post |
+| `roadmapId` | string | Roadmap TypeID |
+| `postId` | string | Post TypeID |
+
+**Scope:** `write:feedback` + team role (admin or member)
+
+<Tip>
+Use the `quackback://roadmaps` resource to look up roadmap IDs.
+</Tip>
+
+```
+manage_roadmap_post({ action: "add", roadmapId: "roadmap_01abc...", postId: "post_01xyz..." })
+manage_roadmap_post({ action: "remove", roadmapId: "roadmap_01abc...", postId: "post_01xyz..." })
+```
+
+---
+
 ### create_changelog
 
 Create a changelog entry. Saves as a draft by default. Set `publish: true` to publish immediately.
@@ -167,6 +318,47 @@ Create a changelog entry. Saves as a draft by default. Set `publish: true` to pu
 ```
 create_changelog({ title: "v2.1 Release", content: "## New features\n- Dark mode..." })
 create_changelog({ title: "v2.1 Release", content: "...", publish: true })
+```
+
+---
+
+### update_changelog
+
+Update an existing changelog entry's title, content, publish state, or linked posts.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `changelogId` | string | Changelog TypeID to update |
+| `title` | string | New title (max 200 characters) |
+| `content` | string | New content, markdown supported (max 50,000 characters) |
+| `publish` | boolean | `true` to publish, `false` to revert to draft |
+| `linkedPostIds` | string[] | Replace linked posts with these post TypeIDs |
+
+**Scope:** `write:changelog` + team role (admin or member)
+
+```
+update_changelog({ changelogId: "changelog_01abc...", title: "v2.1.1 Patch" })
+update_changelog({
+  changelogId: "changelog_01abc...",
+  publish: true,
+  linkedPostIds: ["post_01a...", "post_01b..."]
+})
+```
+
+---
+
+### delete_changelog
+
+Soft-delete a changelog entry.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `changelogId` | string | Changelog TypeID to delete |
+
+**Scope:** `write:changelog` + team role (admin or member)
+
+```
+delete_changelog({ changelogId: "changelog_01abc..." })
 ```
 
 ## Resources

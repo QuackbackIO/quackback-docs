@@ -6,17 +6,20 @@ icon: "zendesk"
 
 # Zendesk
 
-Connect support data to product decisions. Link Zendesk to enrich feedback posts with user data, organization information, and tags -- so you can see the support context behind every feature request.
+Connect support data to product decisions. The Zendesk integration lets your support agents capture feedback directly from tickets and enriches feedback posts with customer context -- so you can see who is asking for what and why.
 
 ## Overview
 
 The Zendesk integration provides:
 
-- **Capture feedback** -- turn Zendesk tickets into feedback posts directly from the agent interface
-- **Customer context** -- enrich feedback with Zendesk user data like organization, tags, and ticket history
+- **Capture feedback** -- turn Zendesk tickets into feedback posts directly from the agent interface using the sidebar app
+- **Link tickets to posts** -- connect Zendesk tickets to existing feedback posts so you can track how many support conversations relate to a feature request
+- **AI suggestions** -- automatically surface relevant existing posts based on the ticket subject
+- **Customer context** -- enrich feedback with Zendesk user data like organization, tags, and role
+- **Vote on behalf** -- let agents upvote posts on behalf of the ticket requester when creating or linking
 
 <Note>
-Zendesk is an enrichment integration. It pulls user and organization data into Quackback to give you context on the customers behind your feedback. It does not create tickets or send notifications to Zendesk.
+Zendesk is an enrichment integration. It pulls user and organization data into Quackback and provides a sidebar app for agents to capture feedback. It does not create tickets or send notifications to Zendesk.
 </Note>
 
 ## Prerequisites
@@ -25,26 +28,35 @@ Zendesk is an enrichment integration. It pulls user and organization data into Q
 - A Zendesk account with admin access
 - A Zendesk OAuth application (created in [Zendesk Admin Center](https://developer.zendesk.com/))
 - Your Zendesk subdomain (the `your-company` part of `your-company.zendesk.com`)
+- A Quackback API key (for the sidebar app)
 
 ## Setup
 
-### 1. Create a Zendesk OAuth Application
+There are two parts to setting up the Zendesk integration: connecting your Zendesk account via OAuth, and installing the sidebar app for your support agents.
+
+### Part 1: Connect Zendesk to Quackback
+
+#### 1. Create a Zendesk OAuth Application
 
 1. Go to [Zendesk Admin Center > Apps and Integrations > APIs > OAuth Clients](https://developer.zendesk.com/)
 2. Create a new OAuth client
 3. Copy the **Client ID** and **Client Secret**
-4. Add your Quackback OAuth callback URL as a redirect URI
+4. Add your Quackback OAuth callback URL as a redirect URI:
+   ```
+   https://your-quackback-instance.com/oauth/zendesk/callback
+   ```
 
-### 2. Configure Platform Credentials
+#### 2. Configure Platform Credentials
 
-1. Go to **Admin > Settings > Integrations > Zendesk**
-2. Enter the following credentials:
+1. Go to **Admin > Settings > Integrations > Zendesk** in Quackback
+2. Click **Configure credentials**
+3. Enter the following:
    - **Client ID** from your Zendesk OAuth client
    - **Client Secret** from your Zendesk OAuth client
 
-### 3. Enter Your Subdomain
+#### 3. Enter Your Subdomain
 
-Before connecting, you'll be prompted to enter your **Zendesk subdomain**. This is the subdomain part of your Zendesk URL:
+You'll be prompted to enter your **Zendesk subdomain**. This is the subdomain part of your Zendesk URL:
 
 ```
 https://your-company.zendesk.com
@@ -54,7 +66,7 @@ https://your-company.zendesk.com
 
 The subdomain must be lowercase alphanumeric characters and hyphens only (e.g., `acme-corp`).
 
-### 4. Connect Your Account
+#### 4. Connect Your Account
 
 1. Click **Connect to Zendesk**
 2. You'll be redirected to your Zendesk instance to authorize the application
@@ -67,15 +79,78 @@ The app requests these OAuth scopes:
 | `read` | Search users and read organization data |
 | `write` | Required for full API access |
 
-### 5. Verify the Connection
+#### 5. Verify the Connection
 
 Once connected, Quackback stores your Zendesk subdomain and account name. Verify the integration shows as active in the settings.
 
+### Part 2: Install the Sidebar App
+
+The sidebar app lets your Zendesk agents search, link, and create feedback posts without leaving the ticket view.
+
+#### 1. Generate an API Key
+
+1. Go to **Admin > Settings > API Keys** in Quackback
+2. Create a new API key
+3. Copy the key immediately -- it starts with `qb_` and is only shown once
+
+<Warning>
+Store this API key securely. It grants access to create and manage feedback posts in your workspace. If compromised, revoke it and create a new one.
+</Warning>
+
+#### 2. Download the Zendesk App
+
+Download the Quackback Zendesk app package from your Quackback instance. The app is a private Zendesk app that embeds a sidebar in the ticket view.
+
+#### 3. Upload the App to Zendesk
+
+1. Go to **Zendesk Admin Center > Apps and Integrations > Apps > Zendesk Support Apps**
+2. Click **Upload private app**
+3. Upload the Quackback app package
+4. Configure the app settings:
+   - **Quackback URL** -- your Quackback instance URL (e.g., `https://feedback.yourcompany.com`)
+   - **API Key** -- the API key you generated in step 1 (starts with `qb_`)
+5. Click **Install**
+
+#### 4. Enable the App
+
+Once installed, the Quackback sidebar appears in the ticket view for all agents. You can restrict access to specific agent groups in the Zendesk app settings if needed.
+
 ## How It Works
 
-### User Lookup
+### Sidebar App
 
-When you view a feedback post, Quackback can look up the author's email in Zendesk and display:
+When an agent opens a ticket in Zendesk, the Quackback sidebar loads automatically and shows:
+
+#### Suggested Matches
+
+The sidebar uses the ticket subject to find relevant existing posts using AI-powered similarity matching. Up to 5 suggestions are shown, ranked by relevance. Agents can link a suggestion to the current ticket with one click.
+
+#### Linked Posts
+
+Any posts already linked to the current ticket are shown at the top of the sidebar. Each linked post shows its title, board, and vote count. Agents can unlink a post if it was linked by mistake.
+
+#### Search
+
+Agents can search for posts by typing in the search bar. Results update as you type (with a 300ms debounce). If no results match, agents can create a new post directly from the search query.
+
+#### Create New Post
+
+Agents can create a new feedback post directly from the sidebar:
+
+1. Click **+ Create new post** (or use the search-to-create flow)
+2. Select a **board** from the dropdown (lists all public boards)
+3. Enter a **title** (required, max 200 characters)
+4. Add an optional **description** (max 10,000 characters)
+5. **Link to ticket** -- checked by default, links the new post to the current Zendesk ticket
+6. **Vote on behalf of requester** -- checked by default, casts an upvote attributed to the ticket requester's email
+
+<Tip>
+The "vote on behalf" feature is powerful for tracking demand. When multiple agents create or link posts for different tickets, you can see exactly how many customers requested a feature -- not just how many tickets mentioned it.
+</Tip>
+
+### Customer Context
+
+When you view a feedback post in Quackback, the integration can look up the author's email in Zendesk and display:
 
 - **Name** -- the user's full name
 - **Email** -- the user's email address
@@ -91,6 +166,13 @@ Tags in Zendesk are often used to segment customers by plan, region, or priority
 
 When a Zendesk user has an associated organization, Quackback automatically fetches the organization details. This lets you see which company a requester belongs to, even if the feedback was submitted with a personal email.
 
+### Ticket Linking
+
+Linking a Zendesk ticket to a feedback post creates a bidirectional reference:
+
+- In Quackback, the post shows how many support tickets are linked to it
+- Linked tickets are tracked by integration type and external ID, so the same ticket cannot be linked to the same post twice
+
 ### No Token Expiration
 
 Zendesk OAuth tokens do not expire. Once connected, the integration stays active without requiring token refreshes.
@@ -104,6 +186,7 @@ Temporarily stop the integration:
 1. Go to **Admin > Settings > Integrations > Zendesk**
 2. Toggle **Enabled** off
 3. User lookups pause, but the connection remains
+4. The sidebar app continues to work independently (it uses its own API key)
 
 ### Reconnect
 
@@ -122,10 +205,23 @@ To fully remove the integration:
 3. Confirm the action
 
 <Note>
-Disconnecting revokes the OAuth token with Zendesk and removes the stored credentials from Quackback.
+Disconnecting revokes the OAuth token with Zendesk and removes the stored credentials from Quackback. The sidebar app will continue to function for linking and creating posts as long as its API key is valid. To fully disable the sidebar, uninstall the app from Zendesk or revoke the API key.
 </Note>
 
 ## Troubleshooting
+
+### Sidebar App Not Loading
+
+1. **Check the Quackback URL** -- verify the URL in the Zendesk app settings matches your Quackback instance (no trailing slash)
+2. **Check the API key** -- ensure the API key starts with `qb_` and has not been revoked
+3. **Check browser console** -- look for CORS or network errors in the browser developer tools
+4. **Verify the app is installed** -- confirm the Quackback app appears in Zendesk Admin Center
+
+### No Suggestions Showing
+
+1. **Check the ticket subject** -- suggestions are based on the ticket subject line. Very short or generic subjects may not produce matches
+2. **Verify posts exist** -- the workspace needs existing feedback posts for suggestions to work
+3. **Check the API key permissions** -- the API key must belong to an admin account
 
 ### User Not Found
 
@@ -150,6 +246,14 @@ The Zendesk subdomain is stored during the initial connection. If it is missing:
 1. Verify your Client ID and Client Secret are correct
 2. Click **Reconnect** and re-authorize the app
 3. Check that the OAuth client has not been revoked in Zendesk Admin Center
+
+### "Quackback URL Not Configured" in Sidebar
+
+This means the Zendesk app settings are missing the Quackback URL:
+
+1. Go to **Zendesk Admin Center > Apps > Manage**
+2. Find the Quackback app and click the gear icon
+3. Enter your Quackback instance URL in the **Quackback URL** field
 
 ## Next Steps
 

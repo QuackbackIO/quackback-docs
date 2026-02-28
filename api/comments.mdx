@@ -10,7 +10,7 @@ Turn feedback into conversations. The Comments API lets you create threaded disc
 
 ## Overview
 
-Comments support nested replies, emoji reactions, and the ability to pin team responses as the "official answer" to a post. Team member comments are automatically badged to distinguish them from community feedback.
+Comments support nested replies, emoji reactions, and the ability to pin team responses as the "official answer" to a post. Team member comments are automatically badged to distinguish them from community feedback. Team members can also post [private comments](#private-comments) for internal-only discussion.
 
 ## Authentication
 
@@ -38,6 +38,7 @@ Create a new comment on a post. Supports nested replies via `parentId`.
 | `postId` | `string` | Yes | Post ID to comment on |
 | `content` | `string` | Yes | Comment text (1-5,000 chars) |
 | `parentId` | `string` | No | Parent comment ID for replies |
+| `isPrivate` | `boolean` | No | Mark as private (team-only). Defaults to `false` |
 
 **Response:**
 
@@ -50,6 +51,7 @@ Create a new comment on a post. Supports nested replies via `parentId`.
     parentId: string | null
     memberId: string
     isTeamMember: boolean
+    isPrivate: boolean
     createdAt: Date
     deletedAt: Date | null
   }
@@ -90,11 +92,25 @@ const reply = await createCommentFn({
 })
 ```
 
+**Creating a Private Comment:**
+
+```typescript
+// Post a team-only internal note
+const result = await createCommentFn({
+  data: {
+    postId: 'post_01h455vb4pex5vsknk084sn02q',
+    content: 'This user is on the enterprise plan. Let\'s prioritize this.',
+    isPrivate: true,
+  },
+})
+```
+
 <Tip>
 **Side Effects:**
 
 - Author is automatically subscribed to the post for notifications
 - `comment.created` event is dispatched (for integrations like Slack)
+- Private comments only notify team member subscribers, not portal users
 </Tip>
 
 ## Update comments
@@ -316,6 +332,7 @@ Team members can pin a comment as the "official response" to a post. This highli
 - Comment must exist and not be deleted
 - Comment must be a root-level comment (no `parentId`)
 - Comment must be from a team member (`isTeamMember = true`)
+- Comment must not be private (`isPrivate = false`)
 </Note>
 
 ### Pin Comment
@@ -454,6 +471,7 @@ Comments are returned as a threaded tree structure where replies are nested unde
       content: 'This is a great idea!',
       parentId: null,
       isTeamMember: false,
+      isPrivate: false,
       authorName: 'Alice',
       createdAt: '2024-01-15T10:00:00Z',
       reactions: [
@@ -466,6 +484,7 @@ Comments are returned as a threaded tree structure where replies are nested unde
           content: 'Thanks for the feedback!',
           parentId: 'comment_1',
           isTeamMember: true,
+          isPrivate: false,
           authorName: 'Bob (Team)',
           createdAt: '2024-01-15T11:00:00Z',
           reactions: [],
@@ -489,6 +508,44 @@ Comments are returned as a threaded tree structure where replies are nested unde
 <Tip>
 Comments from team members (users with `admin` or `member` role) have `isTeamMember: true`. This is typically displayed as a badge in the UI to distinguish official team responses from community comments.
 </Tip>
+
+## Private Comments
+
+Team members can post private comments that are only visible to other team members. Private comments are useful for internal discussion - coordinating responses, sharing context, or discussing priorities without the conversation being visible to portal users.
+
+### Behavior
+
+- Only team members (`admin` or `member` role) can create private comments. Setting `isPrivate: true` as a `user` role throws a `ForbiddenError`.
+- Replies to private comments are always private. The `isPrivate` flag is automatically inherited from the parent comment.
+- Private comments are excluded from the public portal view. They are only returned in admin/team contexts.
+- Private comments don't increment the public `commentCount` on the post.
+- Private comments cannot be pinned as the official response.
+- Notifications for private comments are only sent to team member subscribers, not portal users.
+
+### Example
+
+```typescript
+import { createCommentFn } from '@/lib/server/functions/comments'
+
+// Post a private internal note
+const result = await createCommentFn({
+  data: {
+    postId: 'post_01h455vb4pex5vsknk084sn02q',
+    content: 'Customer is on the enterprise plan. Let\'s prioritize this request.',
+    isPrivate: true,
+  },
+})
+
+// Reply to a private comment (automatically private)
+const reply = await createCommentFn({
+  data: {
+    postId: 'post_01h455vb4pex5vsknk084sn02q',
+    content: 'Agreed, I\'ll bump it to the top of the sprint.',
+    parentId: result.comment.id,
+    // isPrivate is inherited from the parent - no need to set it
+  },
+})
+```
 
 ## Error Handling
 
@@ -525,6 +582,7 @@ try {
 | `content` | Required, 1-5,000 characters |
 | `postId` | Must exist and belong to a valid board |
 | `parentId` | Must exist and belong to the same post (if provided) |
+| `isPrivate` | Optional boolean. Only team members (`admin` or `member`) can set to `true` |
 | `emoji` | Must be a valid emoji string |
 
 <Tip>
