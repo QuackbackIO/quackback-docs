@@ -39,7 +39,7 @@ Click any row to navigate to the post detail page.
 When you click a post, you're taken to the detail page which shows:
 
 - Complete content with formatting
-- Comment thread
+- Comment thread (including private internal notes visible only to team members)
 - Properties panel (Status, Board, Tags, Roadmaps)
 - Author information
 
@@ -71,6 +71,18 @@ Select one or more boards to filter by feedback type.
 ### By Tags
 Show posts with specific tags applied. Click tags to toggle them on/off.
 
+### By Segment
+Filter feedback by [user segment](/admin/segments). Select a segment to see only posts from users in that group -- useful for understanding what enterprise customers or free-tier users are asking for.
+
+### By Owner
+Filter by the team member assigned to a post. Select a name from the "Assigned to" dropdown, or choose "Unassigned" to find posts that haven't been picked up yet.
+
+### By Date Range
+Filter posts created within a specific timeframe. Set a start date, end date, or both.
+
+### By Minimum Votes
+Set a vote threshold to surface high-demand requests. Posts with fewer votes are hidden.
+
 ### Search
 Use the search bar at the top to search across titles and content.
 
@@ -98,6 +110,16 @@ From the detail page:
 
 **While commenting**: Team members can also change a post's status directly from the comment form. A status selector appears next to the comment button, letting you update the status and leave a comment in one action. The status change is displayed inline in the comment thread.
 
+### Private Comments
+
+Team members can post private comments for internal-only discussion. Click the **Private** button (lock icon) next to the submit button to toggle private mode - the button turns amber when active. Private comments display with an amber left border and an "Internal note" badge to distinguish them from public comments.
+
+Private comments are only visible to other team members. Portal users and anonymous visitors never see them, and they don't count toward the public comment count. Replies to private comments are always private automatically.
+
+<Note>
+Private comments don't trigger notifications to portal users - only team members who are subscribed to the post are notified.
+</Note>
+
 ### Add Tags
 
 1. Open a post in the detail page
@@ -114,9 +136,48 @@ To remove a tag, click the X on the tag badge.
 
 Posts on roadmaps appear in the public roadmap view.
 
-### Delete Posts
+### Assign an Owner
 
-Posts can be deleted from the edit dialog or post menu.
+Assign a team member to take responsibility for a post:
+
+1. Open the post detail page
+2. Use the owner dropdown in the properties panel
+3. Select a team member, or clear the assignment
+
+Filter the inbox by owner to see your assigned posts or find unassigned work.
+
+### View Voters
+
+See who voted on a post and where their votes came from:
+
+1. Open a post with at least one vote
+2. In the properties panel, click **Voters** next to the vote count
+3. A modal lists each voter with their name and source
+
+Votes from integrations (like Zendesk or Intercom) show the originating platform and a link back to the source ticket or conversation.
+
+### Merge Duplicate Posts
+
+Combine duplicate feedback to consolidate votes and discussion:
+
+1. Open a post you want to mark as a duplicate
+2. Click **Mark as duplicate** in the post header
+3. Search for the canonical post (the one to keep)
+4. Review the match and confirm the merge
+
+After merging, the duplicate shows a banner linking to the canonical post. Votes are combined. The canonical post displays a "Merged Feedback" section listing all duplicates.
+
+To reverse a merge, open the canonical post, find the merged post in the list, and click **Unmerge**.
+
+<Tip>
+Use the search function to find potential duplicates before merging. The search dialog shows match confidence to help you decide.
+</Tip>
+
+### Delete and Restore Posts
+
+Posts can be soft-deleted from the edit dialog or post menu. Deleted posts are hidden from public views but preserved for 30 days.
+
+To view deleted posts, enable the **Show deleted** toggle in filters. To restore a deleted post, open it and click **Restore**.
 
 ## Keyboard Shortcuts
 
@@ -156,8 +217,10 @@ Respond to posts even if you won't implement them. Users appreciate acknowledgme
 - Suggest alternatives if available
 </Note>
 
-## Next Steps
+## Next steps
 
 - [Boards](/admin/boards) - Organize feedback into boards
 - [Statuses](/admin/statuses) - Customize your workflow
 - [Roadmap](/admin/roadmap) - Manage your public roadmaps
+- [Segments](/admin/segments) - Group users to filter feedback
+- [Changelog](/admin/changelog) - Announce shipped features

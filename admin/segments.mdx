@@ -1,0 +1,88 @@
+---
+title: "Group users with segments"
+description: "Create user segments to filter feedback by customer group and understand who's asking for what."
+icon: "users"
+---
+
+# Group users with segments
+
+Not all feedback is equal. Segments let you group users by plan, company size, region, or any attribute you track, so you can filter feedback by the customers who matter most to a given decision.
+
+## Overview
+
+Access segments from **Admin > Settings > Segments**. You can:
+
+- Create manual segments by hand-picking users
+- Create dynamic segments with rule-based auto-membership
+- Filter the feedback inbox by segment
+- Filter the users list by segment
+
+## Segment types
+
+### Manual segments
+
+Assign users to a segment individually. Use manual segments for curated groups like beta testers, design partners, or key accounts.
+
+1. Click **New Segment**
+2. Enter a name and optional description
+3. Leave the rules empty to create a manual segment
+4. Add users individually from the users list
+
+### Dynamic segments
+
+Define rules and let Quackback auto-populate the segment. Use dynamic segments for attribute-based groups like "Enterprise plan" or "Signed up in the last 30 days".
+
+1. Click **New Segment**
+2. Enter a name and optional description
+3. Add one or more conditions using the rule builder
+4. Choose whether **all** or **any** conditions must match
+5. Save the segment
+
+<Tip>
+Start with one or two broad segments (e.g., "Enterprise" and "Free"). You can always refine later.
+</Tip>
+
+## Configure rules
+
+Dynamic segments support conditions on these attributes:
+
+| Attribute | Operators | Example |
+|-----------|-----------|---------|
+| Email domain | equals, contains | `acme.com` |
+| Email verified | is true, is false | Verified users only |
+| Days since joined | greater than, less than | Joined in the last 90 days |
+| Post count | greater than, less than, equals | Users with 5+ posts |
+| Vote count | greater than, less than, equals | Active voters |
+| Comment count | greater than, less than, equals | Engaged commenters |
+| Custom attributes | varies by type | Any user metadata field |
+
+You can combine multiple conditions. Choose **all** to require every condition (AND logic), or **any** to match at least one (OR logic).
+
+## Re-evaluate membership
+
+Dynamic segments re-evaluate automatically on an hourly schedule. You can also trigger a manual re-evaluation:
+
+- **Re-evaluate all** - click the button at the top of the segments list to refresh all dynamic segments at once
+- **Re-evaluate one** - click the refresh icon on an individual segment row
+
+Manual segments are not affected by re-evaluation.
+
+## Edit and delete segments
+
+Click **Edit** on any segment to change its name, description, or rules. For dynamic segments, you can add, modify, or remove conditions.
+
+Click **Delete** to remove a segment. A confirmation dialog warns that all user memberships are removed.
+
+<Note>
+You cannot convert a manual segment to a dynamic one (or vice versa). Create a new segment if you need to change the type.
+</Note>
+
+## Filter feedback by segment
+
+Once you have segments, use them as filters in the [feedback inbox](/admin/inbox) and the [users list](/admin/users). Select a segment from the filter sidebar to see only feedback or users in that group.
+
+## Next steps
+
+- [Inbox](/admin/inbox) - Filter feedback by segment
+- [Users](/admin/users) - View and manage portal users
+- [Tags](/admin/tags) - Categorize feedback with tags
