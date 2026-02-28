@@ -1,7 +1,7 @@
 {
   "tabs": [
     { "id": "getting-started", "label": "Getting Started", "icon": "book-open", "sections": ["getting-started"], "defaultSlug": "getting-started/introduction" },
-    { "id": "guides", "label": "Guides", "icon": "graduation-cap", "sections": ["guides"], "defaultSlug": "guides/index" },
+    { "id": "guides", "label": "Guides", "icon": "graduation-cap", "sections": ["guides"], "defaultSlug": "guides/overview" },
     { "id": "self-hosting", "label": "Self Hosting", "icon": "server", "sections": ["self-hosting"], "defaultSlug": "self-hosting/overview" },
     { "id": "users", "label": "Users", "icon": "users", "sections": ["users"], "defaultSlug": "users/submitting-feedback" },
     { "id": "admin", "label": "Admin", "icon": "settings", "sections": ["admin"], "defaultSlug": "admin/inbox" },

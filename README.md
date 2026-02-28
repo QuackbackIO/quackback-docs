@@ -29,7 +29,7 @@ Collect, organize, and act on user feedback. Open source, self-hosted.
 
 A structured course for building a feedback program that ships the right features.
 
-- [Guides Overview](guides/index.mdx): Course structure and module overview
+- [Guides Overview](guides/overview.mdx): Course structure and module overview
 - [Define your feedback strategy](guides/define-your-feedback-strategy.mdx): Set goals before touching settings
 - [Structure your workspace](guides/structure-your-workspace.mdx): Boards, statuses, and tags for your team
 - [Launch your portal](guides/launch-your-portal.mdx): Get users submitting feedback
