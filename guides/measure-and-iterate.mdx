@@ -1,0 +1,112 @@
+---
+title: "Measure and iterate"
+description: "Review your feedback program's health and improve it over time."
+icon: "chart-line"
+---
+
+# Measure and iterate
+
+You've built a feedback program: collecting, triaging, prioritizing, shipping, and announcing. But is it working? This lesson gives you the metrics and review process to evaluate your feedback program's health and improve it over time.
+
+## Track your hit rate
+
+Of the features you shipped last quarter, how many came from user feedback?
+
+**If the answer is zero,** your feedback program is decorative. You're collecting input but not using it. Either your prioritization process is disconnected from feedback, or you're building the right things but not linking them back to posts.
+
+**If the answer is 30-50%,** you're in a healthy range. Not everything should come from user feedback - you need room for technical improvements, strategic bets, and proactive design. But a significant chunk of your shipped work should trace back to user requests.
+
+**If the answer is 80%+,** you might be too reactive. Are you building what users ask for at the expense of what they _need_? Users can't request features they can't imagine. Make sure you're balancing user requests with your own product vision.
+
+Track this quarterly. A simple count is enough: "We shipped 12 features. 5 were user-requested." No fancy analytics needed.
+
+## Response time
+
+How long do posts sit in "Open" before getting a first response?
+
+| Response time | Assessment |
+|--------------|------------|
+| Under 24 hours | Excellent - users feel heard |
+| 24-48 hours | Good - meeting expectations |
+| 2-7 days | Needs improvement - users may feel ignored |
+| Over a week | Problem - users are losing trust |
+
+You don't need to measure this precisely. During your weekly review, scan recent posts and note when they were submitted vs. when they got a first response. If you're consistently over 48 hours, triage more frequently.
+
+<Tip>
+First response time matters more than resolution time. A quick "We've seen this and we're evaluating it" within 24 hours buys you weeks of goodwill for the actual decision.
+</Tip>
+
+## Stale post audit
+
+How many posts are in active statuses but haven't been updated in 30+ days?
+
+Open the [Stale tab](/admin/inbox#view-tabs) in the inbox. This is your honest mirror. Every stale post is either:
+
+- **Forgotten work.** It should be in progress but nobody's tracking it. Fix the process.
+- **A false promise.** It was marked "Planned" optimistically but never prioritized. Update the status honestly.
+- **Legitimately on hold.** It's waiting on a dependency. Add a private comment explaining the blocker so the next person who looks at it has context.
+
+**Target: fewer than 10 stale posts.** If you have more, block time to work through them. Close what won't happen, update what's in progress, and recommit to what's genuinely planned.
+
+## User engagement
+
+Is feedback coming from a broad base of users, or just the same handful?
+
+**Healthy signs:**
+- New users submit feedback each month
+- Feedback comes from different customer segments
+- Users who submitted feedback come back to vote on other posts
+
+**Warning signs:**
+- The same 5 users submit 90% of posts
+- Feedback dried up after the first month
+- Users submit but never return to check status
+
+If engagement is concentrated, revisit your portal placement and announcement strategy from [Launch your portal](/guides/launch-your-portal). If engagement is declining, check whether you're closing the loop - users stop contributing when they never hear back.
+
+Check the [Users](/admin/users) page to see your contributor base.
+
+## The quarterly review
+
+Once a quarter, step back and assess the whole program. This is different from your weekly triage review. This is about the system, not the individual posts.
+
+**Questions to answer:**
+
+1. **Hit rate.** What percentage of shipped features were user-requested?
+2. **Response health.** What's our average first-response time? Are we meeting our target?
+3. **Stale posts.** How many? What's causing the staleness?
+4. **Engagement trends.** More or fewer contributors than last quarter? Why?
+5. **Process friction.** What's the most annoying part of managing feedback right now? Fix that one thing.
+
+## Process tweaks
+
+After a quarter of running your feedback program, you'll know where it hurts. Here are common adjustments:
+
+**"We need more boards."** You probably don't. But if a single board has 200+ posts and multiple distinct categories, split it. See [Merge and organize](/guides/merge-and-organize) for the criteria.
+
+**"We have too many tags."** Consolidate. Fewer, broader tags are more useful than a detailed taxonomy nobody applies consistently.
+
+**"We need custom statuses."** Maybe. If the default statuses genuinely don't map to your workflow, add one. But resist the urge to mirror your internal process in Quackback. Users see statuses - keep them simple.
+
+**"Triage takes too long."** Are you spending time on posts that could be merged? Are you writing long responses when short ones would do? Revisit [Triage feedback effectively](/guides/triage-feedback-effectively) and [Write responses users love](/guides/write-responses-users-love).
+
+**"We're not using the data in planning."** Bring the inbox into sprint planning. Sort by votes, filter by segment, and spend 10 minutes as a team looking at what users are asking for. Make feedback visible where decisions happen.
+
+## Monthly cleanup checklist
+
+Run through this on the first Monday of each month:
+
+- [ ] Close stale posts (active status, no update in 30+ days, no clear plan)
+- [ ] Review tag usage and consolidate redundant tags
+- [ ] Update roadmap (remove shipped items from Complete, verify In Progress is accurate)
+- [ ] Check that recent completions have changelog entries
+- [ ] Scan for unmerged duplicates
+
+<Note>
+Don't try to improve everything at once. Pick the one metric that's weakest and focus on that for the next quarter. Sustainable improvement beats ambitious overhauls.
+</Note>
+
+## What's next
+
+Your feedback program is running and improving. If you're ready to handle more volume and complexity, continue to Module 5. Next: [Segment your users](/guides/segment-your-users).

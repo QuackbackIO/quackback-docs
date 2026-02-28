@@ -1,0 +1,100 @@
+---
+title: "Read the signals"
+description: "Use votes, segments, and patterns to understand what users actually need."
+icon: "signal"
+---
+
+# Read the signals
+
+You have feedback flowing in and a system for processing it. Now the hard part: figuring out what it all means. Votes, comments, and post volume tell a story, but only if you know how to read them. This lesson is about feedback data literacy.
+
+## Votes are a signal, not a mandate
+
+High votes mean demand. They don't mean you should build it.
+
+A feature with 50 votes from free-tier users means something very different than 5 votes from enterprise customers paying $10K/month. A post with 100 votes for "AI-powered auto-categorization" might be exciting but technically unfeasible. A post with 3 votes for "fix the broken CSV export" might be urgent.
+
+**Use votes for:**
+- Gauging relative demand between similar requests
+- Identifying features with broad appeal
+- Spotting when something is gaining momentum (rising votes over time)
+
+**Don't use votes for:**
+- Determining what to build next (that's a multi-factor decision)
+- Comparing across boards (bug vote patterns differ from feature request patterns)
+- Measuring urgency (critical bugs may have few votes but high impact)
+
+<Tip>
+Sort by votes weekly to see what's trending. But make your roadmap decisions based on votes + segments + strategic fit, not votes alone.
+</Tip>
+
+## The vocal minority problem
+
+A small percentage of your users submit the vast majority of feedback. This is true for every product, every feedback tool, every community. Your power users have different needs than your silent majority.
+
+**What this means in practice:**
+- The top 10% of contributors may represent 80% of posts. Their feedback is valuable but skewed toward power-user needs.
+- Features that power users want (advanced customization, bulk operations, API access) may not matter to most of your users.
+- Features that most users need (simpler onboarding, better defaults, clearer UI) rarely get posted because casual users don't submit feedback about friction - they just leave.
+
+**How to compensate:**
+- Use [segments](/admin/segments) to see who is asking. Filter by customer type to spot when feedback is dominated by one group.
+- Supplement feedback data with usage analytics. If 90% of users never find a feature, that's a problem feedback won't surface.
+- Proactively seek feedback from quiet users. Post-interaction surveys, onboarding check-ins, and churn interviews fill the gaps that a feedback portal can't.
+
+## Spotting trends
+
+Individual posts are data points. Trends are insights. Learn to see the pattern behind the posts.
+
+**Cluster detection:** Three separate posts about "the dashboard is slow" is more important than one post with 20 votes for a nice-to-have feature. Look for multiple users describing the same pain in different words.
+
+**Temporal patterns:** A sudden spike in bug reports after a release tells you something different than a steady trickle. If integration requests double after you launch an API, that's validation.
+
+**Sentiment shifts:** When long-time users start posting frustrated feedback, pay attention. That's different from a new user's first impression. Long-time user frustration often signals a regression or an unmet expectation that's been building.
+
+**Use tags to track trends.** If you tag consistently, you can see at a glance which product areas get the most feedback. A board dominated by "onboarding" tags tells you where the pain is.
+
+## What feedback can't tell you
+
+Users describe problems, not solutions. "Add a CSV export" might really mean "I need to share data with my boss." "Add dark mode" might mean "I use this app at night and my eyes hurt." The stated request is a symptom. The underlying need is what you should build for.
+
+**How to dig deeper:**
+- Ask follow-up questions in comments. "What would you use CSV export for?" often reveals the real need.
+- Look for the job-to-be-done behind the request. What is the user trying to accomplish?
+- Talk to users directly. A 15-minute conversation with someone who submitted a post teaches you more than the post itself.
+
+Feedback also can't tell you about:
+- Problems users don't know they have (they won't request features they can't imagine)
+- Non-users (people who evaluated your product and left don't submit feedback)
+- Technical possibilities (users don't know what's easy or hard to build)
+
+## Using segments for context
+
+If you haven't set up segments yet, now is the time. Even two segments transform how you read feedback.
+
+**Start with:** Enterprise (or paid) and Free (or trial). This single split changes every prioritization conversation. "Our enterprise customers are asking for SSO" is a very different signal than "someone asked for SSO."
+
+**Filter the inbox by segment** to answer questions like:
+- What are our highest-paying customers asking for?
+- Are enterprise and free users asking for the same things?
+- Which segment generates the most feedback per user?
+
+See [Segments](/admin/segments) for setup instructions and [Filtering](/admin/inbox#filtering) for how to use segment filters in the inbox.
+
+## Turning signals into decisions
+
+Reading signals is half the work. The other half is turning them into prioritization decisions. Here's a simple framework:
+
+| Signal | Combined with | Decision |
+|--------|--------------|----------|
+| High votes | Enterprise segment | Strong candidate for roadmap |
+| High votes | Free segment only | Consider, but validate the business case |
+| Low votes | Enterprise request | Investigate - could be high value |
+| Cluster of posts | Any segment | Likely a real pain point worth addressing |
+| Single post, no votes | Any segment | Log it, but don't prioritize yet |
+
+This isn't a formula. It's a starting point for the conversation your team should have about what to build next.
+
+## What's next
+
+You understand what the signals are telling you. Now put it into a plan. Next: [Build your roadmap](/guides/build-your-roadmap).

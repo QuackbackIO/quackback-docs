@@ -1,0 +1,115 @@
+---
+title: "Align your team"
+description: "Get product, engineering, and support working from the same feedback source."
+icon: "users"
+---
+
+# Align your team
+
+Until now, these guides have assumed a single person managing feedback. As your team grows, feedback becomes a shared responsibility. This lesson covers how to get product, engineering, and support working from the same source without stepping on each other.
+
+## Who should be on the team
+
+Not everyone needs full access, but everyone benefits from seeing feedback. Here's how different roles use Quackback:
+
+**Product** owns triage and prioritization. They're in the inbox daily, updating statuses, writing responses, and deciding what goes on the roadmap. Product is the primary audience for these guides.
+
+**Engineering** reads for context, not for task assignment. When an engineer picks up a feature, they read the original feedback post and comments to understand the user need behind the ticket. Engineers don't need to triage.
+
+**Support** contributes feedback from conversations. When a customer mentions a pain point in a support ticket, the support team submits it as feedback (or points the customer to the portal). Support sees patterns from the frontline that product might miss.
+
+**Design** reads for user research. Feedback posts with detailed descriptions of workflows, frustrations, and workarounds are gold for designers. They don't need to respond - just read.
+
+## Roles and permissions
+
+Match permissions to responsibilities:
+
+| Role | Quackback role | Why |
+|------|---------------|-----|
+| Product lead | **Admin** | Manages settings, boards, integrations, and team |
+| Other product managers | **Member** | Triages, responds, updates statuses |
+| Engineers | **Member** | Reads posts, adds private comments |
+| Support | **Member** | Submits feedback, adds context via comments |
+| Design | **Member** | Read access for research |
+
+Keep admin access limited. One or two people should own workspace configuration. Everyone else operates within the structure they set up.
+
+See [Manage your team](/admin/team) for inviting teammates and assigning roles.
+
+<Tip>
+Invite your team before you need them. It's easier to onboard people when the inbox is manageable than when it's overflowing.
+</Tip>
+
+## Assigning owners
+
+Every post in "Planned" or "In Progress" should have an owner. Unassigned work is nobody's work.
+
+**How to use ownership:**
+- When a post moves to Planned, assign it to the product manager or engineer who will drive it.
+- Use the owner filter in the inbox to review your personal queue. "What feedback am I responsible for?" should be a one-click answer.
+- When ownership transfers (engineer leaves, PM changes teams), reassign the posts. Orphaned posts get forgotten.
+
+**Don't assign everything.** Posts in Open or Under Review don't need individual owners. They're managed through the shared triage process. Only assign when someone is personally accountable for moving a post forward.
+
+## Private comments for internal discussion
+
+Public comments are for users. Private comments are for your team. Use them to:
+
+- **Debate priorities.** "I think we should close this - it conflicts with our API redesign." This conversation happens internally, and the user sees only the polished decision.
+- **Share context.** "This customer is on the Enterprise plan and threatened to churn over this." Context changes prioritization.
+- **Coordinate responses.** "Sarah, can you respond to this one? You know the technical constraints better than I do."
+- **Flag for attention.** "This looks like a duplicate of #234 but I'm not sure - can someone check?"
+
+A good rule: if you're discussing the _user's_ request, respond publicly. If you're discussing _your team's_ response to it, use a private comment.
+
+See [Private comments](/admin/inbox#private-comments) for how to create them.
+
+## Connecting to your issue tracker
+
+Feedback lives in Quackback. Engineering work lives in Linear, Jira, GitHub Issues, or wherever your team tracks tasks. Connect them so shipping code automatically updates the feedback post.
+
+**The workflow:**
+1. A feedback post reaches "Planned" status.
+2. Create an issue in your tracker, linked to the feedback post.
+3. When the issue ships, the feedback post status updates automatically (if you've set up the integration).
+4. Users get notified. The loop is closed.
+
+This is how you close the feedback loop without manual work. Without this connection, someone has to remember to go back and update every feedback post when something ships. That someone will forget.
+
+See the integration docs for setup: [Linear](/integrations/linear), [GitHub](/integrations/github), [Jira](/integrations/jira).
+
+## The weekly sync
+
+As your team grows, a weekly 15-minute sync around feedback keeps everyone aligned. Keep it structured:
+
+**Agenda:**
+1. **What shipped this week?** Update statuses, write completion comments, celebrate.
+2. **What's blocked?** Posts in active statuses that aren't moving. Who can unblock them?
+3. **What's new and notable?** Top-voted new posts, notable feedback from key customers, emerging patterns.
+4. **Any changes to the roadmap?** Items to add, remove, or reprioritize.
+
+**Tools for the sync:**
+- Pull up the inbox, sorted by votes, filtered to "Open" and "Under Review"
+- Check the Stale tab for stuck items
+- Review the roadmap for accuracy
+
+This isn't a planning meeting. It's a 15-minute calibration to make sure the team is seeing the same things and nothing is falling through the cracks.
+
+## Scaling beyond one team
+
+When multiple product teams use Quackback, each team should own their boards. The platform team owns the "API" board, the mobile team owns the "Mobile" board, and so on.
+
+What stays shared:
+- Tags (for cross-cutting concerns)
+- Segments (for company-wide customer context)
+- The roadmap (one public roadmap shows the unified plan)
+
+What gets owned by teams:
+- Boards (each team triages their own)
+- Posts on their boards (each team responds and updates statuses)
+
+## What's next
+
+Your team is aligned around feedback. Time to close the loop. Next: [Ship and announce](/guides/ship-and-announce).
+
+For team management details, see [Manage your team](/admin/team).

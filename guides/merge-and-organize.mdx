@@ -1,0 +1,105 @@
+---
+title: "Merge and organize"
+description: "Keep your feedback clean as volume grows by merging duplicates and staying organized."
+icon: "git-merge"
+---
+
+# Merge and organize
+
+As feedback volume grows, duplicates accumulate, tags drift, and boards get cluttered. This isn't failure - it's normal. What matters is having maintenance habits that prevent chaos. This lesson covers the organizational practices that keep your feedback useful.
+
+## Finding duplicates
+
+Before you change any post's status, search for similar posts. Duplicates are the number-one source of noise in a feedback portal. Five separate posts about "dark mode" with 3 votes each look like low demand. One canonical post with 15 merged votes tells a different story.
+
+**How to spot them:**
+
+- **Check similar posts.** Quackback surfaces similar posts automatically. Review these before triaging a new post.
+- **Search by keyword.** Users describe the same idea in different ways. "Dark mode," "night theme," "dark theme," and "reduce eye strain" could all be the same request. Search for variations.
+- **Watch for clusters.** If you see three posts in a week about related pain points, there's probably a unifying theme worth consolidating.
+
+<Tip>
+Make duplicate-checking part of your daily triage. It takes 30 seconds per post and prevents vote fragmentation.
+</Tip>
+
+## When to merge vs. keep separate
+
+Not every similar post is a duplicate. Here's the decision framework:
+
+**Merge when:**
+- The posts describe the same user need, even in different words
+- A single implementation would satisfy both requests
+- Users would be happy with a single post representing their feedback
+
+**Keep separate when:**
+- The posts describe the same category but different implementations ("dark mode for the app" vs. "dark mode for email notifications" - these are different pieces of work)
+- The scope is meaningfully different ("basic CSV export" vs. "full data warehouse integration")
+- Different user segments are asking for different reasons (same feature, but the context matters for prioritization)
+
+When in doubt, keep them separate. You can always merge later, but un-merging is harder to undo cleanly.
+
+## The merge workflow
+
+When you find a duplicate:
+
+1. Open the duplicate post (the one you want to close).
+2. Click **Mark as duplicate** and search for the canonical post (the one you want to keep).
+3. Votes from the duplicate are consolidated into the canonical post automatically.
+4. The duplicate stays visible so future searchers find it and get redirected.
+
+**Choosing the canonical post:** Pick the post with the better description, more votes, or more discussion. If they're equal, pick the older one.
+
+See [Merge duplicate posts](/admin/inbox#merge-duplicate-posts) for step-by-step instructions.
+
+## Tag hygiene
+
+Tags are only useful if they're consistent. Without periodic cleanup, you end up with "mobile", "Mobile", "mobile-app", and "iOS" all meaning the same thing.
+
+**Monthly tag review (10 minutes):**
+
+1. Open [Tags](/admin/tags) and review the full list.
+2. **Low-usage tags.** If a tag has fewer than 3 posts, it's probably not earning its keep. Consider removing it or merging it into a broader tag.
+3. **Redundant tags.** Combine "mobile" and "mobile-app" into one. Pick the simpler name.
+4. **Missing tags.** Are there clusters of posts that should share a tag but don't? Add the tag and apply it retroactively.
+
+**Tag naming conventions:**
+- Use lowercase, hyphenated names: "mobile-app" not "Mobile App"
+- Keep them short: "billing" not "billing-and-payments"
+- Use broad categories: "api" covers REST, GraphQL, and webhooks unless you genuinely need to distinguish them
+
+<Note>
+Tags should help you filter and spot patterns. If you never filter by a tag, you don't need it.
+</Note>
+
+## When to reorganize boards
+
+Boards should be stable. Reorganizing them is disruptive - bookmarks break, users get confused, and you have to recategorize existing posts. Only do it when the pain is real.
+
+**Signs you need a new board:**
+- A single board has 200+ posts and you find yourself wishing you could filter by type within it.
+- An entire category of feedback (like integrations) has emerged that doesn't fit your existing boards.
+- Different teams need to own different types of feedback.
+
+**Signs you don't need a new board:**
+- You just think it would be "cleaner" to separate things.
+- You have fewer than 50 posts total.
+- The proposed board would have fewer than 10 posts.
+
+When you do split a board, move existing posts to the new board so historical feedback is in the right place. Announce the change to your team so everyone triages from the right place.
+
+## The monthly cleanup routine
+
+Set a recurring 30-minute calendar block once a month for feedback maintenance:
+
+1. **Tag review (10 min).** Clean up redundant tags, remove unused ones, add missing ones.
+2. **Duplicate scan (10 min).** Sort by recent posts and look for duplicates you missed during daily triage.
+3. **Board health check (5 min).** Is any board overwhelmed? Is any board dead? Adjust if needed.
+4. **Status audit (5 min).** Are there posts in "In Progress" that aren't actually being worked on? Update them.
+
+This routine prevents the slow drift from "organized workspace" to "junk drawer." 30 minutes a month is cheap insurance.
+
+## What's next
+
+Your feedback is organized and deduplicated. Time to figure out what it's telling you. Next: [Read the signals](/guides/read-the-signals).
+
+For more on inbox features, see [Triage feedback in the inbox](/admin/inbox).

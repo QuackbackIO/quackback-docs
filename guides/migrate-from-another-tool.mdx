@@ -1,0 +1,164 @@
+---
+title: "Migrate from another tool"
+description: "Move from Canny, UserVoice, or a spreadsheet without losing data or momentum."
+icon: "package-open"
+---
+
+# Migrate from another tool
+
+Switching feedback tools is disruptive. Users have bookmarks, you have historical data, and there's always a risk of losing momentum during the transition. This lesson gives you a step-by-step playbook to migrate cleanly.
+
+## Before you migrate
+
+Set up your Quackback workspace completely before importing anything.
+
+- Boards are created and named
+- Statuses are configured (defaults are usually fine)
+- Tags are ready
+- Branding is applied (logo, colors)
+- Authentication is configured
+- At least one team member has admin access
+
+Don't import into a half-configured workspace. You'll end up reconfiguring things after import and creating a mess. Get the foundation right first - review [Structure your workspace](/guides/structure-your-workspace) if you haven't already.
+
+## Export from your old tool
+
+Every tool has different export formats. Here's what to expect for common migrations.
+
+### From Canny
+
+Canny exports feedback as CSV. Map the fields:
+
+| Canny field | Quackback field |
+|-------------|----------------|
+| `title` | `title` |
+| `details` | `content` |
+| `status` | Map to your Quackback status slugs |
+| `score` (vote count) | `vote_count` |
+| `category` | Board (or tag, depending on your structure) |
+| `tags` | Tags |
+| `created` | `created_at` |
+
+Export each Canny board separately and import into the corresponding Quackback board.
+
+### From UserVoice
+
+UserVoice exports as CSV through their admin panel. Map the fields:
+
+| UserVoice field | Quackback field |
+|-----------------|----------------|
+| `suggestion_title` | `title` |
+| `suggestion_text` | `content` |
+| `status_name` | Map to your Quackback status slugs |
+| `vote_count` | `vote_count` |
+| `category` | Board or tag |
+| `created_at` | `created_at` |
+
+UserVoice categories map well to Quackback boards. If you had 5+ categories in UserVoice, consider consolidating into 2-3 Quackback boards and using tags for the rest.
+
+### From a spreadsheet
+
+If you've been tracking feedback in a spreadsheet, Google Form, or Airtable, you'll need to clean it up first:
+
+1. **Add standard headers.** At minimum: `title`, `content`, `status`, `vote_count`, `created_at`.
+2. **Clean dates.** Convert all dates to ISO 8601 format (`2026-01-15T00:00:00Z`).
+3. **Normalize statuses.** Map your custom statuses to Quackback status slugs (`open`, `under-review`, `planned`, `in-progress`, `complete`, `closed`).
+4. **Remove empty rows and duplicates.** Clean before import, not after.
+
+Export as CSV.
+
+<Tip>
+If your spreadsheet has fewer than 50 entries, consider manually creating the most important posts instead of importing. It takes longer but lets you curate quality from the start.
+</Tip>
+
+## Clean your data first
+
+Regardless of where you're migrating from, clean your data before importing:
+
+**Remove spam and junk.** Don't import test posts, spam, or garbage data. Start clean.
+
+**Merge duplicates in the old tool.** It's easier to merge duplicates in a tool you already know than to merge them after import. Identify the obvious duplicates and consolidate them before export.
+
+**Normalize status names.** Make sure your exported statuses map to valid Quackback status slugs. If your old tool had "In Review" and Quackback uses "Under Review," decide on the mapping before import.
+
+**Decide what to archive.** Not everything needs to come over. Posts that are years old, have zero votes, and are clearly outdated? Leave them behind. Import the feedback that's still relevant.
+
+<Note>
+Do a test import first. Import into a single board, verify that vote counts, dates, and statuses look right, then import the rest. Catching a mapping error after importing 500 posts is painful.
+</Note>
+
+## Import process
+
+Import board-by-board, starting with your most important board.
+
+1. **Prepare your CSV** with the correct field mappings.
+2. **Import into Quackback.** Use the [Import & Export](/admin/import-export) feature.
+3. **Verify the import:**
+   - Check that post count matches your export (minus any you intentionally excluded).
+   - Spot-check 5-10 posts: are titles, content, and statuses correct?
+   - Verify vote counts on your highest-voted posts.
+   - Confirm tags were created and applied correctly.
+4. **Repeat for each board.**
+
+If something looks wrong, it's usually a field mapping issue. Check your CSV headers and try again with a small sample.
+
+## Communicate the switch
+
+Don't surprise your users. Tell them what's changing, why, and what they need to do.
+
+**First announcement (1-2 weeks before):**
+
+> We're moving our feedback portal to a new platform. All your existing posts and votes are being migrated. We'll share the new link soon. No action needed from you yet.
+
+**Second announcement (day of switch):**
+
+> Our new feedback portal is live at [new URL]. All your existing posts and votes have been moved over. Here's what's new: [1-2 key improvements]. Submit your next idea at [link].
+
+**Where to announce:**
+- Email to active contributors (they care the most)
+- In-app notification
+- A banner or note on the old tool pointing to the new one
+
+## Redirect URLs
+
+If possible, redirect old feedback URLs to Quackback. Users with bookmarks, saved links in Slack, or referenced URLs in support tickets should land somewhere useful.
+
+**If you can configure redirects on the old tool's domain:** Set up 301 redirects from old post URLs to the corresponding Quackback posts, or at minimum to your Quackback portal homepage.
+
+**If you can't redirect:** Add a notice on the old tool's landing page: "We've moved! Visit [new URL] for our feedback portal."
+
+## Sunset the old tool
+
+Don't run two feedback tools in parallel. It splits your user base and doubles your triage work.
+
+**Timeline:**
+1. **Day 0:** New tool is live. Announcement sent. Old tool links redirect (if possible).
+2. **Week 1-2:** Monitor both tools. Respond to any feedback that arrives on the old tool with a redirect message.
+3. **Week 2:** Make the old tool read-only. Users can view but not submit.
+4. **Month 1-2:** Shut down the old tool entirely.
+
+Set the sunset date in advance and communicate it clearly. "The old feedback portal will be read-only starting March 1 and shut down April 1."
+
+## Post-migration checklist
+
+After migration is complete:
+
+- [ ] All boards imported and verified
+- [ ] Vote counts are accurate on high-priority posts
+- [ ] Tags are clean (no duplicates from import)
+- [ ] Status mapping is correct
+- [ ] Team members have access to the new workspace
+- [ ] Old tool redirects to new portal (or shows a notice)
+- [ ] Users have been notified twice
+- [ ] Old tool is set to read-only
+- [ ] Shutdown date is scheduled
+
+## What's next
+
+You've migrated successfully. If you haven't already, work through the earlier modules to build your feedback program on the new foundation:
+
+- [Define your feedback strategy](/guides/define-your-feedback-strategy) if you're taking this opportunity to rethink your approach
+- [Triage feedback effectively](/guides/triage-feedback-effectively) to set up your daily rhythm
+- [Launch your portal](/guides/launch-your-portal) for tips on re-engaging users after the switch
+
+For import/export details, see [Import and export data](/admin/import-export).

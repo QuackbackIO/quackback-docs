@@ -1,0 +1,103 @@
+---
+title: "Ship and announce"
+description: "Write changelog entries that make users feel their feedback mattered."
+icon: "megaphone"
+---
+
+# Ship and announce
+
+This is the payoff for your entire feedback program. When users see their feedback turn into shipped features, they become advocates. When they don't, they stop contributing. This lesson covers the feedback-to-changelog pipeline that closes the loop.
+
+## The feedback-to-changelog pipeline
+
+Here's the full sequence. Every step matters:
+
+1. **Feature ships.** Your team merges the code and deploys it.
+2. **Write a changelog entry.** Create a draft in Quackback. Lead with the user benefit.
+3. **Link the feedback posts.** Connect the changelog entry to every feedback post that requested this feature.
+4. **Update feedback post statuses.** Change linked posts to "Complete."
+5. **Publish the changelog entry.** Make it live when the feature is actually available.
+6. **Users get notified.** Every subscriber on the linked posts sees that their feedback was heard and acted on.
+
+This pipeline transforms feedback from a one-way suggestion box into a two-way conversation. Users submit, you build, they hear about it. That's the loop.
+
+## Writing good changelog entries
+
+The changelog is for users, not for your team. Write it from their perspective.
+
+**Lead with the benefit, not the change:**
+- Good: "You can now export reports to PDF for easy sharing with stakeholders."
+- Bad: "Added PDF export functionality to the reports module."
+
+**Be specific about what changed:**
+- Good: "Keyboard shortcuts now work in the inbox. Press `J` and `K` to navigate between posts."
+- Bad: "Improved inbox performance and usability."
+
+**Keep it scannable:**
+- One paragraph per feature. Two at most for major releases.
+- Use a screenshot or GIF if the change is visual.
+- Bold the key takeaway if the entry is long.
+
+**Include a call to action when relevant:**
+- "Try it out in Settings → Export."
+- "Let us know how it works for you on the feedback portal."
+
+<Tip>
+Write the changelog entry before you ship, not after. It forces you to articulate the user benefit clearly, which often improves the feature itself.
+</Tip>
+
+## Linking feedback posts
+
+Every changelog entry should link to at least one feedback post. This is what makes your changelog different from a generic "what's new" page - it shows users that real feedback drove real product decisions.
+
+**How to link:**
+1. While editing a changelog entry, search for and select the feedback posts that requested this feature.
+2. When you publish, those posts automatically update to "Complete" status.
+3. Users subscribed to those posts get notified.
+
+**What if the feature wasn't requested?** Not every feature comes from feedback. That's fine - publish changelog entries for those too. But when a feature _was_ requested, always make the connection. It's the strongest signal you can send that feedback matters.
+
+See [Changelog](/admin/changelog) for detailed instructions on creating and linking entries.
+
+## Draft, review, publish
+
+Don't publish changelog entries in a rush. Use the draft workflow:
+
+1. **Draft.** Write the entry and link the feedback posts. Don't agonize over the copy, but make sure the benefit is clear.
+2. **Review.** Share the draft with your team (especially the engineer who built the feature). They'll catch inaccuracies.
+3. **Publish.** Only when the feature is actually live and available to users. Publishing before deployment creates confusion and support tickets.
+
+<Note>
+Never publish a changelog entry for a feature that's in beta or behind a feature flag unless it's available to the users you're notifying. There's nothing worse than "we shipped your feature!" followed by "actually, you can't use it yet."
+</Note>
+
+## Making completions count
+
+When a feedback post moves to Complete, every subscriber gets notified. Make this notification count:
+
+**Leave a comment on the post.** Don't just change the status silently. Write a comment that:
+- Thanks the users who contributed ("Thanks to everyone who voted and commented on this - your feedback shaped the final design.")
+- Explains what shipped ("We added PDF export with support for custom headers and page sizes.")
+- Links to the changelog entry for the full details.
+
+**Be specific about the connection.** "Three of the suggestions in this thread made it into the final feature" is more powerful than a generic thank-you. Users want to know their specific input mattered.
+
+## Batch vs. individual announcements
+
+**For major features:** Individual changelog entry, individual comments on linked posts. Worth the effort.
+
+**For small improvements and bug fixes:** Batch them into a weekly or monthly changelog entry. "Small improvements - February 2026" with a bullet list is fine. Still link the feedback posts.
+
+**For shipped features that nobody asked for:** Publish a changelog entry but don't stress about linking feedback. The changelog serves as a record of progress even when it's not feedback-driven.
+
+## Building the habit
+
+Closing the loop is the easiest step to skip and the hardest to recover from. When you ship without announcing, you lose the trust-building moment, and you'll never get it back for that feature.
+
+**Make it part of your definition of done.** A feature isn't "shipped" until the changelog entry is published and the feedback posts are updated. Add it to your release checklist.
+
+**Review during your weekly sync.** "What shipped this week that needs a changelog entry?" should be a standing agenda item.
+
+## What's next
+
+You're shipping and announcing. Now make sure the whole program stays healthy. Next: [Measure and iterate](/guides/measure-and-iterate).

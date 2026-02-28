@@ -1,0 +1,108 @@
+---
+title: "Segment your users"
+description: "Filter feedback by customer group to prioritize the voices that matter most."
+icon: "pie-chart"
+---
+
+# Segment your users
+
+"All feedback is equal" is a nice idea that stops being true the moment you have different types of customers. An enterprise customer asking for SSO and a free user asking for dark mode represent fundamentally different business decisions. Segments let you see the difference.
+
+## When to start segmenting
+
+You don't need segments on day one. Start segmenting when:
+
+- **You have enough volume** that "top-voted" doesn't tell the full story anymore.
+- **You have distinct customer types** (free vs. paid, small vs. enterprise, self-serve vs. sales-assisted).
+- **Prioritization arguments** keep coming back to "but who is asking for this?"
+
+If you're getting 5 posts a week and everyone is on the same plan, segments add overhead without value. If you're getting 50 posts a week from a mix of free and enterprise customers, segments are essential.
+
+## Start with two segments
+
+Don't over-segment from the start. Two segments give you 80% of the insight:
+
+**Segment 1: Paid (or Enterprise).** Customers who pay you money. Their feedback carries business weight because losing them has direct revenue impact.
+
+**Segment 2: Free (or Trial).** Users on free plans or in a trial period. Their feedback represents growth potential but different prioritization criteria.
+
+That single split transforms every prioritization conversation. "30 votes from free users" and "5 votes from paying customers" are completely different signals, and now you can see which is which.
+
+<Tip>
+Name your segments based on how your team talks about customers. If you say "enterprise customers," name the segment "Enterprise." If you say "Pro plan users," name it "Pro." Use the language that already exists.
+</Tip>
+
+## Dynamic vs. manual segments
+
+Quackback supports two approaches:
+
+**Dynamic segments** use rules to automatically assign users. Set criteria like email domain, plan type, or activity level, and users are segmented automatically. Use dynamic segments for plan-based splits (everyone on the Enterprise plan, everyone with a @bigcorp.com email).
+
+**Manual segments** are hand-picked lists. Use them for curated groups like:
+- Beta testers for a specific feature
+- Design partners giving detailed feedback
+- Customers who threatened to churn
+- Strategic accounts your sales team flagged
+
+Most teams use a mix: dynamic for plan-based segmentation, manual for special groups.
+
+See [Segments](/admin/segments) for setup instructions.
+
+## Filtering the inbox by segment
+
+This is where segments pay off. Instead of looking at all feedback in a single stream, you can answer specific questions:
+
+- **"What are enterprise customers asking for?"** Filter to your paid segment, sort by votes. This is your revenue-protection list.
+- **"What do free users want most?"** Filter to your free segment. These are your conversion opportunities.
+- **"Are enterprise and free users asking for the same things?"** Compare the two filtered views. Overlap means broad demand. Divergence means segment-specific priorities.
+
+Use the [inbox filters](/admin/inbox#filtering) to apply segment filters. Combine with board and status filters for even more targeted views.
+
+## Enrichment from integrations
+
+Segments become even more powerful when enriched with data from your other tools. Connect Quackback to your CRM or support platform to automatically add context to feedback:
+
+- **Stripe or billing system:** See which plan a user is on, their MRR, and how long they've been a customer.
+- **Zendesk or Intercom:** See support ticket volume and sentiment for users who submit feedback.
+- **HubSpot or Salesforce:** See deal stage, company size, and account owner.
+
+This data turns feedback from anonymous suggestions into contextualized business intelligence. "A user wants SSO" becomes "A $50K ARR enterprise customer in a renewal cycle wants SSO."
+
+See the integration docs for setup: [Zendesk](/integrations/zendesk), [HubSpot](/integrations/hubspot), [Intercom](/integrations/intercom), [Salesforce](/integrations/salesforce).
+
+## Don't over-segment
+
+More segments means more complexity and less clarity. Every segment you add splits your feedback into a smaller pool, making trends harder to spot.
+
+**2-4 segments is plenty.** Common setups:
+
+| Setup | Segments |
+|-------|----------|
+| **Simple** | Paid, Free |
+| **Standard** | Enterprise, Pro, Free |
+| **Advanced** | Enterprise, Mid-Market, Self-Serve, Beta |
+
+**Signs you've over-segmented:**
+- Some segments have fewer than 10 users submitting feedback
+- You're spending more time deciding which segment to filter than reading the feedback
+- Segment-specific views look the same as the unfiltered view
+
+If you find yourself with 8 segments and can't explain why each one exists, consolidate.
+
+## Using segments in prioritization
+
+Segments change how you read every signal. Here's how to incorporate them into your existing workflow:
+
+**During daily triage:** Note the segment of high-priority posts in your mental model. You don't need to filter every day, but awareness of who is asking shapes your responses.
+
+**During weekly review:** Filter by your highest-value segment. Are their top requests reflected on your roadmap? If your enterprise customers' top request has no roadmap presence, that's a red flag.
+
+**During quarterly review:** Compare segment-level metrics. Response time by segment, hit rate by segment, stale posts by segment. Your highest-value segment should have the best numbers.
+
+<Note>
+Segments inform prioritization - they don't dictate it. A feature requested by 100 free users might still be more important than one requested by 5 enterprise users. Use segments as context, not as a formula.
+</Note>
+
+## What's next
+
+You're prioritizing with precision. Now reduce the manual work. Next: [Automate your workflow](/guides/automate-your-workflow).

@@ -1,0 +1,102 @@
+---
+title: "Structure your workspace"
+description: "Set up boards, statuses, and tags that match how your team actually works."
+icon: "layout-grid"
+---
+
+# Structure your workspace
+
+You know what you want feedback to do. Now configure Quackback to support that. This lesson gives you opinionated defaults for different team sizes so you can get set up in 15 minutes instead of agonizing over the perfect taxonomy.
+
+## The two-board start
+
+Start with two boards: **Feature Requests** and **Bug Reports**. That's it.
+
+This works for 90% of teams because it maps to the two fundamental types of feedback: things users want and things that are broken. Users intuitively know which board to pick, and your team can triage them differently (bugs get fast responses, feature requests get batched).
+
+<Tip>
+Resist the urge to create boards for every category you can think of. Users won't know where to post, and you'll spend more time moving posts between boards than reading them.
+</Tip>
+
+**When to add a third board:**
+
+- You're getting 10+ integration requests and they're drowning out feature requests. Create an **Integrations** board.
+- You have a distinct product area with its own team (e.g., a mobile app). Create a board for it.
+- You want open-ended feedback that isn't feature requests. Create a **General** board.
+
+Add boards when the pain is real. If you find yourself wishing you could filter a board by type, that's the signal.
+
+## A status workflow that works
+
+Keep the default statuses: **Open**, **Under Review**, **Planned**, **In Progress**, **Complete**, and **Closed**.
+
+These cover the full lifecycle of a piece of feedback. The only custom status worth adding early is **Blocked** - for items you want to build but can't yet due to a dependency or technical constraint. It communicates "we hear you, this isn't forgotten" without the false promise of "Planned."
+
+**Why not add more statuses?**
+
+Every status you add is a status you have to maintain. "In Design," "In Beta," "Awaiting QA" - these feel productive but they create work. Every time a post moves through your internal process, someone has to update Quackback. With 6 statuses, that's manageable. With 12, it becomes a chore nobody does.
+
+Your users don't care about your internal workflow stages. They care about five things: did you see it, are you considering it, are you going to build it, are you building it, and is it done. The default statuses map to exactly those five things.
+
+See [Track progress with statuses](/admin/statuses) for setup instructions.
+
+## Boards vs. tags vs. segments
+
+These three features overlap in purpose, so here's a decision framework:
+
+| Use | For | Example |
+|-----|-----|---------|
+| **Boards** | Content type - what kind of feedback is it? | Feature Requests, Bug Reports |
+| **Statuses** | Workflow stage - where is it in your process? | Open, Planned, Complete |
+| **Tags** | Cross-cutting concerns - what is it about? | "mobile", "api", "onboarding" |
+| **Segments** | Who submitted it - what type of customer? | Enterprise, Free tier |
+
+The most common mistake is using tags to recreate boards. If you have tags for "feature-request" and "bug" on a single board, you should have two boards instead. Tags should cut across boards - a "mobile" tag might appear on both Feature Requests and Bug Reports.
+
+## Starter configurations
+
+Pick the configuration that matches your team size and adapt from there.
+
+### Solo founder
+
+You're one person doing everything. Keep it minimal.
+
+- **1 board:** Feature Requests (bugs go here too, just tag them)
+- **Statuses:** Defaults only
+- **Tags:** None to start. Add them when you notice patterns worth tracking.
+
+The priority is speed. You don't have time for process overhead. Review feedback when you can, ship what makes sense, close what doesn't.
+
+### Small team (2-10 people)
+
+Multiple people triaging feedback. You need a bit more structure.
+
+- **2 boards:** Feature Requests + Bug Reports
+- **Statuses:** Defaults + Blocked
+- **Tags:** 3-5 tags for your product areas (e.g., "dashboard", "api", "billing", "onboarding", "mobile")
+
+Assign a primary owner for each board. One person reviews Feature Requests weekly, another triages Bug Reports daily. See [Manage your team](/admin/team) for role setup.
+
+### Established product (10+ people)
+
+Multiple teams, multiple product areas, real volume.
+
+- **3-4 boards:** Feature Requests + Bug Reports + Integrations + (optionally) a product-area-specific board
+- **Statuses:** Defaults + Blocked + one custom status if you have a specific workflow stage (like "In Beta")
+- **Tags:** A tag taxonomy with 10-15 tags covering product areas, platforms, and priorities
+
+At this scale, segments become important. Set up at least two segments (e.g., Enterprise and Free) to understand who is asking for what. See [Segments](/admin/segments).
+
+## Set it up
+
+Ready to create your boards and configure statuses? Here's where to go:
+
+- [Organize feedback with boards](/admin/boards): Create and configure boards
+- [Track progress with statuses](/admin/statuses): Customize your status workflow
+- [Categorize posts with tags](/admin/tags): Create your initial tags
+
+Don't overthink it. You can rename boards, add tags, and adjust statuses later. The goal right now is to have a workspace that's ready for your first users.
+
+## What's next
+
+Your workspace is configured. Next: [Launch your portal](/guides/launch-your-portal) to get users submitting feedback.

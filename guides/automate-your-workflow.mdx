@@ -1,0 +1,127 @@
+---
+title: "Automate your workflow"
+description: "Connect integrations and reduce manual work as your feedback volume grows."
+icon: "zap"
+---
+
+# Automate your workflow
+
+At some point, the manual process you've built starts to strain. You're copying post links into Slack, manually updating statuses when issues ship, and checking for new feedback throughout the day. This lesson covers which parts to automate and which to keep human.
+
+## Start with notifications
+
+The first automation most teams need: getting feedback into the channel where your team already works.
+
+**Slack or Discord:** Route new feedback to a dedicated channel. Your team sees it without opening Quackback. Set up event mappings to control what gets posted:
+- New posts → #feedback channel
+- Status changes → same channel or a separate #feedback-updates channel
+- New comments → optional, can get noisy at high volume
+
+**Why a dedicated channel matters:** Feedback notifications in a busy #general channel get lost. A dedicated #feedback channel lets people opt in to the stream and keeps it scannable.
+
+<Tip>
+Start with just new-post notifications. Add status change notifications later if your team finds them useful. Don't turn on everything at once - notification fatigue is real.
+</Tip>
+
+See [Slack](/integrations/slack) or [Discord](/integrations/discord) for setup.
+
+## Connect your issue tracker
+
+This is the highest-value automation. When your issue tracker is connected, shipping code automatically updates feedback posts. No manual status changes, no forgotten completions.
+
+**The flow:**
+1. A feedback post reaches "Planned" status.
+2. You create a linked issue in Linear, Jira, GitHub, or your tracker of choice.
+3. Your team works on the issue in their normal workflow.
+4. When the issue is completed, the feedback post status updates to "Complete" automatically.
+5. Subscribers get notified.
+
+**Status mapping:** Configure how your tracker's statuses map to Quackback statuses. A typical mapping:
+
+| Tracker status | Quackback status |
+|---------------|-----------------|
+| Backlog / To Do | Planned |
+| In Progress | In Progress |
+| Done / Closed | Complete |
+
+This eliminates the biggest manual bottleneck: remembering to go back and update feedback when work ships.
+
+See the integration docs: [Linear](/integrations/linear), [GitHub](/integrations/github), [Jira](/integrations/jira).
+
+## Webhooks for custom workflows
+
+When built-in integrations don't cover your use case, webhooks let you send feedback events to any HTTP endpoint.
+
+**Common webhook use cases:**
+- Send new feedback to a Zapier/Make/n8n workflow that enriches it with CRM data
+- Trigger a Slack message with custom formatting
+- Log feedback events to your analytics platform
+- Create a custom notification for a tool that doesn't have a native integration
+
+**Keep it simple:** Start with one webhook for one use case. Don't build an elaborate event processing pipeline on day one. Add complexity when the pain is real.
+
+See [Webhooks](/integrations/webhooks) for setup and event types.
+
+## The MCP server for AI triage
+
+For high-volume feedback operations, Quackback's MCP (Model Context Protocol) server lets AI agents search, triage, and respond to feedback programmatically.
+
+**Use cases:**
+- Automatic duplicate detection: "Is this similar to an existing post?"
+- Suggested triage: "Based on content and keywords, this post should be tagged [api] and assigned to the platform team."
+- Bulk analysis: "Summarize the top themes from the last month's feedback."
+
+Connect the MCP server to Claude Code or another AI agent. The agent can read feedback, suggest actions, and (with your approval) execute them.
+
+<Note>
+AI triage is a tool, not a replacement. Use it to speed up your process, not to remove human judgment. Users can tell when a bot is responding, and it erodes the personal connection that makes feedback programs work.
+</Note>
+
+See [MCP](/mcp) for setup and available tools.
+
+## What to automate and what to keep manual
+
+This is the most important decision. Automate the wrong things and you lose the human touch that makes feedback programs valuable.
+
+**Automate:**
+- Notifications to your team (Slack, Discord, email)
+- Status syncing between issue tracker and Quackback
+- Data enrichment (CRM lookups, customer data)
+- Duplicate detection suggestions
+
+**Keep manual:**
+- Responding to users (always human-written)
+- Prioritization decisions (votes + segments + strategy, not a formula)
+- Roadmap management (what to commit to publicly)
+- Saying no (this requires empathy and context that automation can't provide)
+
+The principle: automate the plumbing, keep the judgment human.
+
+## Monitoring integrations
+
+Integrations fail silently. An expired OAuth token, a deleted Slack channel, or a renamed Jira project means feedback events stop flowing without anyone noticing.
+
+**Monthly integration check (5 minutes):**
+1. Verify each active integration shows a healthy status.
+2. Send a test event if the integration supports it.
+3. Check your Slack/Discord channel - are notifications still appearing?
+4. Review webhook delivery logs for failures.
+
+Add this to your [monthly cleanup checklist](/guides/measure-and-iterate#monthly-cleanup-checklist). Catching a broken integration after a week is fine. Catching it after three months means you've lost data.
+
+## Integration roadmap
+
+Don't set up every integration at once. Build up gradually:
+
+| Stage | Integrations |
+|-------|-------------|
+| **Week 1** | Slack or Discord notifications |
+| **Month 1** | Issue tracker (Linear, Jira, or GitHub) |
+| **Month 2** | CRM enrichment (if you have distinct customer segments) |
+| **As needed** | Webhooks for custom workflows, MCP for AI triage |
+
+Each integration should solve a specific pain point you're already feeling. "It would be cool to have" is not a good reason. "I keep forgetting to update feedback when issues ship" is.
+
+## What's next
+
+Your workflow is automated and sustainable. If you're migrating from another tool, the last lesson covers that. Next: [Migrate from another tool](/guides/migrate-from-another-tool).

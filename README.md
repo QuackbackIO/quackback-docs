@@ -25,6 +25,26 @@ Collect, organize, and act on user feedback. Open source, self-hosted.
 - [Quick Start](getting-started/quick-start.mdx): Get running in 5 minutes
 - [Core Concepts](getting-started/concepts.mdx): Boards, posts, statuses, and roles
 
+## Guides
+
+A structured course for building a feedback program that ships the right features.
+
+- [Guides Overview](guides/index.mdx): Course structure and module overview
+- [Define your feedback strategy](guides/define-your-feedback-strategy.mdx): Set goals before touching settings
+- [Structure your workspace](guides/structure-your-workspace.mdx): Boards, statuses, and tags for your team
+- [Launch your portal](guides/launch-your-portal.mdx): Get users submitting feedback
+- [Triage feedback effectively](guides/triage-feedback-effectively.mdx): A repeatable review process
+- [Write responses users love](guides/write-responses-users-love.mdx): Build trust with every response
+- [Merge and organize](guides/merge-and-organize.mdx): Keep feedback clean as volume grows
+- [Read the signals](guides/read-the-signals.mdx): Understand what users actually need
+- [Build your roadmap](guides/build-your-roadmap.mdx): Public planning that builds trust
+- [Align your team](guides/align-your-team.mdx): Multi-person feedback operations
+- [Ship and announce](guides/ship-and-announce.mdx): Close the feedback loop
+- [Measure and iterate](guides/measure-and-iterate.mdx): Program health and improvement
+- [Segment your users](guides/segment-your-users.mdx): Prioritize by customer group
+- [Automate your workflow](guides/automate-your-workflow.mdx): Reduce manual work with integrations
+- [Migrate from another tool](guides/migrate-from-another-tool.mdx): Switch from Canny, UserVoice, or spreadsheets
+
 ## For Users
 
 - [Submit feedback](users/submitting-feedback.mdx): Share ideas and report bugs
