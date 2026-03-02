@@ -43,21 +43,6 @@ When you click a post, you're taken to the detail page which shows:
 - Properties panel (Status, Board, Tags, Roadmaps)
 - Author information
 
-## View Tabs
-
-Quick-filter tabs at the top of the feedback list let you jump between common views:
-
-| Tab | Description |
-|-----|-------------|
-| **All** | Every post, no preset filters |
-| **Top Voted** | Posts sorted by vote count (highest first) |
-| **Unresponded** | Posts with no team response yet |
-| **Stale** | Posts with an active status that haven't been updated in 30+ days |
-
-<Tip>
-Use the **Stale** tab in your weekly review to catch posts that may have fallen through the cracks.
-</Tip>
-
 ## Filtering
 
 Use the filter sidebar to narrow down posts:
@@ -82,6 +67,9 @@ Filter posts created within a specific timeframe. Set a start date, end date, or
 
 ### By Minimum Votes
 Set a vote threshold to surface high-demand requests. Posts with fewer votes are hidden.
+
+### By Comment Count
+Set a comment threshold to find highly-discussed posts. Choose from presets (1+, 5+, 10+, 25+, 50+) or use "1+ comments" to find any post with at least one comment. This is also useful for finding posts with zero engagement when combined with other filters.
 
 ### Search
 Use the search bar at the top to search across titles and content.
@@ -179,6 +167,30 @@ Posts can be soft-deleted from the edit dialog or post menu. Deleted posts are h
 
 To view deleted posts, enable the **Show deleted** toggle in filters. To restore a deleted post, open it and click **Restore**.
 
+## AI Summaries
+
+Posts with comments display an AI-generated summary card in the post detail view. Summaries help you quickly understand what users are asking for without reading every comment.
+
+Each summary includes:
+
+- **Overview** - 1-3 sentences capturing the core user need
+- **Key quotes** - Notable comments from users (not team replies)
+- **Next steps** - Suggested actions like "Investigate...", "Reproduce...", or "Respond to..."
+
+### Staleness detection
+
+Summaries automatically detect when new comments have been added since the last generation. A **Stale** badge appears next to the timestamp when the summary is out of date. Stale summaries are refreshed automatically in the background.
+
+<Tip>
+AI summaries are generated and refreshed automatically. No configuration needed - they appear on any post with comments.
+</Tip>
+
+## AI Suggestions
+
+Quackback automatically detects duplicate posts and suggests merges. The suggestions page provides a dedicated triage view for these AI-powered recommendations.
+
+See [Triage AI suggestions](/admin/suggestions) for the full guide.
+
 ## Keyboard Shortcuts
 
 | Key | Action |
@@ -205,7 +217,7 @@ Follow this workflow for efficient feedback processing:
 
 ### Find duplicates
 
-Use the search function to find similar posts before changing their status. Consider merging duplicate requests to consolidate votes.
+Quackback [automatically detects duplicate posts](/admin/suggestions) and suggests merges. You can also use the search function to find similar posts manually before changing their status.
 
 ### Engage users
 
@@ -219,6 +231,7 @@ Respond to posts even if you won't implement them. Users appreciate acknowledgme
 
 ## Next steps
 
+- [AI Suggestions](/admin/suggestions) - Triage duplicate detection and merge suggestions
 - [Boards](/admin/boards) - Organize feedback into boards
 - [Statuses](/admin/statuses) - Customize your workflow
 - [Roadmap](/admin/roadmap) - Manage your public roadmaps

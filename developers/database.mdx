@@ -11,7 +11,7 @@ Master the data layer. This guide covers how Quackback uses PostgreSQL with Driz
 ## Overview
 
 Quackback uses:
-- **PostgreSQL 17+** as the database
+- **PostgreSQL 18+** as the database
 - **Drizzle ORM** for type-safe queries
 - **TypeIDs** for branded identifiers
 - **pgvector** for semantic search
@@ -24,13 +24,17 @@ Database schema is defined in `packages/db/src/schema/`:
 ```
 packages/db/src/schema/
 ├── index.ts              # Barrel export
-├── auth.ts               # Users, sessions, members, workspaces
+├── auth.ts               # Users, sessions, members, OAuth
 ├── posts.ts              # Posts, comments, votes, tags
-├── boards.ts             # Boards
+├── boards.ts             # Boards, roadmaps, tags
 ├── statuses.ts           # Post statuses
 ├── integrations.ts       # Integration configs
 ├── notifications.ts      # Notifications, subscriptions
 ├── sentiment.ts          # AI sentiment data
+├── merge-suggestions.ts  # AI duplicate detection
+├── feedback.ts           # Feedback pipeline (sources, signals)
+├── segments.ts           # User segments
+├── user-attributes.ts    # Custom user attributes
 ├── changelog.ts          # Changelog entries
 ├── api-keys.ts           # API key management
 ├── webhooks.ts           # Webhook configurations

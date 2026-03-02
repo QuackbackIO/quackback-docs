@@ -1,12 +1,12 @@
 ---
 title: "Set up OAuth providers"
-description: "Let users sign in with GitHub or Google."
+description: "Let users sign in with GitHub, Google, and 8 more social providers."
 icon: "key"
 ---
 
 # Set up OAuth providers
 
-One-click sign-in. Let users authenticate with GitHub or Google instead of managing another set of credentials. Works for both portal users (customers) and team members (your employees).
+One-click sign-in. Let users authenticate with social accounts instead of managing another set of credentials. Works for both portal users (customers) and team members (your employees).
 
 ## Overview
 
@@ -14,10 +14,20 @@ OAuth lets users sign in with accounts they already have. No new passwords, no v
 
 ### Supported Providers
 
-| Provider | Portal Users | Team Members | Configuration |
-|----------|--------------|--------------|---------------|
-| GitHub | Yes | Yes | Environment variables |
-| Google | Yes | Yes | Environment variables |
+| Provider | Configuration | Notes |
+|----------|---------------|-------|
+| Apple | Client ID, Client Secret, App Bundle Identifier (optional) | Bundle ID only needed for native apps |
+| Discord | Client ID, Client Secret | |
+| Facebook | Client ID, Client Secret | |
+| GitHub | Client ID, Client Secret | |
+| GitLab | Client ID, Client Secret, Issuer URL (optional) | Issuer URL for self-hosted GitLab |
+| Google | Client ID, Client Secret | |
+| LinkedIn | Client ID, Client Secret | |
+| Microsoft | Client ID, Client Secret, Tenant ID (optional) | Defaults to "common" for multi-tenant |
+| Reddit | Client ID, Client Secret | |
+| Twitter / X | Client ID, Client Secret | |
+
+All providers work for both portal users and team members. For enterprise identity providers (Okta, Auth0, Keycloak), see [Custom OIDC](/auth/sso).
 
 ### How It Works
 
@@ -127,20 +137,37 @@ https://YOUR_DOMAIN/api/auth/callback/google
 
 ## Enable OAuth in Quackback
 
-After configuring environment variables, OAuth providers are automatically available. To enable/disable them for portal users:
+OAuth providers are configured in the admin dashboard, not through environment variables. Credentials are stored encrypted in the database.
 
 ### Admin Settings
 
 **[Dashboard]**
 
-1. Navigate to **Admin > Settings > Portal Authentication**
-2. Toggle the providers:
-   - **GitHub** - Enable/disable GitHub sign-in
-   - **Google** - Enable/disable Google sign-in
+1. Navigate to **Admin > Settings > Portal Authentication** (or **Security** for team auth)
+2. Click on the provider you want to configure
+3. Enter the Client ID, Client Secret, and any provider-specific fields
+4. Toggle the provider on
 
-### Environment-Based Control
+Providers only appear on the sign-in page when they're configured and enabled.
 
-OAuth buttons only appear if the corresponding environment variables are set. To disable a provider entirely, remove its environment variables.
+## Other Providers
+
+All providers follow the same pattern:
+
+1. Create an OAuth application in the provider's developer console
+2. Set the callback URL to `https://YOUR_DOMAIN/api/auth/callback/PROVIDER_ID`
+3. Enter the Client ID and Client Secret in Quackback's admin settings
+
+| Provider | Developer Console | Callback URL |
+|----------|-------------------|--------------|
+| Apple | [Apple Developer](https://developer.apple.com/account/resources/identifiers/list) | `/api/auth/callback/apple` |
+| Discord | [Discord Developer Portal](https://discord.com/developers/applications) | `/api/auth/callback/discord` |
+| Facebook | [Meta for Developers](https://developers.facebook.com/apps/) | `/api/auth/callback/facebook` |
+| GitLab | [GitLab Applications](https://gitlab.com/-/user_settings/applications) | `/api/auth/callback/gitlab` |
+| LinkedIn | [LinkedIn Developers](https://www.linkedin.com/developers/apps) | `/api/auth/callback/linkedin` |
+| Microsoft | [Azure App Registrations](https://portal.azure.com/#blade/Microsoft_AAD_RegisteredApps/ApplicationsListBlade) | `/api/auth/callback/microsoft` |
+| Reddit | [Reddit Apps](https://www.reddit.com/prefs/apps) | `/api/auth/callback/reddit` |
+| Twitter / X | [X Developer Portal](https://developer.x.com/en/portal/projects-and-apps) | `/api/auth/callback/twitter` |
 
 ## Common Issues
 
@@ -237,41 +264,25 @@ No write access or sensitive permissions are requested.
 - Set up alerts for unusual patterns
 - Disable unused OAuth providers
 
-## Environment Variables Reference
-
-```bash
-# GitHub
-GITHUB_CLIENT_ID=""
-GITHUB_CLIENT_SECRET=""
-
-# Google
-GOOGLE_CLIENT_ID=""
-GOOGLE_CLIENT_SECRET=""
-
-# Required for all OAuth
-SECRET_KEY=""
-BASE_URL=""
-```
-
 ## Test OAuth locally
 
 **[Browser]**
 
 ### Local Development Setup
 
-1. Use `localhost:3000` as your callback URL
+1. Use `localhost:3000` in your callback URL
 2. Most providers allow `http://localhost` for development
 3. For Google, add `http://localhost:3000` to authorized origins
 
 ### Test checklist
 
 - [ ] OAuth app created with correct callback URL
-- [ ] Environment variables set in `.env`
-- [ ] Quackback server restarted after env changes
+- [ ] Credentials entered in admin settings
 - [ ] Browser allows popups from your domain
 - [ ] Test user exists (for testing-mode apps)
 
-## Related Documentation
+## Next steps
 
+- [Custom OIDC](/auth/sso) - Enterprise identity providers (Okta, Auth0, Keycloak)
 - [Email OTP](/auth/email-otp) - Magic code authentication
-- [Authentication Overview](/auth/overview) - General auth concepts
+- [Authentication Overview](/auth/overview) - All auth options

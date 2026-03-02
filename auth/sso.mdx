@@ -1,25 +1,141 @@
 ---
-title: "Single sign-on"
-description: "SSO/OIDC is not yet available. See current authentication options."
+title: "Set up custom OIDC"
+description: "Let users sign in with Okta, Auth0, Keycloak, or any OIDC provider."
 icon: "building"
 ---
 
-# Single sign-on
+# Set up custom OIDC
 
-SSO via OpenID Connect (OIDC) or SAML is not currently implemented in Quackback. This feature may be added in a future release.
+One less password for your users. Connect any OpenID Connect provider - Okta, Auth0, Keycloak, or your own identity server - and let users sign in with their existing work accounts.
 
-## Current Authentication Options
+## Overview
 
-Quackback supports the following passwordless authentication methods:
+Custom OIDC lets you integrate any OAuth 2.0 / OpenID Connect identity provider beyond the [built-in social logins](/auth/oauth). This is ideal for:
 
-| Method | Portal Users | Team Members |
-|--------|--------------|--------------|
-| Email OTP | Yes | Yes |
-| GitHub OAuth | Yes | Yes |
-| Google OAuth | Yes | Yes |
+- **Enterprise SSO** - Okta, Azure AD, Auth0, OneLogin, PingFederate
+- **Self-hosted identity** - Keycloak, Authentik, Zitadel, Authelia
+- **Custom providers** - Any service that supports OIDC discovery or manual OAuth 2.0 configuration
 
-## Next Steps
+## Configure Custom OIDC
 
-- [Email OTP](/auth/email-otp) - Passwordless authentication with email codes
-- [OAuth](/auth/oauth) - Configure GitHub/Google sign-in
-- [Authentication Overview](/auth/overview) - Complete auth documentation
+### Step 1: Register Quackback in your identity provider
+
+Create an OAuth / OIDC application in your identity provider with these settings:
+
+| Field | Value |
+|-------|-------|
+| Application type | Web application |
+| Redirect URI | `https://YOUR_DOMAIN/api/auth/callback/custom-oidc` |
+| Scopes | `openid email profile` |
+
+Note the **Client ID** and **Client Secret**.
+
+### Step 2: Add credentials in Quackback
+
+**[Dashboard]**
+
+1. Go to **Admin > Settings > Portal Authentication** (or **Security** for team auth)
+2. Find **Custom OIDC** in the provider list
+3. Fill in the required fields:
+
+| Field | Description | Required |
+|-------|-------------|----------|
+| Display Name | Name shown on the sign-in button (e.g. "Okta", "Company SSO") | Yes |
+| Client ID | From your identity provider | Yes |
+| Client Secret | From your identity provider | Yes |
+| Discovery URL | OIDC discovery endpoint (recommended) | No |
+| Authorization URL | OAuth authorize endpoint | If no Discovery URL |
+| Token URL | OAuth token endpoint | If no Discovery URL |
+| Scopes | Space-separated scopes | No (defaults to `openid email profile`) |
+
+<Tip>
+Use the **Discovery URL** when your provider supports it. Quackback auto-discovers the authorization and token endpoints from `/.well-known/openid-configuration`, so you don't need to enter them manually.
+</Tip>
+
+### Step 3: Enable the provider
+
+Toggle **Custom OIDC** on in the Portal Authentication or Security settings. The sign-in button appears immediately.
+
+## Provider examples
+
+### Okta
+
+| Field | Value |
+|-------|-------|
+| Display Name | `Okta` |
+| Discovery URL | `https://your-org.okta.com/.well-known/openid-configuration` |
+| Client ID | From Okta app |
+| Client Secret | From Okta app |
+
+### Auth0
+
+| Field | Value |
+|-------|-------|
+| Display Name | `Auth0` |
+| Discovery URL | `https://your-tenant.auth0.com/.well-known/openid-configuration` |
+| Client ID | From Auth0 app |
+| Client Secret | From Auth0 app |
+
+### Keycloak
+
+| Field | Value |
+|-------|-------|
+| Display Name | `Keycloak` |
+| Discovery URL | `https://keycloak.example.com/realms/your-realm/.well-known/openid-configuration` |
+| Client ID | From Keycloak client |
+| Client Secret | From Keycloak client |
+
+### Manual configuration (no discovery)
+
+If your provider doesn't support OIDC discovery, provide the URLs directly:
+
+| Field | Value |
+|-------|-------|
+| Authorization URL | `https://provider.example.com/oauth/authorize` |
+| Token URL | `https://provider.example.com/oauth/token` |
+| Scopes | `openid email profile` |
+
+## How it works
+
+1. User clicks the custom sign-in button on the login page
+2. Quackback redirects to your identity provider's authorization endpoint
+3. User authenticates with their existing credentials
+4. Provider redirects back to Quackback with an authorization code
+5. Quackback exchanges the code for user information (email, name)
+6. A session is created
+
+Quackback uses the `email` claim from the OIDC token to identify users. If a user with that email already exists, the account is linked automatically.
+
+## Troubleshooting
+
+### "Redirect URI mismatch"
+
+The redirect URI in your identity provider must match exactly:
+
+```
+https://YOUR_DOMAIN/api/auth/callback/custom-oidc
+```
+
+Check for protocol mismatches (`http` vs `https`), trailing slashes, and port numbers.
+
+### "Invalid client_id"
+
+Verify the Client ID and Client Secret are copied correctly with no extra whitespace. Check that the OIDC application is active in your identity provider.
+
+### "Unable to get email"
+
+Quackback requires an email address from the OIDC provider. Ensure:
+- The `email` scope is included
+- Your provider returns the `email` claim in the ID token or userinfo response
+
+### Discovery URL not working
+
+If auto-discovery fails:
+1. Verify the URL returns valid JSON when accessed in a browser
+2. Try providing the Authorization URL and Token URL manually instead
+
+## Next steps
+
+- [OAuth](/auth/oauth) - Built-in social login providers
+- [Authentication Overview](/auth/overview) - All auth options
+- [Portal Authentication](/admin/portal-auth) - Configure sign-in for portal users

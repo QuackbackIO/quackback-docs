@@ -1,0 +1,101 @@
+---
+title: "Triage AI suggestions"
+description: "Review duplicate detection and AI-generated post suggestions."
+icon: "sparkles"
+---
+
+# Triage AI suggestions
+
+Stop merging duplicates by hand. Quackback automatically detects duplicate posts using vector similarity and full-text search, then verifies matches with an LLM. Review suggestions in a dedicated triage view and accept or dismiss with one click.
+
+## Overview
+
+Access suggestions from **Admin > Suggestions** in the sidebar. The suggestions page shows two types of AI-generated recommendations:
+
+| Type | Description |
+|------|-------------|
+| **Merge posts** | Two existing posts that appear to be duplicates. Quackback suggests which to merge into which based on vote count, comments, and age. |
+| **Create post** | Feedback from an integration source that doesn't match any existing post. Quackback suggests creating a new post with an AI-generated title. |
+
+## How duplicate detection works
+
+When a new post is created, Quackback:
+
+1. Generates a vector embedding of the post content
+2. Searches for similar posts using hybrid vector + full-text search
+3. Verifies potential matches with an LLM to filter false positives
+4. Scores matches by vector similarity, text overlap, and LLM confidence
+5. Creates a merge suggestion if confidence is high enough
+
+A periodic sweep also checks older posts that may not have been compared when first created.
+
+## Filter suggestions
+
+### By suggested action
+
+Use the sidebar to filter by suggestion type:
+
+- **Merge posts** - Duplicate post pairs to review
+- **Create post** - New posts suggested from feedback sources
+
+### By source
+
+Filter by the integration source that generated the feedback. Each source shows a count of pending suggestions. Merge suggestions appear under the "Quackback" source.
+
+### Search
+
+Use the search bar to find suggestions by title or content.
+
+## Sort suggestions
+
+| Option | Description |
+|--------|-------------|
+| **Newest** | Most recently created suggestions first (default) |
+| **Relevance** | Sorted by similarity score for merges, or relevance ranking for new posts |
+
+## Review merge suggestions
+
+Each merge suggestion shows two post cards side by side:
+
+- **Vote count** and **status** for each post
+- **Title** and content preview
+- **Board**, creation date, and comment count
+- **Similarity score** as a percentage
+- **AI reasoning** explaining why the posts are similar
+
+### Accept a merge
+
+Click **Merge** to combine the posts. Votes and subscribers are consolidated into the target post. The source post shows a banner linking to the merged post.
+
+### Swap merge direction
+
+By default, Quackback suggests merging the newer or lower-engagement post into the older or higher-engagement one. If you disagree, click the **swap button** between the two post cards to flip which post gets merged into which, then click **Merge**.
+
+### Dismiss a suggestion
+
+Click **Dismiss** to reject the suggestion. The pair won't be suggested again.
+
+<Tip>
+Click either post card in a merge suggestion to open its full detail view. This helps you compare content and comments before deciding.
+</Tip>
+
+## Review create post suggestions
+
+Each create suggestion shows:
+
+- The **original feedback** from the integration source
+- An **AI-suggested title** and reasoning
+- The recommended **board** for the new post
+
+### Accept a suggestion
+
+Click **Create post** to open a dialog with the suggested title and content pre-filled. You can edit before creating.
+
+### Dismiss a suggestion
+
+Click **Dismiss** to reject the suggestion.
+
+## Next steps
+
+- [Triage feedback in the inbox](/admin/inbox) - Filter and respond to feedback
+- [Boards](/admin/boards) - Organize feedback into boards

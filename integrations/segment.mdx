@@ -1,0 +1,124 @@
+---
+title: "Set up Segment"
+description: "Sync user data and segment membership between Segment and Quackback."
+icon: "circle-dot"
+---
+
+# Set up Segment
+
+Enrich feedback with customer data from your CDP. The Segment integration supports bidirectional sync: receive user attributes from Segment identify events, and push segment membership changes back to Segment for use in downstream tools.
+
+## What you get
+
+| Direction | Description |
+|-----------|-------------|
+| **Inbound** | Receive Segment `identify` events to sync user attributes (plan, company, role, etc.) into Quackback |
+| **Outbound** | Push [segment](/admin/segments) membership changes back to Segment as user traits |
+
+## Prerequisites
+
+- A Segment workspace with a configured source
+- A Segment write key (for outbound sync)
+
+## Set up inbound sync
+
+Inbound sync receives `identify` events from Segment and writes user attributes to matching Quackback users.
+
+### Step 1: Create a destination in Segment
+
+**[Segment]**
+
+1. Go to **Connections > Destinations**
+2. Add a **Webhook** destination (or use a **Source Function**)
+3. Set the webhook URL to:
+
+```
+https://YOUR_DOMAIN/api/integrations/segment/webhook
+```
+
+### Step 2: Configure the shared secret
+
+**[Dashboard]**
+
+1. Go to **Admin > Settings > Integrations > Segment**
+2. Enter a **Shared Secret** - this must match the signing secret configured in Segment
+3. Save
+
+Quackback verifies inbound webhooks using HMAC-SHA1 signatures. The `x-signature` header on each request is validated against your shared secret.
+
+<Warning>
+Without a shared secret, Quackback cannot verify that incoming webhooks are from Segment. Always configure one in production.
+</Warning>
+
+### How it works
+
+When Segment sends an `identify` event:
+
+1. Quackback verifies the HMAC-SHA1 signature
+2. Extracts the user's email from `traits.email` or `context.traits.email`
+3. Matches the email to an existing Quackback user
+4. Merges all traits as user attributes
+
+Non-identify events (track, page, etc.) are ignored and return `200 OK`.
+
+## Set up outbound sync
+
+Outbound sync pushes segment membership changes from Quackback back to Segment as user traits.
+
+### Step 1: Get your Segment write key
+
+**[Segment]**
+
+1. Go to **Connections > Sources**
+2. Select or create a source for Quackback data
+3. Copy the **Write Key**
+
+### Step 2: Configure outbound sync
+
+**[Dashboard]**
+
+1. Go to **Admin > Settings > Integrations > Segment**
+2. Enter the **Write Key**
+3. Enable **Outbound Sync**
+4. Save
+
+### How it works
+
+When a user's segment membership changes in Quackback (e.g. they join or leave a dynamic segment), Quackback sends an `identify` call to Segment's HTTP Tracking API with a boolean trait indicating membership.
+
+For example, if a user joins the "Enterprise" segment, Segment receives:
+
+```json
+{
+  "type": "identify",
+  "userId": "user@example.com",
+  "traits": {
+    "enterprise": true
+  }
+}
+```
+
+Segment names are converted to snake_case trait keys. Use these traits in Segment to trigger downstream workflows in tools like Braze, Iterable, or Customer.io.
+
+## Troubleshooting
+
+### Inbound events not syncing
+
+1. Verify the shared secret matches between Segment and Quackback
+2. Check that Segment is sending `identify` events (not just `track`)
+3. Ensure the user's email in Segment traits matches an existing Quackback user
+
+### Outbound sync not working
+
+1. Verify the write key is correct
+2. Check that **Outbound Sync** is toggled on
+3. Confirm the Segment source is active and receiving data
+
+### "401 Unauthorized" on webhook
+
+The HMAC-SHA1 signature didn't match. Verify your shared secret is identical in both Segment and Quackback.
+
+## Next steps
+
+- [Segments](/admin/segments) - Create user segments in Quackback
+- [Integrations Overview](/integrations/overview) - See all available integrations

@@ -33,7 +33,9 @@ When working with the database, always import from `@/lib/db` rather than `@quac
 | [Integrations](#integration-tables) | integrations, integration_platform_credentials, integration_event_mappings, post_external_links |
 | [Notifications](#notification-tables) | in_app_notifications, post_subscriptions, notification_preferences, unsubscribe_tokens |
 | [Changelog](#changelog-tables) | changelog_entries, changelog_entry_posts |
-| [AI Features](#ai-feature-tables) | post_sentiment |
+| [AI Features](#ai-feature-tables) | post_sentiment, merge_suggestions |
+| [Feedback Pipeline](#feedback-pipeline-tables) | feedback_sources, raw_feedback_items, feedback_signals, feedback_suggestions, feedback_signal_corrections, external_user_mappings |
+| [Segments](#segment-tables) | segments, user_segments, user_attribute_definitions |
 | [API](#api-tables) | api_keys, webhooks |
 
 ---
@@ -329,6 +331,11 @@ Feedback posts submitted by users or team members.
 | `embedding` | vector(1536) | | Semantic embedding (AI) |
 | `embedding_model` | text | | Model used for embedding |
 | `embedding_updated_at` | timestamptz | | Embedding generation time |
+| `summary_json` | jsonb | | AI-generated summary (structured) |
+| `summary_model` | text | | Model used for summary generation |
+| `summary_updated_at` | timestamptz | | Summary generation timestamp |
+| `summary_comment_count` | integer | | Comment count when summary was last generated |
+| `merge_checked_at` | timestamptz | | Last merge suggestion check timestamp |
 | `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
 | `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
 | `deleted_at` | timestamptz | | Soft delete timestamp |
@@ -371,6 +378,7 @@ Comments on feedback posts, supporting nested replies.
 | `member_id` | TypeID (member) | NOT NULL, FK -> member.id ON DELETE RESTRICT | Author member |
 | `content` | text | NOT NULL | Comment text |
 | `is_team_member` | boolean | NOT NULL, DEFAULT false | Team member flag |
+| `is_private` | boolean | NOT NULL, DEFAULT false | Private internal note (visible only to team) |
 | `status_change_from_id` | TypeID (status) | FK -> post_statuses.id ON DELETE SET NULL | Previous status (for status changes recorded with comments) |
 | `status_change_to_id` | TypeID (status) | FK -> post_statuses.id ON DELETE SET NULL | New status (for status changes recorded with comments) |
 | `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
@@ -398,6 +406,8 @@ User votes on posts. Each member can vote once per post.
 | `id` | TypeID (vote) | PRIMARY KEY | Vote identifier |
 | `post_id` | TypeID (post) | NOT NULL, FK -> posts.id ON DELETE CASCADE | Voted post |
 | `member_id` | TypeID (member) | NOT NULL, FK -> member.id ON DELETE CASCADE | Voting member |
+| `source_type` | text | | Integration source that created the vote |
+| `source_external_url` | text | | URL to the source ticket/conversation |
 | `created_at` | timestamptz | NOT NULL, DEFAULT now() | Vote timestamp |
 | `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
 
@@ -996,15 +1006,159 @@ Webhook configurations for external event notifications.
 
 ---
 
+### merge_suggestions
+
+AI-generated merge suggestions for duplicate posts.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | TypeID (merge_sug) | PRIMARY KEY | Suggestion identifier |
+| `source_post_id` | TypeID (post) | NOT NULL, FK -> posts.id ON DELETE CASCADE | Post suggested as duplicate |
+| `target_post_id` | TypeID (post) | NOT NULL, FK -> posts.id ON DELETE CASCADE | Canonical post to merge into |
+| `status` | text | NOT NULL, DEFAULT 'pending' | Status: pending, accepted, dismissed |
+| `vector_score` | real | | Vector similarity score |
+| `fts_score` | real | | Full-text search score |
+| `hybrid_score` | real | | Combined hybrid score |
+| `llm_confidence` | real | | LLM verification confidence |
+| `llm_reasoning` | text | | LLM explanation for the match |
+| `llm_model` | text | | LLM model used for verification |
+| `resolved_at` | timestamptz | | When accepted or dismissed |
+| `resolved_by_principal_id` | TypeID (member) | FK -> member.id ON DELETE SET NULL | Who resolved |
+| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
+| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
+
+**Relations:**
+- Belongs to: post (source), post (target), member (resolved_by)
+
+---
+
+## Feedback Pipeline Tables
+
+### feedback_sources
+
+External feedback source configurations for the ingest pipeline.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | TypeID (fb_source) | PRIMARY KEY | Source identifier |
+| `source_type` | text | NOT NULL | Source type (e.g. integration name) |
+| `delivery_mode` | text | NOT NULL | How feedback is delivered |
+| `name` | text | NOT NULL | Display name |
+| `integration_id` | TypeID (integration) | FK -> integrations.id | Linked integration |
+| `enabled` | boolean | NOT NULL, DEFAULT true | Active flag |
+| `config` | jsonb | NOT NULL, DEFAULT \{\} | Source configuration |
+| `secrets` | text | | Encrypted secrets |
+| `cursor` | text | | Pagination cursor for polling |
+| `last_synced_at` | timestamptz | | Last sync timestamp |
+| `last_success_at` | timestamptz | | Last successful sync |
+| `last_error` | text | | Most recent error |
+| `error_count` | integer | NOT NULL, DEFAULT 0 | Consecutive errors |
+| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
+| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
+
+---
+
+### raw_feedback_items
+
+Unprocessed feedback items from external sources, queued for AI extraction.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | TypeID (raw_fb) | PRIMARY KEY | Item identifier |
+| `source_id` | TypeID (fb_source) | NOT NULL, FK -> feedback_sources.id | Parent source |
+| `source_type` | text | NOT NULL | Source type |
+| `external_id` | text | | External item ID |
+| `dedupe_key` | text | | Deduplication key |
+| `external_url` | text | | Link back to source |
+| `source_created_at` | timestamptz | | When created in source system |
+| `author` | jsonb | | Author information |
+| `content` | text | NOT NULL | Raw feedback content |
+| `context_envelope` | jsonb | | Additional context metadata |
+| `processing_state` | text | NOT NULL, DEFAULT 'pending' | State: pending, processing, done, failed |
+| `attempt_count` | integer | NOT NULL, DEFAULT 0 | Processing attempts |
+| `last_error` | text | | Last processing error |
+| `processed_at` | timestamptz | | When processing completed |
+| `principal_id` | TypeID (member) | | Matched user principal |
+| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
+| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
+
+---
+
+### feedback_signals
+
+AI-extracted signals from raw feedback items.
+
+---
+
+### feedback_suggestions
+
+Suggestions generated from AI analysis of feedback signals (e.g. create a new post, merge with existing).
+
+---
+
+### feedback_signal_corrections
+
+User corrections and feedback on AI signal extraction accuracy.
+
+---
+
+### external_user_mappings
+
+Maps external user identifiers to internal Quackback principals for cross-system identity resolution.
+
+---
+
+## Segment Tables
+
+### segments
+
+User segments for filtering and analytics. Supports manual and dynamic (rule-based) membership.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | TypeID (segment) | PRIMARY KEY | Segment identifier |
+| `name` | text | NOT NULL | Display name |
+| `description` | text | | Segment description |
+| `type` | text | NOT NULL | Type: manual, dynamic |
+| `color` | text | | Display color |
+| `rules` | jsonb | | Dynamic segment rules |
+| `evaluation_schedule` | text | | Cron schedule for re-evaluation |
+| `weight_config` | jsonb | | Weighting configuration |
+| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
+| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
+| `deleted_at` | timestamptz | | Soft delete timestamp |
+
+---
+
+### user_segments
+
+Junction table for user-to-segment membership.
+
+---
+
+### user_attribute_definitions
+
+Admin-defined custom user attributes for enrichment.
+
+| Column | Type | Constraints | Description |
+|--------|------|-------------|-------------|
+| `id` | TypeID (user_attr) | PRIMARY KEY | Attribute identifier |
+| `key` | text | NOT NULL, UNIQUE | Attribute key |
+| `label` | text | NOT NULL | Display label |
+| `description` | text | | Attribute description |
+| `type` | text | NOT NULL | Data type: text, number, boolean, date, currency |
+| `currency_code` | text | | Currency code (for currency type) |
+| `external_key` | text | | Mapping key for integration sync |
+| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
+| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
+
+---
+
 ## Database Triggers
 
-### comment_count Trigger
+### comment_count
 
-Automatically maintains the `comment_count` column on posts when comments are inserted or deleted.
-
-<Note>
-See migration `0006_add_comment_count_trigger.sql` for implementation details.
-</Note>
+The `comment_count` column on posts is maintained in application code (not a database trigger). It's updated whenever comments are created or deleted.
 
 ---
 
@@ -1039,7 +1193,7 @@ The schema is defined in Drizzle ORM format in these files:
 
 | File | Tables |
 |------|--------|
-| `packages/db/src/schema/auth.ts` | user, session, account, verification, one_time_token, settings, member, invitation |
+| `packages/db/src/schema/auth.ts` | user, session, account, verification, one_time_token, settings, member, invitation, jwks, oauth_client, oauth_access_token, oauth_refresh_token, oauth_consent |
 | `packages/db/src/schema/boards.ts` | boards, roadmaps, tags |
 | `packages/db/src/schema/posts.ts` | posts, post_tags, post_roadmaps, votes, comments, comment_reactions, post_edit_history, comment_edit_history, post_notes |
 | `packages/db/src/schema/statuses.ts` | post_statuses |
@@ -1047,6 +1201,10 @@ The schema is defined in Drizzle ORM format in these files:
 | `packages/db/src/schema/notifications.ts` | in_app_notifications, post_subscriptions, notification_preferences, unsubscribe_tokens |
 | `packages/db/src/schema/changelog.ts` | changelog_entries, changelog_entry_posts |
 | `packages/db/src/schema/sentiment.ts` | post_sentiment |
+| `packages/db/src/schema/merge-suggestions.ts` | merge_suggestions |
+| `packages/db/src/schema/feedback.ts` | feedback_sources, raw_feedback_items, feedback_signals, feedback_suggestions, feedback_signal_corrections, external_user_mappings |
+| `packages/db/src/schema/segments.ts` | segments, user_segments |
+| `packages/db/src/schema/user-attributes.ts` | user_attribute_definitions |
 | `packages/db/src/schema/api-keys.ts` | api_keys |
 | `packages/db/src/schema/webhooks.ts` | webhooks |
 | `packages/db/src/schema/external-links.ts` | post_external_links |

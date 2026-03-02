@@ -51,7 +51,7 @@ Know where everything lives. This overview shows how Quackback's layers fit toge
 |-------|------------|---------|
 | Framework | TanStack Start | Full-stack React framework |
 | Routing | TanStack Router | File-based routing, type-safe |
-| Database | PostgreSQL 17+ | Primary data store |
+| Database | PostgreSQL 18+ | Primary data store |
 | ORM | Drizzle | Type-safe queries |
 | Auth | Better Auth | Authentication library |
 | Styling | Tailwind CSS v4 | Utility-first CSS |
@@ -98,7 +98,13 @@ apps/web/src/
 │   │   │   ├── subscriptions/ # Subscription service
 │   │   │   ├── ai/            # AI integrations
 │   │   │   ├── sentiment/     # Sentiment analysis
-│   │   │   └── embeddings/    # Vector embeddings
+│   │   │   ├── embeddings/    # Vector embeddings
+│   │   │   ├── summary/       # AI post summaries
+│   │   │   ├── merge-suggestions/ # AI duplicate detection
+│   │   │   ├── changelog/     # Changelog entries
+│   │   │   ├── roadmaps/      # Roadmap management
+│   │   │   ├── api-keys/      # API key management
+│   │   │   └── webhooks/      # Webhook management
 │   │   ├── auth/              # Auth configuration
 │   │   ├── events/            # Event dispatch & handlers
 │   │   ├── integrations/      # Integration handlers
@@ -126,7 +132,6 @@ packages/
 ├── db/                        # Database layer
 │   ├── src/
 │   │   ├── schema/            # Drizzle table definitions
-│   │   ├── tenant/            # Multi-tenant provisioning
 │   │   ├── client.ts          # Connection factory
 │   │   ├── seed.ts            # Demo data seeding
 │   │   └── migrate.ts         # Migration runner
@@ -308,8 +313,8 @@ Team management interface:
 ### Authentication
 
 Two separate auth flows:
-- `auth.*` - Portal users (email OTP)
-- `admin.login` - Team members (email/password + OAuth)
+- `auth.*` - Portal users (password, email OTP, OAuth, OIDC)
+- `admin.login` - Team members (password, email OTP, OAuth, OIDC)
 
 ## Data Flow
 
