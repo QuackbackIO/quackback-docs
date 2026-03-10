@@ -1,12 +1,12 @@
 ---
 title: "MCP Reference"
-description: "Complete reference for Quackback's MCP tools and resources. Parameters, return values, and examples for all 17 tools and 5 resources."
+description: "Complete reference for Quackback's MCP tools and resources. Parameters, return values, and examples for all 22 tools and 5 resources."
 order: 2
 ---
 
 # MCP Reference
 
-Quackback's MCP server exposes 17 tools and 5 resources. Tools perform actions (search, create, update, delete). Resources provide lookup data (boards, statuses, tags) that tools reference by ID.
+Quackback's MCP server exposes 22 tools and 5 resources. Tools perform actions (search, create, update, delete). Resources provide lookup data (boards, statuses, tags) that tools reference by ID.
 
 ## Tools
 
@@ -360,6 +360,113 @@ Soft-delete a changelog entry.
 ```
 delete_changelog({ changelogId: "changelog_01abc..." })
 ```
+
+### list_suggestions
+
+List AI-generated feedback suggestions. Suggestions are created when feedback is ingested from external sources (Slack, email, API) and processed by the AI pipeline.
+
+Three suggestion types:
+- `create_post` - AI extracted new feedback and suggests creating a post
+- `vote_on_post` - AI matched feedback to an existing post and suggests adding a vote
+- `duplicate_post` - AI detected two existing posts that may be duplicates
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `status` | `"pending"` \| `"dismissed"` | `"pending"` | Filter by suggestion status |
+| `suggestionType` | `"create_post"` \| `"vote_on_post"` \| `"duplicate_post"` | - | Filter by type |
+| `sort` | `"newest"` \| `"relevance"` | `"newest"` | Sort order |
+| `limit` | number (1-100) | `20` | Max results per page |
+| `cursor` | string | - | Pagination cursor from a previous response |
+
+**Scope:** `read:feedback` + team role (admin or member)
+
+Each suggestion includes the original raw feedback item, matched post (if applicable), AI signal data (summary, evidence, confidence), and source metadata.
+
+```
+list_suggestions()
+list_suggestions({ suggestionType: "create_post" })
+list_suggestions({ status: "dismissed", sort: "relevance" })
+```
+
+---
+
+### accept_suggestion
+
+Accept an AI-generated suggestion. The result depends on the suggestion type:
+
+- **create_post**: Creates a new post from the extracted feedback. Optional edits override the suggested title, body, or board.
+- **vote_on_post**: Adds a proxy vote to the matched existing post.
+- **duplicate_post**: Merges the source post into the target post. Use `swapDirection` to reverse which post is kept.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | string | Suggestion TypeID (`feedback_suggestion_xxx` or `merge_sug_xxx`) |
+| `edits` | object | Optional. Override `title`, `body`, `boardId`, or `statusId` before accepting (create_post only) |
+| `swapDirection` | boolean | Optional. Reverse merge direction (duplicate_post only) |
+
+**Scope:** `write:feedback` + team role (admin or member)
+
+```
+accept_suggestion({ id: "feedback_suggestion_01abc..." })
+accept_suggestion({
+  id: "feedback_suggestion_01abc...",
+  edits: { title: "Better title" }
+})
+accept_suggestion({ id: "merge_sug_01abc...", swapDirection: true })
+```
+
+---
+
+### dismiss_suggestion
+
+Dismiss an AI-generated suggestion. The suggestion can be restored later via `restore_suggestion`.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | string | Suggestion TypeID (`feedback_suggestion_xxx` or `merge_sug_xxx`) |
+
+**Scope:** `write:feedback` + team role (admin or member)
+
+```
+dismiss_suggestion({ id: "feedback_suggestion_01abc..." })
+dismiss_suggestion({ id: "merge_sug_01abc..." })
+```
+
+---
+
+### restore_suggestion
+
+Restore a dismissed suggestion back to pending status.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `id` | string | Suggestion TypeID (`feedback_suggestion_xxx` or `merge_sug_xxx`) |
+
+**Scope:** `write:feedback` + team role (admin or member)
+
+```
+restore_suggestion({ id: "feedback_suggestion_01abc..." })
+```
+
+---
+
+### get_post_activity
+
+Get the activity log for a post. Shows status changes, merges, tag changes, owner assignments, proxy votes, comment pins, and other events in reverse chronological order (limited to the 200 most recent).
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `postId` | string | Post TypeID |
+
+**Scope:** `read:feedback` + team role (admin or member)
+
+Each activity entry includes the event type, actor name, metadata (e.g., old/new status), and timestamp.
+
+```
+get_post_activity({ postId: "post_01abc..." })
+```
+
+---
 
 ## Resources
 
