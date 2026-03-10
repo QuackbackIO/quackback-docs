@@ -31,7 +31,7 @@ The user list displays accounts in rows with:
 |--------|-------------|
 | Avatar | User's profile picture or initials |
 | Name | Display name |
-| Email | Email address |
+| Email | Email address (may be blank for users created via integrations) |
 | Status | Verified/Unverified badge |
 | Date | When they signed up |
 
@@ -91,6 +91,28 @@ Sort users using the dropdown:
 
 1. Select a user from the list
 2. View their posts and votes in the detail panel
+
+### Edit User
+
+Update a user's name or email:
+
+1. Select the user from the list
+2. Click the **Edit** button in the detail panel
+3. Update the name or email
+4. Save changes
+
+### Create Users Inline
+
+You can create portal users directly from several admin workflows without visiting the Users page:
+
+- **Add voter** — When adding a proxy vote on a post, click "Create new user" in the voter search popover
+- **Create post from suggestion** — The author selector lets you create a new user when the feedback author doesn't have an account yet
+
+Inline-created users appear in the Portal Users list like any other user.
+
+<Note>
+Users created through integrations (Slack, API) may not have an email address. These users appear with a name only and can still be assigned as post authors and voters.
+</Note>
 
 ### Remove User
 

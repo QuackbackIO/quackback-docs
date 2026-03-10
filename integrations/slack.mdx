@@ -1,19 +1,25 @@
 ---
 title: "Slack"
-description: "Get feedback alerts in Slack the moment they arrive."
+description: "Send feedback from Slack and get alerts when it arrives."
 icon: "slack"
 ---
 
 # Slack
 
-Feedback where you work. Get notified in Slack channels the moment new feedback arrives, statuses change, or users comment. Route different events to different channels based on board, status, or priority.
+Feedback where you work. Send messages to Quackback directly from Slack, monitor channels for feedback automatically, and get notified when new feedback arrives, statuses change, or users comment.
 
 ## Overview
 
-The Slack integration sends notifications to channels when:
-- New feedback is submitted
-- Post status changes
-- New comments are posted
+The Slack integration works in both directions:
+
+**Slack to Quackback:**
+- Send any message to Quackback with the "Send to Quackback" shortcut
+- Automatically ingest feedback from monitored channels
+
+**Quackback to Slack:**
+- New feedback notifications
+- Post status change alerts
+- New comment notifications
 
 ## Prerequisites
 
@@ -58,6 +64,45 @@ Choose which events trigger Slack notifications:
 1. Click **Save**
 2. Click **Send Test** to verify the connection
 3. Check your Slack channel for the test message
+
+## Send feedback from Slack
+
+### "Send to Quackback" shortcut
+
+Turn any Slack message into feedback without leaving the conversation. The message shortcut lets team members or users forward messages directly into your Quackback workspace.
+
+**How to use it:**
+
+1. Hover over any message in Slack
+2. Click the **More actions** menu (three dots)
+3. Select **Send to Quackback**
+4. A modal opens with the message content pre-filled
+5. Optionally add context or select a board
+6. Click **Submit**
+
+The message is sent to your Quackback feedback pipeline. AI processes it, suggests a title, detects duplicates, and creates a triage suggestion in your [AI suggestions inbox](/admin/suggestions).
+
+<Tip>
+The shortcut preserves a link back to the original Slack message. When you review the suggestion in Quackback, you can click "Open in Slack" to see the full conversation context.
+</Tip>
+
+### Channel monitoring
+
+Automatically collect feedback from entire Slack channels. When enabled, Quackback monitors selected channels and ingests new messages as raw feedback for AI processing.
+
+**Set up channel monitoring:**
+
+1. Go to **Admin > Settings > Integrations > Slack**
+2. Scroll to **Channel Monitoring**
+3. Click **Add Channel**
+4. Select the channel to monitor
+5. Save
+
+Messages posted in monitored channels are automatically sent through the feedback pipeline. AI extracts themes, detects duplicates against existing posts, and creates triage suggestions.
+
+<Note>
+Channel monitoring captures new messages only — it does not backfill historical messages. Bot messages and thread replies are excluded.
+</Note>
 
 ## Notification Format
 
@@ -191,16 +236,18 @@ The Slack app requests:
 | Permission | Purpose |
 |------------|---------|
 | `channels:read` | List public channels |
+| `channels:history` | Read messages in monitored public channels |
 | `groups:read` | List private channels (when invited) |
+| `groups:history` | Read messages in monitored private channels |
 | `channels:join` | Auto-join public channels for posting |
 | `chat:write` | Post notifications |
+| `chat:write.public` | Post to public channels without joining |
+| `commands` | Register the "Send to Quackback" shortcut |
 | `team:read` | Get workspace info |
+| `users:read` | Resolve Slack user profiles for feedback attribution |
 
 <Note>
-The app cannot:
-- Read your messages
-- Access private channels (unless invited)
-- Post as individual users
+The app only reads messages in channels you explicitly enable for monitoring. It cannot read messages in other channels or direct messages.
 </Note>
 
 ## Best Practices
@@ -234,6 +281,7 @@ Slack notifications include links back to Quackback. Click through to:
 
 ## Next Steps
 
+- [Triage AI suggestions](/admin/suggestions) - Review feedback sent from Slack
 - [Webhooks](/integrations/webhooks) - Build custom integrations
 - [Event Mappings](/integrations/overview#event-mappings) - Advanced configuration
 - [Admin Guide](/admin/inbox) - Managing feedback

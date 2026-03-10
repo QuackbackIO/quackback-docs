@@ -40,8 +40,11 @@ When you click a post, you're taken to the detail page which shows:
 
 - Complete content with formatting
 - Comment thread (including private internal notes visible only to team members)
+- Activity timeline showing all post events
 - Properties panel (Status, Board, Tags, Roadmaps)
 - Author information
+- Similar posts (when AI finds related feedback)
+- Feedback source details (for posts created from integrations)
 
 ## Filtering
 
@@ -134,31 +137,45 @@ Assign a team member to take responsibility for a post:
 
 Filter the inbox by owner to see your assigned posts or find unassigned work.
 
-### View Voters
+### View and Add Voters
 
-See who voted on a post and where their votes came from:
+The properties panel shows a voter avatar stack — small profile pictures of the first few voters, plus a count of remaining voters.
 
-1. Open a post with at least one vote
-2. In the properties panel, click **Voters** next to the vote count
-3. A modal lists each voter with their name and source
+**View all voters:**
+1. Click the avatar stack to open the full voter list
+2. The modal shows each voter with their name and how their vote was added
+3. Proxy votes show which admin added the vote on the user's behalf
 
-Votes from integrations (like Zendesk or Intercom) show the originating platform and a link back to the source ticket or conversation.
+**Add a vote on behalf of a user:**
+1. Click **Add voter** next to the avatar stack
+2. Search for an existing user by name or email
+3. Click the user to add their vote
+
+If the user doesn't exist yet, click **Create new user** at the bottom of the search list to create them and add their vote in one step.
+
+<Note>
+Proxy votes are attributed to the user, not the admin who added them. The admin who cast the vote is recorded for audit purposes but not shown publicly.
+</Note>
 
 ### Merge Duplicate Posts
 
 Combine duplicate feedback to consolidate votes and discussion:
 
-1. Open a post you want to mark as a duplicate
-2. Click **Mark as duplicate** in the post header
-3. Search for the canonical post (the one to keep)
-4. Review the match and confirm the merge
+1. Open a post you want to merge
+2. In the **Merge** section, search for the other post
+3. Choose the merge direction — pick which post to keep as the canonical post and which becomes the duplicate
+4. Click **Merge** to confirm
 
-After merging, the duplicate shows a banner linking to the canonical post. Votes are combined. The canonical post displays a "Merged Feedback" section listing all duplicates.
+After merging:
+- The duplicate shows a banner linking to the canonical post
+- Votes are deduplicated and consolidated (unique voters only)
+- The canonical post displays a "Merged Feedback" section listing all merged duplicates
+- An activity entry is recorded on both posts
 
-To reverse a merge, open the canonical post, find the merged post in the list, and click **Unmerge**.
+To reverse a merge, open the canonical post, find the merged post in the Merged Feedback section, and click **Unmerge**.
 
 <Tip>
-Use the search function to find potential duplicates before merging. The search dialog shows match confidence to help you decide.
+The merge section also shows AI-detected similar posts with similarity scores. You can merge directly from these suggestions without searching.
 </Tip>
 
 ### Delete and Restore Posts
@@ -185,9 +202,23 @@ Summaries automatically detect when new comments have been added since the last 
 AI summaries are generated and refreshed automatically. No configuration needed - they appear on any post with comments.
 </Tip>
 
+## Activity Timeline
+
+Every post has an activity timeline that records key events in its lifecycle. The timeline appears below the comment thread on the post detail page.
+
+| Event | Description |
+|-------|-------------|
+| Status changed | Shows old and new status with who made the change |
+| Post merged | Another post was merged into this one, with a link to the duplicate |
+| Post merged away | This post was merged into another, with a link to the canonical post |
+| Post unmerged | A previously merged post was separated |
+| Post created | When and how the post was created (direct submission, suggestion, API) |
+
+The timeline is sorted chronologically with the most recent events at the top. Each entry shows the actor (who performed the action) and a timestamp.
+
 ## AI Suggestions
 
-Quackback automatically detects duplicate posts and suggests merges. The suggestions page provides a dedicated triage view for these AI-powered recommendations.
+Quackback automatically detects duplicate posts and suggests merges. Feedback from integration sources like Slack is analyzed and turned into actionable suggestions — either voting on an existing post or creating a new one.
 
 See [Triage AI suggestions](/admin/suggestions) for the full guide.
 

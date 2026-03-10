@@ -1,33 +1,45 @@
 ---
 title: "Triage AI suggestions"
-description: "Review duplicate detection and AI-generated post suggestions."
+description: "Review duplicate detection, vote suggestions, and AI-generated posts."
 icon: "sparkles"
 ---
 
 # Triage AI suggestions
 
-Stop merging duplicates by hand. Quackback automatically detects duplicate posts using vector similarity and full-text search, then verifies matches with an LLM. Review suggestions in a dedicated triage view and accept or dismiss with one click.
+Stop merging duplicates by hand. Quackback automatically detects duplicate posts using vector similarity and full-text search, then verifies matches with an LLM. Feedback from integrations like Slack is analyzed and turned into actionable suggestions. Review everything in a dedicated triage view and accept or dismiss with one click.
 
 ## Overview
 
-Access suggestions from **Admin > Suggestions** in the sidebar. The suggestions page shows two types of AI-generated recommendations:
+Access suggestions from **Admin > Feedback > Incoming** in the sidebar. The suggestions page shows three types of AI-generated recommendations:
 
 | Type | Description |
 |------|-------------|
 | **Merge posts** | Two existing posts that appear to be duplicates. Quackback suggests which to merge into which based on vote count, comments, and age. |
+| **Vote on post** | Feedback from an integration source that matches an existing post. Quackback suggests adding a vote instead of creating a duplicate. |
 | **Create post** | Feedback from an integration source that doesn't match any existing post. Quackback suggests creating a new post with an AI-generated title. |
 
-## How duplicate detection works
+## How it works
 
-When a new post is created, Quackback:
+When feedback arrives from an integration source (Slack, API, etc.), Quackback:
 
-1. Generates a vector embedding of the post content
-2. Searches for similar posts using hybrid vector + full-text search
-3. Verifies potential matches with an LLM to filter false positives
-4. Scores matches by vector similarity, text overlap, and LLM confidence
-5. Creates a merge suggestion if confidence is high enough
+1. Runs the content through a quality gate to filter noise
+2. Extracts structured themes from the raw feedback
+3. Generates vector embeddings for each theme
+4. Searches for similar existing posts using hybrid vector + full-text search
+5. Verifies potential matches with an LLM to filter false positives
+6. Creates a **vote on post** suggestion if a strong match is found, or a **create post** suggestion if no match exists
 
-A periodic sweep also checks older posts that may not have been compared when first created.
+For duplicate detection between existing posts, a periodic sweep compares newer posts against older ones and creates **merge** suggestions when confidence is high.
+
+## Suggestion grouping
+
+Suggestions from integration sources are grouped by their original feedback item. When a single Slack message or support ticket produces multiple suggestions (for example, a message that mentions both a feature request and a bug), they appear together under a shared source header.
+
+Each group shows:
+- **Source icon** and integration name (Slack, API, etc.)
+- **Author name** and timestamp
+- **Original feedback** as a collapsible quote
+- **"Open in" link** to view the original message in the source platform (e.g., "Open in Slack")
 
 ## Filter suggestions
 
@@ -35,7 +47,9 @@ A periodic sweep also checks older posts that may not have been compared when fi
 
 Use the sidebar to filter by suggestion type:
 
+- **All** - Every pending suggestion
 - **Merge posts** - Duplicate post pairs to review
+- **Vote on post** - Feedback that matches an existing post
 - **Create post** - New posts suggested from feedback sources
 
 ### By source
@@ -79,23 +93,59 @@ Click **Dismiss** to reject the suggestion. The pair won't be suggested again.
 Click either post card in a merge suggestion to open its full detail view. This helps you compare content and comments before deciding.
 </Tip>
 
+## Review vote suggestions
+
+When feedback matches an existing post, Quackback suggests voting on that post instead of creating a duplicate. Each vote suggestion shows:
+
+- The **existing post** with its current vote count, status, and board
+- **Similarity score** as a percentage
+
+### Accept a vote
+
+Click **Vote** to add a vote to the existing post on behalf of the feedback author. The vote is attributed to the original author.
+
+### Create instead
+
+If the feedback is related but distinct enough to warrant its own post, click **Create instead** to open the create post dialog with the feedback pre-filled.
+
+### Dismiss
+
+Click **Dismiss** to reject the suggestion.
+
 ## Review create post suggestions
 
 Each create suggestion shows:
 
-- The **original feedback** from the integration source
-- An **AI-suggested title** and reasoning
+- An **AI-suggested title** and description
 - The recommended **board** for the new post
 
 ### Accept a suggestion
 
-Click **Create post** to open a dialog with the suggested title and content pre-filled. You can edit before creating.
+Click **Create post** to open a dialog with the suggested title and content pre-filled. The dialog includes:
+
+- **Title** and **description** fields (editable)
+- **Author** selector — defaults to the original feedback author. You can search for existing users or create a new user inline.
+- **Board** selector
+- **Status** selector — defaults to your workspace's default status
+
+The original feedback is shown as a quote at the top of the dialog with a link to the source.
 
 ### Dismiss a suggestion
 
 Click **Dismiss** to reject the suggestion.
 
+## Dismiss and restore
+
+When you dismiss a suggestion, it doesn't disappear immediately. A placeholder appears with an **Undo** button for a few seconds. If you change your mind, click Undo to restore the suggestion before it's permanently dismissed.
+
+To dismiss all suggestions in a source group at once, click **Dismiss all** in the group header.
+
+### View dismissed suggestions
+
+Switch to the **Dismissed** tab to see suggestions you've previously dismissed. You can restore any dismissed suggestion by clicking **Restore**.
+
 ## Next steps
 
 - [Triage feedback in the inbox](/admin/inbox) - Filter and respond to feedback
 - [Boards](/admin/boards) - Organize feedback into boards
+- [Slack](/integrations/slack) - Send feedback from Slack to Quackback
