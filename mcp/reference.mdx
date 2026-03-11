@@ -1,12 +1,12 @@
 ---
 title: "MCP Reference"
-description: "Complete reference for Quackback's MCP tools and resources. Parameters, return values, and examples for all 22 tools and 5 resources."
+description: "Complete reference for Quackback's MCP tools and resources. Parameters, return values, and examples for all 23 tools and 5 resources."
 order: 2
 ---
 
 # MCP Reference
 
-Quackback's MCP server exposes 22 tools and 5 resources. Tools perform actions (search, create, update, delete). Resources provide lookup data (boards, statuses, tags) that tools reference by ID.
+Quackback's MCP server exposes 23 tools and 5 resources. Tools perform actions (search, create, update, delete). Resources provide lookup data (boards, statuses, tags) that tools reference by ID.
 
 ## Tools
 
@@ -94,6 +94,35 @@ Returns the current vote state and total vote count.
 
 ```
 vote_post({ postId: "post_01abc..." })
+```
+
+---
+
+### proxy_vote
+
+Add or remove a vote on behalf of another user. Use this to record votes from external channels (support tickets, Slack messages, sales calls) with source attribution for traceability.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `action` | `"add"` \| `"remove"` | `"add"` | Whether to add or remove the proxy vote |
+| `postId` | string | - | Post TypeID to vote on |
+| `voterPrincipalId` | string | - | Principal TypeID of the user to vote on behalf of |
+| `sourceType` | string | - | Attribution source type (e.g. `"zendesk"`, `"slack"`, `"intercom"`) |
+| `sourceExternalUrl` | string | - | URL linking to the originating record |
+
+**Scope:** `write:feedback` + team role (admin or member)
+
+Adding a vote is idempotent — calling it twice for the same user has no effect. Removing a vote works for any vote type (proxy, integration, or direct).
+
+```
+proxy_vote({ postId: "post_01abc...", voterPrincipalId: "principal_01xyz..." })
+proxy_vote({
+  postId: "post_01abc...",
+  voterPrincipalId: "principal_01xyz...",
+  sourceType: "zendesk",
+  sourceExternalUrl: "https://support.example.com/tickets/1234"
+})
+proxy_vote({ action: "remove", postId: "post_01abc...", voterPrincipalId: "principal_01xyz..." })
 ```
 
 ---

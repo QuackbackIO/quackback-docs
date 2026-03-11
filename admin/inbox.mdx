@@ -153,6 +153,13 @@ The properties panel shows a voter avatar stack — small profile pictures of th
 
 If the user doesn't exist yet, click **Create new user** at the bottom of the search list to create them and add their vote in one step.
 
+**Remove a vote:**
+1. Click the avatar stack to open the voter list
+2. Hover over any voter row to reveal the remove button
+3. Click the **X** to remove that user's vote
+
+Removing a vote works for any vote type — proxy, integration, or direct. A `vote.removed` activity entry is recorded on the post timeline.
+
 <Note>
 Proxy votes are attributed to the user, not the admin who added them. The admin who cast the vote is recorded for audit purposes but not shown publicly.
 </Note>
@@ -208,11 +215,25 @@ Every post has an activity timeline that records key events in its lifecycle. Th
 
 | Event | Description |
 |-------|-------------|
+| Post created | When and how the post was created (direct submission, suggestion, API) |
+| Post deleted | Post was soft-deleted |
+| Post restored | A deleted post was restored |
 | Status changed | Shows old and new status with who made the change |
 | Post merged | Another post was merged into this one, with a link to the duplicate |
 | Post merged away | This post was merged into another, with a link to the canonical post |
 | Post unmerged | A previously merged post was separated |
-| Post created | When and how the post was created (direct submission, suggestion, API) |
+| Proxy vote | A vote was added on behalf of a user, with attribution |
+| Vote removed | A vote was removed from the post |
+| Owner assigned | A team member was assigned to the post |
+| Owner unassigned | The assigned owner was removed |
+| Tags added | Tags were applied to the post |
+| Tags removed | Tags were removed from the post |
+| Roadmap added | Post was added to a roadmap |
+| Roadmap removed | Post was removed from a roadmap |
+| Comments locked | Comments were locked on the post |
+| Comments unlocked | Comments were unlocked |
+| Comment pinned | A comment was pinned to the top |
+| Comment unpinned | A pinned comment was unpinned |
 
 The timeline is sorted chronologically with the most recent events at the top. Each entry shows the actor (who performed the action) and a timestamp.
 
