@@ -7,6 +7,7 @@
     { "id": "admin", "label": "Admin", "icon": "settings", "sections": ["admin"], "defaultSlug": "admin/inbox" },
     { "id": "auth", "label": "Auth", "icon": "shield", "sections": ["auth"], "defaultSlug": "auth/overview" },
     { "id": "integrations", "label": "Integrations", "icon": "plug", "sections": ["integrations"], "defaultSlug": "integrations/overview" },
+    { "id": "widget", "label": "Widget", "icon": "chat-bubble-left-right", "sections": ["widget"], "defaultSlug": "widget" },
     { "id": "api", "label": "API", "icon": "code", "sections": ["api"], "defaultSlug": "api/overview" },
     { "id": "mcp", "label": "MCP", "icon": "cpu-chip", "sections": ["mcp"], "defaultSlug": "mcp" },
     { "id": "developers", "label": "Developers", "icon": "terminal", "sections": ["developers", "reference"], "defaultSlug": "developers/setup" }

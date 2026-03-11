@@ -1,0 +1,56 @@
+---
+title: "Feedback Widget"
+description: "Collect feedback directly inside your product with an embeddable widget."
+icon: "chat-bubble-left-right"
+---
+
+# Feedback Widget
+
+Collect feedback without pulling users out of your product. The widget adds a floating button to your site that opens a feedback panel where users can browse, search, vote, and submit posts.
+
+## How it works
+
+The widget is a lightweight JavaScript SDK (~10 KB) that loads an iframe from your Quackback instance. It handles all rendering, authentication, and communication with your feedback portal.
+
+**On desktop**, the widget opens as a 400 x 600px popover panel anchored to the bottom corner of the screen.
+
+**On mobile** (under 640px), it opens as a full-height bottom sheet with a backdrop overlay.
+
+The trigger button hides automatically when the panel is open and reappears when the panel closes.
+
+## Enable the widget
+
+1. Go to **Admin > Settings > Widget**
+2. Toggle the widget **on**
+3. Configure placement (bottom-right or bottom-left) and an optional default board
+4. Copy the embed snippet into your site
+
+<Tip>
+Start with the default settings. You can customize placement and restrict to a specific board later.
+</Tip>
+
+## What users can do
+
+From the widget panel, users can:
+
+- **Browse posts** on your feedback boards
+- **Search** for existing feedback
+- **Vote** on posts they care about
+- **Submit new posts** when no existing feedback matches
+
+If your site [identifies users](/widget/identify-users) to the widget, votes and submissions are attributed to them automatically. Unidentified users see a prompt to sign in to your app before voting.
+
+## Configuration
+
+Configure the widget from **Admin > Settings > Widget**:
+
+| Setting | Description |
+|---------|-------------|
+| **Enabled** | Turn the widget on or off globally |
+| **Position** | Bottom-right (default) or bottom-left |
+| **Default board** | Restrict the widget to a single board, or show all boards |
+
+## Next steps
+
+- [Install the widget](/widget/installation) - Add the embed snippet and SDK commands
+- [Identify users](/widget/identify-users) - Attribute votes and posts to logged-in users

@@ -1,0 +1,208 @@
+---
+title: "Identify users in the widget"
+description: "Attribute widget votes and submissions to logged-in users, with optional HMAC verification."
+icon: "finger-print"
+---
+
+# Identify users in the widget
+
+When you identify a user, their votes and submissions in the widget are attributed to their account. Without identification, users see a prompt to sign in before they can vote.
+
+## Basic identification
+
+After your app's auth resolves, call `identify` with the user's details:
+
+```tsx
+import { useEffect } from "react";
+import { useAuth } from "@/hooks/use-auth";
+
+export function WidgetIdentify() {
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user) return;
+
+    Quackback("identify", {
+      id: user.id,
+      email: user.email,
+      name: user.name,
+    });
+  }, [user]);
+
+  return null;
+}
+```
+
+| Field | Type | Required | Description |
+|-------|------|----------|-------------|
+| `id` | string | Yes | Stable user ID from your system |
+| `email` | string | Yes | User's email address |
+| `name` | string | No | Display name shown on posts and votes |
+| `hash` | string | No | HMAC hash for verification (see below) |
+
+<Note>
+The `id` field should be a stable identifier from your system (database ID, auth provider ID, etc.), not an email address. Emails can change, but the ID ties the widget identity to the correct Quackback user.
+</Note>
+
+## Clear identity on logout
+
+Pass `null` to reset the widget identity when a user logs out:
+
+```js
+Quackback("identify", null);
+```
+
+## HMAC verification
+
+Basic identification trusts the client. A technically savvy user could call `Quackback("identify")` with someone else's ID to spoof their identity. HMAC verification prevents this by requiring a server-generated hash that proves the identity is legitimate.
+
+### Enable HMAC verification
+
+1. Go to **Admin > Settings > Widget**
+2. Toggle **HMAC verification** on
+3. Copy the **widget secret** (masked by default, always viewable from this page)
+4. Add the secret to your server's environment as `QUACKBACK_WIDGET_SECRET`
+
+### Generate the hash server-side
+
+Compute an HMAC-SHA256 of the user's ID using your widget secret. Here are examples for common frameworks:
+
+**Next.js**
+
+```ts
+// app/api/widget-hash/route.ts
+import crypto from "crypto";
+import { NextResponse } from "next/server";
+import { auth } from "@/lib/auth";
+
+export async function POST() {
+  const session = await auth();
+  if (!session?.user) {
+    return NextResponse.json({}, { status: 401 });
+  }
+
+  const hash = crypto
+    .createHmac("sha256", process.env.QUACKBACK_WIDGET_SECRET!)
+    .update(session.user.id)
+    .digest("hex");
+
+  return NextResponse.json({ hash });
+}
+```
+
+**Express**
+
+```js
+// widget.js
+import crypto from "crypto";
+
+app.post("/api/widget-hash", (req, res) => {
+  // req.user set by your auth middleware
+  const hash = crypto
+    .createHmac("sha256", process.env.QUACKBACK_WIDGET_SECRET)
+    .update(req.user.id)
+    .digest("hex");
+
+  res.json({ hash });
+});
+```
+
+**Django**
+
+```python
+# views.py
+import hmac, hashlib
+from django.conf import settings
+from django.http import JsonResponse
+from django.contrib.auth.decorators import login_required
+
+@login_required
+def widget_hash(request):
+    digest = hmac.new(
+        settings.QUACKBACK_WIDGET_SECRET.encode(),
+        str(request.user.id).encode(),
+        hashlib.sha256,
+    ).hexdigest()
+    return JsonResponse({"hash": digest})
+```
+
+**Rails**
+
+```ruby
+# widget_controller.rb
+class Api::WidgetController < ApplicationController
+  before_action :authenticate_user!
+
+  def identify_hash
+    digest = OpenSSL::HMAC.hexdigest(
+      "sha256",
+      ENV["QUACKBACK_WIDGET_SECRET"],
+      current_user.id.to_s,
+    )
+    render json: { hash: digest }
+  end
+end
+```
+
+**Laravel**
+
+```php
+// WidgetController.php
+use Illuminate\Http\Request;
+
+class WidgetController extends Controller
+{
+    public function identifyHash(Request $request)
+    {
+        $hash = hash_hmac(
+            "sha256",
+            $request->user()->id,
+            config("services.quackback.widget_secret"),
+        );
+        return response()->json(["hash" => $hash]);
+    }
+}
+```
+
+### Pass the hash to the widget
+
+Fetch the hash from your server and include it in the `identify` call:
+
+```tsx
+import { useEffect } from "react";
+import { useAuth } from "@/hooks/use-auth";
+
+export function WidgetIdentify() {
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (!user) return;
+
+    fetch("/api/widget-hash", { method: "POST" })
+      .then((res) => res.json())
+      .then(({ hash }) => {
+        Quackback("identify", {
+          id: user.id,
+          email: user.email,
+          name: user.name,
+          hash,
+        });
+      });
+  }, [user]);
+
+  return null;
+}
+```
+
+<Warning>
+Never expose your widget secret in client-side code. The HMAC hash must be computed on your server.
+</Warning>
+
+### Rotate the secret
+
+If your widget secret is compromised, rotate it from **Admin > Settings > Widget**. Click **Regenerate** to create a new secret. Update `QUACKBACK_WIDGET_SECRET` on your server immediately — existing identify calls with the old hash will fail once verification is enabled with the new secret.
+
+## Next steps
+
+- [Install the widget](/widget/installation) - Embed snippet and SDK command reference
+- [Widget overview](/widget) - Configuration and behavior reference

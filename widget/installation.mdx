@@ -1,0 +1,144 @@
+---
+title: "Install the widget"
+description: "Add the feedback widget to your site with a script tag and configure it with SDK commands."
+icon: "code-bracket"
+---
+
+# Install the widget
+
+Add the feedback widget to your site in two steps: paste the embed snippet, then optionally configure placement and identify users.
+
+## Embed the snippet
+
+Paste this snippet before the closing `</body>` tag on any page where you want the widget:
+
+```html
+<script>
+  (function(w,d){if(w.Quackback)return;w.Quackback=function(){
+  (w.Quackback.q=w.Quackback.q||[]).push(arguments)};
+  var s=d.createElement("script");s.async=true;
+  s.src="https://feedback.example.com/api/widget/sdk.js";
+  d.head.appendChild(s)})(window,document);
+
+  Quackback("init");
+</script>
+```
+
+Replace `https://feedback.example.com` with your Quackback instance URL.
+
+<Note>
+The snippet is also available in **Admin > Settings > Widget** with your instance URL pre-filled.
+</Note>
+
+The snippet creates a lightweight command queue, then loads the SDK asynchronously. Commands called before the SDK loads are replayed automatically.
+
+## Configure with init options
+
+Pass options to `Quackback("init")` to customize the widget:
+
+```html
+<script>
+  Quackback("init", {
+    placement: "left",
+    defaultBoard: "feature-requests",
+    buttonColor: "#6366f1"
+  });
+</script>
+```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `placement` | `"left"` \| `"right"` | `"right"` | Which corner the trigger button and panel appear in |
+| `defaultBoard` | string | - | Board slug to filter posts. Omit to show all boards |
+| `buttonColor` | string (hex) | Theme primary | Override the trigger button background color |
+
+## SDK commands
+
+The `Quackback()` function accepts five commands:
+
+### init
+
+Initialize the widget. Creates the trigger button. The panel is created lazily when first opened. Call this once on page load.
+
+```js
+Quackback("init");
+Quackback("init", { placement: "left", defaultBoard: "bugs" });
+```
+
+### identify
+
+Associate the current user with their votes and submissions. See [Identify users](/widget/identify-users) for the full guide.
+
+```js
+Quackback("identify", {
+  id: "user_123",
+  email: "jane@example.com",
+  name: "Jane"
+});
+```
+
+Pass `null` to clear the identity (e.g. on logout):
+
+```js
+Quackback("identify", null);
+```
+
+### open
+
+Programmatically open the widget panel.
+
+```js
+Quackback("open");
+```
+
+### close
+
+Programmatically close the widget panel.
+
+```js
+Quackback("close");
+```
+
+### destroy
+
+Remove all widget DOM elements and reset state. Use this for cleanup in single-page apps when navigating away from pages that use the widget.
+
+```js
+Quackback("destroy");
+```
+
+## Single-page app usage
+
+In React, Vue, or other SPA frameworks, initialize the widget in a layout component and clean up on unmount:
+
+```tsx
+import { useEffect } from "react";
+
+export function FeedbackWidget() {
+  useEffect(() => {
+    Quackback("init", { placement: "right" });
+    return () => Quackback("destroy");
+  }, []);
+
+  return null;
+}
+```
+
+<Tip>
+Call `Quackback("identify")` after your auth state resolves, not inside the init call. The SDK queues the identify command and replays it once the iframe is ready.
+</Tip>
+
+## Trigger button
+
+The widget renders a circular floating button (48px) with a chat bubble icon in the bottom corner of the viewport. It uses your theme's primary color by default, or the `buttonColor` you specify.
+
+The button:
+- Lifts slightly on hover with a shadow transition
+- Hides when the panel is open
+- Reappears when the panel closes
+- Adapts to light/dark mode based on your theme settings
+
+## Next steps
+
+- [Identify users](/widget/identify-users) - Attribute votes and posts to logged-in users
+- [Widget overview](/widget) - Configuration and behavior reference
