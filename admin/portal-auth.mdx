@@ -16,6 +16,34 @@ Access Portal Authentication from **Admin → Settings → Portal Authentication
 Portal Authentication controls **portal user** sign-in (customers submitting feedback). For **team member** authentication (employees managing feedback), see [Security](/admin/security).
 </Note>
 
+## Enable anonymous voting
+
+Let visitors vote on feedback posts without creating an account. Anonymous voting removes friction for users who want to show support but don't want to sign up.
+
+By default, anonymous voting is **enabled**. Find the toggle at **Admin > Settings > Portal Authentication > Anonymous Voting**. This setting applies to both the portal and the [embeddable widget](/widget).
+
+When a visitor casts their first anonymous vote, a browser session is created transparently. The visitor doesn't see a sign-in form or any interruption - their vote registers instantly.
+
+<Note>
+Anonymous votes are rate-limited to **50 votes per IP address per hour** to prevent abuse.
+</Note>
+
+### Preserve votes on sign-up
+
+When an anonymous visitor later creates an account, their votes are linked to the new account automatically. No votes are lost during the transition.
+
+### Disable anonymous voting
+
+Turn off anonymous voting when you need to require accounts for all voting - for example, if you want every voter identifiable or you need to send status update notifications to all voters.
+
+1. Go to **Admin > Settings > Portal Authentication**
+2. Toggle **Anonymous Voting** off
+3. Visitors will now see a sign-in prompt when they try to vote
+
+<Tip>
+Disabling anonymous voting doesn't delete existing anonymous votes. Those votes still count toward totals.
+</Tip>
+
 ## Authentication Methods
 
 ### Password

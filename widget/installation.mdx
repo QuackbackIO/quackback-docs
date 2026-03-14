@@ -6,7 +6,7 @@ icon: "code-bracket"
 
 # Install the widget
 
-Add the feedback widget to your site in two steps: paste the embed snippet, then optionally configure placement and identify users.
+Add the feedback widget to your site in two steps: paste the embed snippet, then call `identify()` to show the widget.
 
 ## Embed the snippet
 
@@ -21,6 +21,7 @@ Paste this snippet before the closing `</body>` tag on any page where you want t
   d.head.appendChild(s)})(window,document);
 
   Quackback("init");
+  Quackback("identify", { anonymous: true });
 </script>
 ```
 
@@ -31,6 +32,8 @@ The snippet is also available in **Admin > Settings > Widget** with your instanc
 </Note>
 
 The snippet creates a lightweight command queue, then loads the SDK asynchronously. Commands called before the SDK loads are replayed automatically.
+
+The widget stays hidden until `identify()` is called. In this example, `{ anonymous: true }` shows the widget to all visitors. To attribute feedback to logged-in users, see [Identify users](/widget/identify-users).
 
 ## Configure with init options
 
@@ -51,14 +54,27 @@ Pass options to `Quackback("init")` to customize the widget:
 | `placement` | `"left"` \| `"right"` | `"right"` | Which corner the trigger button and panel appear in |
 | `defaultBoard` | string | - | Board slug to filter posts. Omit to show all boards |
 | `buttonColor` | string (hex) | Theme primary | Override the trigger button background color |
+| `trigger` | boolean | `true` | Set to `false` to hide the default floating button |
+
+When `trigger` is `false`, no floating button appears. Use `Quackback("open")` from your own UI to open the widget programmatically:
+
+```js
+Quackback("init", { trigger: false });
+Quackback("identify", { anonymous: true });
+
+// Your own button opens the widget
+document.getElementById("feedback-btn").addEventListener("click", () => {
+  Quackback("open");
+});
+```
 
 ## SDK commands
 
-The `Quackback()` function accepts five commands:
+The `Quackback()` function accepts the following commands:
 
 ### init
 
-Initialize the widget. Creates the trigger button. The panel is created lazily when first opened. Call this once on page load.
+Initialize the widget. Call this once on page load. The widget stays hidden until `identify()` is called.
 
 ```js
 Quackback("init");
@@ -67,7 +83,9 @@ Quackback("init", { placement: "left", defaultBoard: "bugs" });
 
 ### identify
 
-Associate the current user with their votes and submissions. See [Identify users](/widget/identify-users) for the full guide.
+Show the widget and associate it with a user session. The widget trigger button appears after the first `identify()` call. See [Identify users](/widget/identify-users) for the full guide.
+
+For logged-in users:
 
 ```js
 Quackback("identify", {
@@ -77,7 +95,13 @@ Quackback("identify", {
 });
 ```
 
-Pass `null` to clear the identity (e.g. on logout):
+For anonymous visitors:
+
+```js
+Quackback("identify", { anonymous: true });
+```
+
+Pass `null` to clear the identity and hide the widget (e.g. on logout):
 
 ```js
 Quackback("identify", null);
@@ -85,11 +109,24 @@ Quackback("identify", null);
 
 ### open
 
-Programmatically open the widget panel.
+Programmatically open the widget panel. You can pass options to open to a specific view:
 
 ```js
+// Open to the home view (default)
 Quackback("open");
+
+// Open directly to the new post form
+Quackback("open", { view: "new-post" });
+
+// Open with a pre-filled title and board
+Quackback("open", { view: "new-post", title: "Bug: page crashes on save", board: "bugs" });
 ```
+
+| Option | Type | Default | Description |
+|--------|------|---------|-------------|
+| `view` | `"home"` \| `"new-post"` | `"home"` | Which view to show |
+| `title` | string | - | Pre-fill the post title (only with `view: "new-post"`) |
+| `board` | string | - | Board slug to pre-select (only with `view: "new-post"`) |
 
 ### close
 
@@ -107,25 +144,70 @@ Remove all widget DOM elements and reset state. Use this for cleanup in single-p
 Quackback("destroy");
 ```
 
+### on
+
+Subscribe to widget events. Returns an unsubscribe function. See [Listen to widget events](/widget/events) for all available events.
+
+```js
+const unsubscribe = Quackback("on", "post:created", (payload) => {
+  console.log("New post:", payload.title);
+});
+
+// Later:
+unsubscribe();
+```
+
+### off
+
+Remove event listeners. Pass a specific handler to remove it, or omit the handler to remove all listeners for that event.
+
+```js
+Quackback("off", "post:created", myHandler); // Remove specific handler
+Quackback("off", "post:created");            // Remove all handlers
+```
+
+### metadata
+
+Attach key-value context to the widget session. Metadata is stored on posts created through the widget. See [Attach session metadata](/widget/metadata) for the full guide.
+
+```js
+Quackback("metadata", { page: "/settings", app_version: "2.4.1" });
+```
+
 ## Single-page app usage
 
 In React, Vue, or other SPA frameworks, initialize the widget in a layout component and clean up on unmount:
 
 ```tsx
 import { useEffect } from "react";
+import { useAuth } from "@/hooks/use-auth";
 
 export function FeedbackWidget() {
+  const { user } = useAuth();
+
   useEffect(() => {
     Quackback("init", { placement: "right" });
     return () => Quackback("destroy");
   }, []);
+
+  useEffect(() => {
+    if (user) {
+      Quackback("identify", {
+        id: user.id,
+        email: user.email,
+        name: user.name,
+      });
+    } else {
+      Quackback("identify", { anonymous: true });
+    }
+  }, [user]);
 
   return null;
 }
 ```
 
 <Tip>
-Call `Quackback("identify")` after your auth state resolves, not inside the init call. The SDK queues the identify command and replays it once the iframe is ready.
+Call `identify()` separately from `init()`, after your auth state resolves. The SDK queues commands and replays them once the iframe is ready.
 </Tip>
 
 ## Trigger button
@@ -133,6 +215,7 @@ Call `Quackback("identify")` after your auth state resolves, not inside the init
 The widget renders a circular floating button (48px) with a chat bubble icon in the bottom corner of the viewport. It uses your theme's primary color by default, or the `buttonColor` you specify.
 
 The button:
+- Appears after `identify()` is called
 - Lifts slightly on hover with a shadow transition
 - Hides when the panel is open
 - Reappears when the panel closes

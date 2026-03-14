@@ -1,0 +1,88 @@
+---
+title: "Attach session metadata"
+description: "Send app context like page URL, version, or user plan alongside widget submissions."
+icon: "tag"
+---
+
+# Attach session metadata
+
+Give your team context about where and how feedback was submitted. Session metadata attaches key-value pairs to posts created through the widget, so you can see which page a user was on, what app version they were running, or which pricing plan they're on - without asking them.
+
+## Set metadata
+
+Call `Quackback("metadata", { ... })` with a plain object of string key-value pairs:
+
+```js
+Quackback("metadata", {
+  page: "/settings/billing",
+  app_version: "2.4.1",
+  plan: "pro",
+});
+```
+
+Metadata is **merged** on each call. You can update individual keys without clearing the rest:
+
+```js
+// Initial metadata
+Quackback("metadata", { page: "/dashboard", plan: "pro" });
+
+// User navigates — only page changes
+Quackback("metadata", { page: "/settings" });
+// Result: { page: "/settings", plan: "pro" }
+```
+
+To remove a key, set its value to `null`:
+
+```js
+Quackback("metadata", { page: null });
+// Result: { plan: "pro" }
+```
+
+All values are stored as strings. Non-string values are converted with `String()`.
+
+<Note>
+Metadata is sent to the widget iframe automatically. If you set metadata before the widget is ready, it's queued and sent once the iframe loads.
+</Note>
+
+## Where metadata appears
+
+When a user submits a post through the widget, the current metadata is stored in the post's `widget_metadata` column as JSON. You can query this directly in the database or see it via the [API](/api/overview).
+
+## SPA usage
+
+In single-page apps, update metadata on route changes to track which page the user was on when they submitted feedback:
+
+```tsx
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
+import { useAuth } from "@/hooks/use-auth";
+
+export function WidgetMetadata() {
+  const location = useLocation();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    Quackback("metadata", {
+      page: location.pathname,
+      app_version: import.meta.env.VITE_APP_VERSION,
+    });
+  }, [location.pathname]);
+
+  useEffect(() => {
+    if (user) {
+      Quackback("metadata", { plan: user.plan, company: user.company });
+    }
+  }, [user]);
+
+  return null;
+}
+```
+
+<Tip>
+Keep metadata keys short and consistent. Use snake_case for key names. Avoid storing sensitive information like passwords, tokens, or PII beyond what's needed for support context.
+</Tip>
+
+## Next steps
+
+- [Listen to widget events](/widget/events) - React to user actions in the widget
+- [Install the widget](/widget/installation) - Full SDK command reference

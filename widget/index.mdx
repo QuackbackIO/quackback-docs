@@ -12,6 +12,8 @@ Collect feedback without pulling users out of your product. The widget adds a fl
 
 The widget is a lightweight JavaScript SDK (~10 KB) that loads an iframe from your Quackback instance. It handles all rendering, authentication, and communication with your feedback portal.
 
+The widget stays hidden until you call `identify()` from your app. This gives you full control over when the widget appears and who can use it. You can identify logged-in users with their details, or pass `{ anonymous: true }` to show the widget to unauthenticated visitors.
+
 **On desktop**, the widget opens as a 400 x 600px popover panel anchored to the bottom corner of the screen.
 
 **On mobile** (under 640px), it opens as a full-height bottom sheet with a backdrop overlay.
@@ -38,7 +40,15 @@ From the widget panel, users can:
 - **Vote** on posts they care about
 - **Submit new posts** when no existing feedback matches
 
-If your site [identifies users](/widget/identify-users) to the widget, votes and submissions are attributed to them automatically. Unidentified users see a prompt to sign in to your app before voting.
+When you [identify users](/widget/identify-users), votes and submissions are attributed to them automatically. You can also show the widget to unauthenticated visitors with [anonymous identification](/widget/identify-users#anonymous-users), and control what anonymous users can do via [anonymous permissions](/admin/portal-auth#enable-anonymous-voting).
+
+## Integrate with your app
+
+The SDK goes beyond embedding - you can hook into what happens inside the widget:
+
+- **Events** - Subscribe to `post:created`, `vote`, `comment:created`, and other events to trigger analytics, show confirmations, or sync state. See [Listen to widget events](/widget/events).
+- **Metadata** - Attach session context (page URL, app version, user plan) that gets stored with every post submitted through the widget. See [Attach session metadata](/widget/metadata).
+- **Programmatic control** - Open the widget to a specific view with a pre-filled title, or hide the default trigger button and use your own UI. See the [`open` command](/widget/installation#open) and [`trigger` option](/widget/installation#configure-with-init-options).
 
 ## Configuration
 
@@ -53,4 +63,6 @@ Configure the widget from **Admin > Settings > Widget**:
 ## Next steps
 
 - [Install the widget](/widget/installation) - Add the embed snippet and SDK commands
-- [Identify users](/widget/identify-users) - Attribute votes and posts to logged-in users
+- [Identify users](/widget/identify-users) - Control who sees the widget and how
+- [Listen to widget events](/widget/events) - React to posts, votes, and comments
+- [Attach session metadata](/widget/metadata) - Send app context with feedback

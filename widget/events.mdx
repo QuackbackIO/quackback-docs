@@ -1,0 +1,194 @@
+---
+title: "Listen to widget events"
+description: "React to user actions inside the widget with event callbacks."
+icon: "bell-alert"
+---
+
+# Listen to widget events
+
+Know when users submit feedback, vote, or comment without polling. The widget SDK fires events you can subscribe to with `on()` and `off()`, so your app can trigger analytics, show confirmations, or update its own UI in response.
+
+## Subscribe to events
+
+Use `Quackback("on", eventName, handler)` to listen for events. It returns an unsubscribe function:
+
+```js
+const unsubscribe = Quackback("on", "post:created", (payload) => {
+  console.log("New post:", payload.title);
+  analytics.track("feedback_submitted", { postId: payload.id });
+});
+
+// Later, stop listening:
+unsubscribe();
+```
+
+You can also remove listeners with `off()`:
+
+```js
+function handleVote(payload) {
+  console.log(payload.voted ? "Upvoted" : "Removed vote", payload.postId);
+}
+
+// Start listening
+Quackback("on", "vote", handleVote);
+
+// Remove a specific handler
+Quackback("off", "vote", handleVote);
+
+// Remove all handlers for an event
+Quackback("off", "vote");
+```
+
+## Available events
+
+### ready
+
+Fires when the widget iframe has loaded and is ready to receive commands.
+
+```js
+Quackback("on", "ready", () => {
+  console.log("Widget is ready");
+});
+```
+
+**Payload:** `{}`
+
+### open
+
+Fires when the widget panel opens (via the trigger button or `Quackback("open")`).
+
+```js
+Quackback("on", "open", () => {
+  document.body.classList.add("widget-open");
+});
+```
+
+**Payload:** `{}`
+
+### close
+
+Fires when the widget panel closes.
+
+```js
+Quackback("on", "close", () => {
+  document.body.classList.remove("widget-open");
+});
+```
+
+**Payload:** `{}`
+
+### post:created
+
+Fires after a user submits a new post through the widget.
+
+```js
+Quackback("on", "post:created", (payload) => {
+  showToast(`Thanks for your feedback: "${payload.title}"`);
+});
+```
+
+**Payload:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `id` | string | Post ID |
+| `title` | string | Post title |
+| `board` | `{ id, name, slug }` | Board the post was created in |
+| `statusId` | string \| null | Initial status ID |
+
+### vote
+
+Fires when a user votes or removes their vote on a post.
+
+```js
+Quackback("on", "vote", (payload) => {
+  analytics.track("vote_toggled", {
+    postId: payload.postId,
+    voted: payload.voted,
+  });
+});
+```
+
+**Payload:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `postId` | string | Post ID |
+| `voted` | boolean | `true` if voted, `false` if unvoted |
+| `voteCount` | number | Updated vote count |
+
+### comment:created
+
+Fires when a user posts a comment or reply.
+
+```js
+Quackback("on", "comment:created", (payload) => {
+  console.log("Comment added to post", payload.postId);
+});
+```
+
+**Payload:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `postId` | string | Post the comment belongs to |
+| `commentId` | string | New comment ID |
+| `parentId` | string \| null | Parent comment ID for replies, `null` for root comments |
+
+### identify
+
+Fires after an `identify()` call completes (success or failure).
+
+```js
+Quackback("on", "identify", (payload) => {
+  if (payload.success) {
+    console.log("Identified:", payload.user?.name ?? "anonymous");
+  } else {
+    console.error("Identify failed:", payload.error);
+  }
+});
+```
+
+**Payload:**
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `success` | boolean | Whether identification succeeded |
+| `user` | `{ id, name, email }` \| null | User details (null for anonymous) |
+| `anonymous` | boolean | `true` if this is an anonymous session |
+| `error` | string \| undefined | Error code on failure |
+
+## SPA usage
+
+In React or other frameworks, subscribe in an effect and clean up on unmount:
+
+```tsx
+import { useEffect } from "react";
+
+export function WidgetEvents() {
+  useEffect(() => {
+    const unsubs = [
+      Quackback("on", "post:created", (p) => {
+        analytics.track("feedback_submitted", { postId: p.id });
+      }),
+      Quackback("on", "vote", (p) => {
+        analytics.track("vote", { postId: p.postId, voted: p.voted });
+      }),
+    ];
+
+    return () => unsubs.forEach((fn) => fn());
+  }, []);
+
+  return null;
+}
+```
+
+<Tip>
+Event handlers are called synchronously. If you need to do async work (API calls, etc.), wrap the body in an async IIFE or fire-and-forget promise. Errors inside handlers are caught and swallowed to prevent breaking the widget.
+</Tip>
+
+## Next steps
+
+- [Attach session metadata](/widget/metadata) - Send app context with feedback submissions
+- [Install the widget](/widget/installation) - Full SDK command reference
+- [Identify users](/widget/identify-users) - Control who sees the widget
