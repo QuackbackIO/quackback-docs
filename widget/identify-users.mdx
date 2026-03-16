@@ -82,7 +82,7 @@ Basic identification trusts the client. A technically savvy user could call `Qua
 
 ### Enable HMAC verification
 
-1. Go to **Admin > Settings > Widget**
+1. Go to **Admin → Settings → Widget**
 2. Toggle **HMAC verification** on
 3. Copy the **widget secret** (masked by default, always viewable from this page)
 4. Add the secret to your server's environment as `QUACKBACK_WIDGET_SECRET`
@@ -226,7 +226,7 @@ Never expose your widget secret in client-side code. The HMAC hash must be compu
 
 ### Rotate the secret
 
-If your widget secret is compromised, rotate it from **Admin > Settings > Widget**. Click **Regenerate** to create a new secret. Update `QUACKBACK_WIDGET_SECRET` on your server immediately - existing identify calls with the old hash will fail once verification is enabled with the new secret.
+If your widget secret is compromised, rotate it from **Admin → Settings → Widget**. Click **Regenerate** to create a new secret. Update `QUACKBACK_WIDGET_SECRET` on your server immediately - existing identify calls with the old hash will fail once verification is enabled with the new secret.
 
 ## Next steps
 

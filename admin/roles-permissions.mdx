@@ -1,0 +1,164 @@
+---
+title: "Understand roles and permissions"
+description: "Control who can do what with three distinct account types."
+icon: "shield-check"
+---
+
+# Understand roles and permissions
+
+Give your team the access they need without exposing settings to everyone. Quackback uses three account types to separate customers from teammates, and teammates from workspace owners.
+
+## Overview
+
+Every person who interacts with your Quackback workspace has one of three roles:
+
+| Role | Who they are | How they get access |
+|------|-------------|---------------------|
+| **Portal User** | Your customers and end users | Sign up through the [public portal](/admin/portal-auth) |
+| **Member** | Your teammates who manage feedback | [Invited by an admin](/admin/team) |
+| **Admin** | Workspace owners with full control | [Invited or promoted by an admin](/admin/team) |
+
+<Note>
+Team members (Members and Admins) can also use the public portal like regular Portal Users. They don't need a separate account.
+</Note>
+
+## Permission matrix
+
+This table covers every capability in Quackback, grouped by category.
+
+### Feedback
+
+| Capability | Portal User | Member | Admin |
+|------------|:-----------:|:------:|:-----:|
+| Submit feedback | ✓ | ✓ | ✓ |
+| Vote on posts | ✓ | ✓ | ✓ |
+| Comment on posts | ✓ | ✓ | ✓ |
+| Edit own posts | ✓ | ✓ | ✓ |
+| Delete own posts | ✓ | ✓ | ✓ |
+
+### Admin feedback management
+
+| Capability | Portal User | Member | Admin |
+|------------|:-----------:|:------:|:-----:|
+| View feedback inbox | — | ✓ | ✓ |
+| Change post statuses | — | ✓ | ✓ |
+| Merge duplicate posts | — | ✓ | ✓ |
+| Delete any post | — | ✓ | ✓ |
+| Assign post owner | — | ✓ | ✓ |
+| Add and remove tags | — | ✓ | ✓ |
+| Add posts to roadmap | — | ✓ | ✓ |
+| Pin official responses | — | ✓ | ✓ |
+| Post private comments | — | ✓ | ✓ |
+| Add proxy votes | — | ✓ | ✓ |
+
+### Portal
+
+| Capability | Portal User | Member | Admin |
+|------------|:-----------:|:------:|:-----:|
+| View public portal | ✓ | ✓ | ✓ |
+| View public roadmap | ✓ | ✓ | ✓ |
+| View changelog | ✓ | ✓ | ✓ |
+
+### Admin dashboard
+
+| Capability | Portal User | Member | Admin |
+|------------|:-----------:|:------:|:-----:|
+| Access admin panel | — | ✓ | ✓ |
+| View analytics | — | ✓ | ✓ |
+| View portal users list | — | ✓ | ✓ |
+| Remove portal users | — | — | ✓ |
+
+### Settings
+
+| Capability | Portal User | Member | Admin |
+|------------|:-----------:|:------:|:-----:|
+| Manage boards | — | ✓ | ✓ |
+| Manage statuses and tags | — | ✓ | ✓ |
+| Branding and customization | — | — | ✓ |
+| Portal authentication | — | — | ✓ |
+| Integrations | — | — | ✓ |
+| Team management | — | — | ✓ |
+| Security settings | — | — | ✓ |
+| API keys | — | — | ✓ |
+| Import and export data | — | — | ✓ |
+
+### Content
+
+| Capability | Portal User | Member | Admin |
+|------------|:-----------:|:------:|:-----:|
+| Create changelog entries | — | ✓ | ✓ |
+| Manage roadmaps | — | ✓ | ✓ |
+
+## Portal Users
+
+Portal Users are your customers. They interact with Quackback through the public-facing [feedback portal](/admin/portal-auth), not the admin dashboard.
+
+**How they sign up:** Portal Users create an account on your portal using the authentication methods you configure -- email OTP, OAuth, or [SSO](/auth/sso).
+
+**What they can do:**
+- Submit feedback and bug reports
+- Vote on posts they care about
+- Comment on any post
+- Edit and delete their own posts
+- Browse the public [roadmap](/admin/roadmap) and [changelog](/admin/changelog)
+
+<Tip>
+Portal Users are unlimited. Encourage your entire user base to sign up and submit feedback.
+</Tip>
+
+## Team Members
+
+Members are your teammates. They have everything Portal Users have, plus access to the admin dashboard where they triage and manage feedback.
+
+**How they join:** An admin [invites them](/admin/team) by email. They receive a link to join the workspace.
+
+**What they can do beyond Portal Users:**
+- Access the admin dashboard and [feedback inbox](/admin/inbox)
+- Change post [statuses](/admin/statuses), merge duplicates, and assign owners
+- Add [tags](/admin/tags) and manage [roadmap](/admin/roadmap) items
+- Post private internal comments
+- Create [changelog](/admin/changelog) entries
+- Manage [boards](/admin/boards), statuses, and tags
+
+Members cannot change workspace settings, manage integrations, or invite other team members.
+
+## Admins
+
+Admins have unrestricted access to everything in the workspace. They're the only ones who can configure settings that affect the entire workspace.
+
+**Capabilities exclusive to Admins:**
+- [Branding](/admin/branding) and portal customization
+- [Portal authentication](/admin/portal-auth) configuration
+- [Integration](/integrations/overview) setup and management
+- [Team management](/admin/team) -- invite, promote, demote, remove
+- [Security](/admin/security) settings
+- API key management
+- Data [import and export](/admin/import-export)
+- Removing portal users
+
+<Warning>
+Every workspace needs at least one Admin. You cannot remove or demote the last Admin.
+</Warning>
+
+## Change roles
+
+Promote or demote team members at any time from the team settings.
+
+1. Go to **Admin → Settings → Team Members**
+2. Find the member in the list
+3. Click the **...** menu on their row
+4. Select **Make admin** or **Make member**
+
+Changes take effect immediately. Demoted Admins lose access to all admin-only settings but keep their dashboard access as a Member.
+
+<Note>
+Changing a role does not affect the member's existing comments, posts, or activity history.
+</Note>
+
+To convert a team member back to a Portal User, remove them from the team entirely. They keep their portal account and can still submit feedback.
+
+## Next steps
+
+- [Manage your team](/admin/team) -- Invite members and assign roles
+- [Configure team security](/admin/security) -- Control sign-in methods
+- [Core Concepts](/getting-started/concepts) -- Review how roles fit into the bigger picture

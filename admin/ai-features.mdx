@@ -1,0 +1,122 @@
+---
+title: "Use AI-powered features"
+description: "Configure and use AI summaries, duplicate detection, and suggestions."
+icon: "sparkles"
+---
+
+# Use AI-powered features
+
+Let AI handle the repetitive work. Quackback uses large language models and vector embeddings to summarize feedback, detect duplicates, and triage incoming posts so your team can focus on decisions.
+
+## Overview
+
+Quackback includes four AI capabilities:
+
+| Feature | What it does |
+|---------|-------------|
+| **Post summaries** | Generates a short summary of user comments on a post |
+| **Duplicate detection** | Finds existing posts that match new feedback using vector similarity, full-text search, and LLM verification |
+| **AI suggestions** | Turns integration feedback (Slack, API) into actionable suggestions: merge, vote, or create |
+| **Embeddings** | Vector representations of post content, used for similarity search |
+
+All features require an OpenAI-compatible API key. Without one, AI features are inactive and the UI elements don't appear.
+
+## Configure AI
+
+Set the `OPENAI_API_KEY` [environment variable](/reference/environment-variables) to enable AI features.
+
+```bash
+OPENAI_API_KEY="sk-..."
+```
+
+To route requests through a proxy or use an OpenAI-compatible provider (Azure OpenAI, Cloudflare AI Gateway), set `OPENAI_BASE_URL`:
+
+```bash
+OPENAI_BASE_URL="https://your-endpoint.com/v1"
+```
+
+<Tip>
+Add both variables to your `.env` file and restart Quackback. AI features activate automatically once a valid key is detected.
+</Tip>
+
+## Post summaries
+
+Posts with comments display an AI-generated summary card on the detail page. Summaries help you understand what users are asking for without reading every comment.
+
+Each summary includes:
+
+- **Overview** -- 1-3 sentences capturing the core user need
+- **Key quotes** -- Notable comments from users (not team replies)
+- **Next steps** -- Suggested actions like "Investigate...", "Reproduce...", or "Respond to..."
+
+### Staleness detection
+
+Summaries detect when new comments arrive after the last generation. A **Stale** badge appears next to the timestamp, and the summary refreshes automatically in the background.
+
+<Note>
+Summaries are generated and refreshed automatically. No configuration needed -- they appear on any post with comments.
+</Note>
+
+## Duplicate detection
+
+When new feedback arrives, Quackback searches for existing posts that cover the same topic. The detection pipeline works in three stages:
+
+1. **Vector similarity** -- Compares embeddings of the new content against all existing post embeddings
+2. **Full-text search** -- Runs a keyword search to catch matches that embeddings might miss
+3. **LLM verification** -- Sends candidate pairs to the model to filter false positives and explain why posts are similar
+
+High-confidence matches appear as [merge suggestions](/admin/suggestions) in the triage view. You also see similar posts in the **Merge** section of any post detail page, with similarity scores and one-click merge.
+
+<Tip>
+Duplicate detection improves over time as your post library grows. The more posts with embeddings, the better the similarity search performs.
+</Tip>
+
+## AI suggestions
+
+Feedback from integration sources like Slack is analyzed and turned into actionable suggestions. Quackback runs each message through a quality gate, extracts themes, and matches them against existing posts.
+
+You get three types of suggestions:
+
+- **Merge posts** -- Two existing posts that appear to be duplicates
+- **Vote on post** -- Incoming feedback that matches an existing post
+- **Create post** -- Feedback that doesn't match anything, with an AI-generated title
+
+Review suggestions from **Admin → Feedback → Incoming**. Accept or dismiss each one with a single click.
+
+See [Triage AI suggestions](/admin/suggestions) for the full guide on reviewing, filtering, and managing suggestions.
+
+## Backfill embeddings
+
+Existing posts created before AI was enabled don't have embeddings. Run the backfill command to generate them:
+
+```bash
+bun run ai:backfill
+```
+
+This processes all posts that lack embeddings and generates vector representations for each one. The command is safe to run multiple times -- it skips posts that already have embeddings.
+
+<Note>
+Backfilling makes API calls for every post without an embedding. For large workspaces, this may take several minutes and consume API credits.
+</Note>
+
+## Privacy considerations
+
+When AI features are enabled, Quackback sends the following data to your configured AI provider:
+
+- **Post titles and descriptions** -- used for embedding generation and duplicate detection
+- **Comment text** -- used for summary generation (only user comments, not team replies)
+- **Candidate post pairs** -- sent for LLM verification during duplicate detection
+
+No user emails, names, or account metadata are included in AI requests. All requests go to the endpoint specified by `OPENAI_BASE_URL` (or `api.openai.com` by default).
+
+<Warning>
+If your organization has data residency requirements, use `OPENAI_BASE_URL` to route requests through a compliant proxy or provider. Review your AI provider's data retention policies before enabling AI features.
+</Warning>
+
+To disable AI features entirely, remove the `OPENAI_API_KEY` variable from your environment and restart Quackback.
+
+## Next steps
+
+- [Triage AI suggestions](/admin/suggestions) -- Review and act on AI-generated suggestions
+- [Triage feedback in the inbox](/admin/inbox) -- Filter and respond to feedback
+- [Environment variables](/reference/environment-variables) -- Full configuration reference

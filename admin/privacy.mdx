@@ -1,0 +1,148 @@
+---
+title: "Manage privacy and data handling"
+description: "Control how Quackback stores, encrypts, and processes user data."
+icon: "lock-closed"
+---
+
+# Manage privacy and data handling
+
+Quackback is self-hosted, so your feedback data stays on your infrastructure. You control storage, encryption, and what (if anything) leaves your network.
+
+## Data ownership
+
+You own all data in your Quackback instance. Nothing is sent to external servers by default. Your database, your rules.
+
+<Tip>
+Self-hosting means you are both the data controller and data processor. This simplifies compliance because no third party touches your data.
+</Tip>
+
+The only exception is AI features. When enabled, specific data is sent to OpenAI for processing. See [AI data handling](#ai-data-handling) below.
+
+## What Quackback stores
+
+| Category | Data stored |
+|----------|-------------|
+| Users | Email address, display name, avatar URL |
+| Posts | Title, content, board, status, tags |
+| Votes | User ID, post ID, timestamp |
+| Comments | Author, content, parent post |
+| Sessions | Session token, user ID, expiry |
+| Integrations | OAuth tokens, webhook URLs, channel mappings |
+
+## Encryption
+
+### Tokens and secrets
+
+Integration OAuth tokens (Slack, Discord, GitHub, Linear) are encrypted with **AES-256-GCM** using your `ENCRYPTION_KEY` environment variable.
+
+<Warning>
+Set a strong, unique `ENCRYPTION_KEY` before connecting any integrations. Changing this key later invalidates all stored tokens.
+</Warning>
+
+### Passwords
+
+Team member passwords are hashed with bcrypt. Plain-text passwords are never stored or logged.
+
+### Sessions
+
+Session tokens are cryptographically random. Sessions expire after 7 days of inactivity.
+
+## AI data handling
+
+When you enable AI features, Quackback sends data to OpenAI for processing.
+
+### What is sent
+
+| Feature | Data sent to OpenAI |
+|---------|---------------------|
+| Post summaries | Post title and content |
+| Comment summaries | Comment text for the target post |
+| Semantic search | Post content for embedding generation |
+| Auto-tagging | Post title and content |
+
+### What is not sent
+
+User emails, passwords, session data, and integration tokens are **never** sent to OpenAI.
+
+### Disable AI features
+
+Set the following environment variable to disable all AI functionality:
+
+```bash
+DISABLE_AI=true
+```
+
+<Note>
+Disabling AI removes summary generation, semantic search, and auto-tagging. Existing embeddings remain in your database but are no longer used.
+</Note>
+
+## Telemetry
+
+Quackback collects minimal anonymous telemetry to improve the product: instance ID, version number, and feature usage counts. No user data or feedback content is included.
+
+Disable telemetry with:
+
+```bash
+DISABLE_TELEMETRY=true
+```
+
+## User data deletion
+
+Delete a user and their associated data. Go to **Admin → Settings → Users** → select the user → **Delete User**.
+
+| Data | Behavior |
+|------|----------|
+| User record | Permanently deleted |
+| Posts | Attributed to "Deleted User" |
+| Votes | Removed and counts recalculated |
+| Comments | Attributed to "Deleted User" |
+| Sessions | Immediately invalidated |
+
+<Note>
+Posts and comments are preserved but anonymized. This maintains thread continuity and accurate vote history for your team.
+</Note>
+
+## Data retention
+
+| Data | Retention |
+|------|-----------|
+| Active posts | Kept until manually deleted |
+| Soft-deleted posts | Permanently removed after 30 days |
+| Sessions | Expire after 7 days of inactivity |
+| Webhook failure logs | Cleared after 7 days |
+| Audit logs | Kept indefinitely |
+
+## GDPR considerations
+
+As a self-hosted deployment, you are the **data controller**. Quackback is the software, not a data processor.
+
+Your responsibilities include:
+
+- Maintain a record of processing activities
+- Respond to data subject access requests within 30 days
+- Notify authorities of breaches within 72 hours
+- Provide a lawful basis for processing feedback data
+
+Use the [user deletion flow](#user-data-deletion) to fulfill right-to-erasure requests. For data portability, export feedback via CSV from **Admin → Settings → Boards → Export Data**. See [Import and export data](/admin/import-export) for details.
+
+<Tip>
+For GDPR subject access requests, export board data as CSV and filter by the user's email address.
+</Tip>
+
+## Security best practices
+
+Protect your instance and your users' data:
+
+- **Use TLS** — Run Quackback behind a reverse proxy (Nginx, Caddy) with HTTPS enabled
+- **Rotate secrets** — Change your `ENCRYPTION_KEY` and `SESSION_SECRET` periodically
+- **Back up regularly** — Schedule automated database backups
+- **Restrict access** — Limit dashboard access to trusted team members
+- **Keep updated** — Pull the latest Docker image for security patches
+
+See [Configure team security](/admin/security) for authentication and sign-in settings.
+
+## Next steps
+
+- [Configure team security](/admin/security) — Set up team authentication and sign-in methods
+- [Deploy with Docker](/self-hosting/docker) — Run Quackback on your own infrastructure
+- [Import and export data](/admin/import-export) — Back up or migrate your feedback data

@@ -1,0 +1,89 @@
+---
+title: "Search across feedback"
+description: "Find posts quickly using full-text search and filters."
+icon: "magnifying-glass"
+---
+
+# Search across feedback
+
+Find the exact feedback you need in seconds. Search works everywhere you manage posts, so you spend less time scrolling and more time acting on what matters.
+
+## Overview
+
+Search is available in three places:
+
+- **Admin → Feedback** - Search across all posts in your inbox
+- **Admin → Feedback → Incoming** - Search AI suggestions by title or content
+- **Portal** - Public search bar for end-users browsing your portal
+
+## Basic search
+
+Type keywords into the search bar at the top of the feedback list. Results update as you type, matching against post titles and content.
+
+1. Navigate to **Admin → Feedback**
+2. Click the search bar or press `/` to focus it
+3. Type your keywords
+4. Results filter in real time
+
+<Tip>
+Use specific terms. Searching "dark mode" returns better results than "mode" alone.
+</Tip>
+
+## How search works
+
+Search is powered by PostgreSQL full-text search. When you enter a query, Quackback matches against two fields:
+
+| Field | What it covers |
+|-------|----------------|
+| Title | The post headline |
+| Content | The full post body |
+
+Matches are ranked by relevance. Posts where the query appears in the title rank higher than content-only matches.
+
+## Search tips
+
+- Use nouns and specific terms: "CSV export" instead of "exporting things to CSV"
+- Search for exact feature names or error messages when looking for related reports
+- Try alternative phrasing if your first search returns too few results
+
+<Note>
+Search matches words in titles and content. It does not search comments, tags, or voter names.
+</Note>
+
+## Combine with filters
+
+Search works alongside every filter in the sidebar. Combine them to narrow results precisely.
+
+| Filter | Example use case |
+|--------|-----------------|
+| Status | Search "SSO" in posts marked "Planned" |
+| Board | Search "billing" within Feature Requests only |
+| Tag | Search "timeout" in posts tagged `api` |
+| Segment | Search "onboarding" among Enterprise users |
+| Date range | Search "mobile" in posts from the last 30 days |
+| Vote count | Search "notifications" with 10+ votes |
+
+Apply filters first, then search within the filtered set for the fastest results.
+
+<Tip>
+Combine search with the minimum votes filter to surface high-demand requests matching a keyword.
+</Tip>
+
+## Portal search
+
+End-users can search your public portal directly. The search bar appears at the top of the portal page.
+
+Portal search:
+
+- Searches post titles and content, just like admin search
+- Helps users find existing requests before submitting duplicates
+- Reduces duplicate feedback by surfacing relevant posts early
+
+<Note>
+Portal search only returns published posts visible to the current user. Draft or deleted posts never appear in portal results.
+</Note>
+
+## Next steps
+
+- [Triage feedback in the inbox](/admin/inbox) - Filter, sort, and respond to posts
+- [Categorize posts with tags](/admin/tags) - Label posts for better organization
