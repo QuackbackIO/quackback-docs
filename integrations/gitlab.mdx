@@ -87,6 +87,12 @@ Quackback registers a webhook with GitLab to receive issue updates. When a linke
 Status sync responds to issue `update`, `close`, and `reopen` actions. Other issue changes (label updates, assignments) are ignored.
 </Note>
 
+## On post delete
+
+When you delete a feedback post with a linked GitLab issue, you can close the issue at the same time. The delete dialog shows a checkbox for each linked issue.
+
+To pre-check this by default, enable the **On post delete** toggle in the GitLab integration settings. You can always override the default per-delete.
+
 ## Manage the Integration
 
 ### Pause

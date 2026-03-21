@@ -45,8 +45,14 @@ Integrations can respond to these events:
 | Event | Description |
 |-------|-------------|
 | `post.created` | New feedback post submitted |
-| `post.status_changed` | Post status updated (e.g., Planned > Shipped) |
+| `post.status_changed` | Post status updated (e.g., Planned → Shipped) |
+| `post.updated` | Post title or content edited |
+| `post.deleted` | Post soft-deleted |
+| `post.restored` | Deleted post restored |
+| `post.merged` | Post merged into another post |
 | `comment.created` | New comment on a post |
+| `comment.updated` | Comment edited |
+| `comment.deleted` | Comment deleted |
 
 ### Event Mappings
 
@@ -115,6 +121,25 @@ Integration OAuth tokens are:
 ### Webhook Signing
 
 Webhook deliveries are signed with HMAC-SHA256 so you can verify they came from Quackback. See [Webhooks](/integrations/webhooks) for details.
+
+## On post delete
+
+When you delete a feedback post that has linked issues in an issue tracker (Linear, GitHub, Jira, etc.), you can archive or close those issues at the same time. The delete dialog shows a checkbox for each linked issue.
+
+### Configure the default
+
+Each integration has an **On post delete** toggle in its settings page. When enabled, the checkbox for that integration's linked issues is pre-checked in the delete dialog. You can always override per-delete.
+
+### What happens
+
+- The post is soft-deleted first -- this always succeeds
+- Selected linked issues are archived or closed in parallel
+- If an external API call fails, you'll see a warning toast -- the post is still deleted
+- The link's status is updated to `archived`, `closed`, or `error` in the database
+
+<Note>
+Issue-tracking integrations archive or close linked issues -- they never hard-delete them. You can reopen or unarchive in the external tool if needed.
+</Note>
 
 ## Best Practices
 

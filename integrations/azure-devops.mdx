@@ -109,6 +109,12 @@ When status sync is configured, Quackback receives inbound webhooks from Azure D
 3. Quackback checks for a `System.State` field change in the payload
 4. If a status mapping exists for the new state, the linked feedback post's status is updated
 
+## On post delete
+
+When you delete a feedback post with a linked Azure DevOps work item, you can close the work item at the same time. The delete dialog shows a checkbox for each linked work item.
+
+To pre-check this by default, enable the **On post delete** toggle in the Azure DevOps integration settings. You can always override the default per-delete.
+
 ## Manage the integration
 
 ### Pause

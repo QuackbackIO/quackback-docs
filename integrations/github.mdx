@@ -98,6 +98,12 @@ When status sync is configured, Quackback registers a webhook with GitHub to rec
 
 The webhook listens for the `issues` event and handles the `closed` and `reopened` actions.
 
+## On post delete
+
+When you delete a feedback post with a linked GitHub issue, you can close the issue at the same time. The delete dialog shows a checkbox for each linked issue.
+
+To pre-check this by default, enable the **On post delete** toggle in the GitHub integration settings. You can always override the default per-delete.
+
 ## Manage the integration
 
 ### Pause

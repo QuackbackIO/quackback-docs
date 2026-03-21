@@ -189,6 +189,12 @@ The merge section also shows AI-detected similar posts with similarity scores. Y
 
 Posts can be soft-deleted from the edit dialog or post menu. Deleted posts are hidden from public views but preserved for 30 days.
 
+If the post has linked issues in an [integration](/integrations/overview) like Linear, GitHub, or Jira, you'll see checkboxes to archive or close those issues at the same time. Each integration's default behavior is configurable under **Admin → Settings → Integrations**.
+
+<Note>
+Linked issue archiving is best-effort. If an external API call fails, the post is still deleted and you'll see a warning. You can close the issue manually in the external tool.
+</Note>
+
 To view deleted posts, enable the **Show deleted** toggle in filters. To restore a deleted post, open it and click **Restore**.
 
 ## AI Summaries

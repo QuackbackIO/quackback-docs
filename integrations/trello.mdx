@@ -83,6 +83,12 @@ Quackback registers a webhook with Trello to receive card updates. When a linked
 Status sync responds to `updateCard` actions where a card moves between lists. Other card changes (description edits, label updates) are ignored.
 </Note>
 
+## On post delete
+
+When you delete a feedback post with a linked Trello card, you can archive the card at the same time. The delete dialog shows a checkbox for each linked card.
+
+To pre-check this by default, enable the **On post delete** toggle in the Trello integration settings. You can always override the default per-delete.
+
 ## Manage the Integration
 
 ### Pause

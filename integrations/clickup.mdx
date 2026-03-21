@@ -103,6 +103,12 @@ When status sync is configured, Quackback registers a webhook with ClickUp to re
 
 The webhook signature is verified using HMAC-SHA256 via the `X-Signature` header.
 
+## On post delete
+
+When you delete a feedback post with a linked ClickUp task, you can close the task at the same time. The delete dialog shows a checkbox for each linked task.
+
+To pre-check this by default, enable the **On post delete** toggle in the ClickUp integration settings. You can always override the default per-delete.
+
 ## Manage the integration
 
 ### Pause

@@ -107,6 +107,12 @@ When status sync is configured, Quackback registers a webhook with Jira to recei
 3. Quackback checks the changelog for a status field change
 4. If a status mapping exists for the new state, the linked feedback post's status is updated
 
+## On post delete
+
+When you delete a feedback post with a linked Jira issue, you can close the issue at the same time. The delete dialog shows a checkbox for each linked issue.
+
+To pre-check this by default, enable the **On post delete** toggle in the Jira integration settings. You can always override the default per-delete.
+
 ## Manage the integration
 
 ### Pause

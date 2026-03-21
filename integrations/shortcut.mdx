@@ -96,6 +96,12 @@ When status sync is configured, Quackback receives webhook events from Shortcut.
 
 The webhook signature is verified using HMAC-SHA256 via the `Payload-Signature` header.
 
+## On post delete
+
+When you delete a feedback post with a linked Shortcut story, you can archive the story at the same time. The delete dialog shows a checkbox for each linked story.
+
+To pre-check this by default, enable the **On post delete** toggle in the Shortcut integration settings. You can always override the default per-delete.
+
 ## Manage the integration
 
 ### Pause

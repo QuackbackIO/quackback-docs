@@ -100,6 +100,12 @@ The webhook uses Asana's handshake protocol -- the initial setup request include
 
 The webhook is filtered to only receive task change events related to section membership, keeping traffic minimal.
 
+## On post delete
+
+When you delete a feedback post with a linked Asana task, you can complete the task at the same time. The delete dialog shows a checkbox for each linked task.
+
+To pre-check this by default, enable the **On post delete** toggle in the Asana integration settings. You can always override the default per-delete.
+
 ## Manage the integration
 
 ### Pause
