@@ -126,6 +126,41 @@ Export is per-board. Select the board you want to export from the board dropdown
 - **Migration** - Move to another system
 - **Reporting** - Share with stakeholders
 
+## Migrate from Canny
+
+Quackback has a dedicated Canny importer that connects directly to your Canny account and migrates everything automatically — no CSV export needed.
+
+### What gets imported
+
+- **Posts** — titles, descriptions, and creation dates
+- **Votes** — full vote counts preserved per post
+- **Comments** — threaded discussions with author attribution
+- **Users** — names, emails, and avatars
+- **Statuses** — mapped to your Quackback workflow
+
+### Run the import
+
+1. Go to **Admin → Settings → Import**
+2. Select **Canny** as the source
+3. Follow the authentication flow to connect your Canny account
+4. Choose which Canny boards to import and map them to Quackback boards
+5. Start the import
+
+The importer runs in the background. You'll see progress and a summary when it completes.
+
+<Tip>
+Set up your Quackback boards and statuses before importing so the mapping step goes smoothly. See [Organize feedback with boards](/admin/boards) if you haven't created boards yet.
+</Tip>
+
+### CSV import from Canny
+
+If you prefer to use a CSV export instead, you can still import manually. Export from Canny and map the columns:
+
+- `title` → `title`
+- `details` → `content`
+- `status` → `status`
+- `votes` → `vote_count`
+
 ## Migrate from other platforms
 
 ### From UserVoice
@@ -136,15 +171,6 @@ Export is per-board. Select the board you want to export from the board dropdown
    - `suggestion_text` → `content`
    - `status` → `status`
    - `vote_count` → `vote_count`
-
-### From Canny
-
-1. Export from Canny
-2. Map columns:
-   - `title` → `title`
-   - `details` → `content`
-   - `status` → `status`
-   - `votes` → `vote_count`
 
 ### From Spreadsheet
 

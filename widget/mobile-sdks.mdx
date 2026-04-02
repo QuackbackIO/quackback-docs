@@ -1,0 +1,196 @@
+---
+title: "Embed the widget in mobile apps"
+description: "Add the feedback widget to iOS and Android apps with native SDKs."
+icon: "device-phone-mobile"
+---
+
+# Embed the widget in mobile apps
+
+Collect feedback directly inside your native iOS and Android apps. The mobile SDKs wrap the web widget in a native WebView with a floating trigger button, user identification, and event callbacks — the same experience as the web widget, optimized for mobile.
+
+## iOS
+
+### Requirements
+
+- iOS 15+
+- Swift 5.9+
+
+### Install with Swift Package Manager
+
+In Xcode, go to **File → Add Package Dependencies** and enter:
+
+```
+https://github.com/QuackbackIO/quackback-ios
+```
+
+Or add it to your `Package.swift`:
+
+```swift
+dependencies: [
+    .package(url: "https://github.com/QuackbackIO/quackback-ios", from: "1.0.0"),
+],
+targets: [
+    .target(name: "YourApp", dependencies: ["Quackback"]),
+]
+```
+
+### Configure and identify
+
+```swift
+import Quackback
+
+// 1. Configure once at app startup
+Quackback.configure(QuackbackConfig(
+    appId: "your-app-id",
+    baseURL: URL(string: "https://feedback.yourapp.com")!,
+    locale: "fr"  // optional — omit to auto-detect
+))
+
+// 2. Identify the current user
+Quackback.identify(userId: "user_123", email: "user@example.com", name: "Jane Smith")
+
+// 3. Show the floating trigger button
+Quackback.showTrigger()
+```
+
+### Configuration options
+
+```swift
+QuackbackConfig(
+    appId: String,                              // required
+    baseURL: URL,                               // required
+    theme: QuackbackTheme = .system,            // .light | .dark | .system
+    position: QuackbackPosition = .bottomRight, // .bottomRight | .bottomLeft
+    buttonColor: String? = nil,                 // hex e.g. "#6366F1"
+    locale: String? = nil                       // "en", "fr", "de", "es", "ar"
+)
+```
+
+### Open programmatically
+
+```swift
+Quackback.open()                         // default view
+Quackback.open(board: "feature-requests") // specific board
+```
+
+### Listen to events
+
+```swift
+let token = Quackback.on(.vote) { data in
+    print("Voted on post:", data["postId"] ?? "")
+}
+
+// Stop listening
+Quackback.off(token)
+```
+
+| Event | Payload keys | Description |
+|-------|-------------|-------------|
+| `.ready` | — | Widget loaded |
+| `.vote` | `postId`, `direction` | User voted |
+| `.submit` | `postId`, `title` | User submitted feedback |
+| `.close` | — | Panel dismissed |
+
+### Clean up
+
+```swift
+Quackback.logout()   // clear identity
+Quackback.destroy()  // tear down SDK entirely
+```
+
+---
+
+## Android
+
+### Requirements
+
+- Android API 24+
+- AndroidX
+
+### Install with Gradle
+
+Add to your module's `build.gradle.kts`:
+
+```kotlin
+dependencies {
+    implementation("com.quackback:sdk:0.1.0")
+}
+```
+
+### Configure and identify
+
+```kotlin
+// In your Application class
+class MyApp : Application() {
+    override fun onCreate() {
+        super.onCreate()
+        Quackback.configure(
+            context = this,
+            config = QuackbackConfig(
+                appId = "your-app-id",
+                baseURL = "https://feedback.yourapp.com"
+            )
+        )
+    }
+}
+
+// After user signs in
+Quackback.identify(
+    userId = "user_123",
+    email = "user@example.com",
+    name = "Jane Smith"
+)
+
+// Show the trigger button in your Activity
+Quackback.showTrigger()
+```
+
+### Configuration options
+
+| Property | Type | Default | Description |
+|----------|------|---------|-------------|
+| `appId` | `String` | required | Your Quackback app ID |
+| `baseURL` | `String` | required | Your Quackback instance URL |
+| `theme` | `QuackbackTheme` | `SYSTEM` | `LIGHT`, `DARK`, or `SYSTEM` |
+| `position` | `QuackbackPosition` | `BOTTOM_RIGHT` | `BOTTOM_RIGHT` or `BOTTOM_LEFT` |
+| `locale` | `String?` | `null` | Force a locale (`"en"`, `"fr"`, `"de"`, `"es"`, `"ar"`) |
+
+### Open programmatically
+
+```kotlin
+Quackback.open()
+Quackback.open(board = "feature-requests")
+```
+
+### Listen to events
+
+```kotlin
+val token = Quackback.on(QuackbackEvent.VOTE) { data ->
+    Log.d("Quackback", "Voted on: ${data["postId"]}")
+}
+
+Quackback.off(token)
+```
+
+### Clean up
+
+```kotlin
+Quackback.logout()   // clear identity
+Quackback.destroy()  // tear down SDK
+```
+
+---
+
+## Locale passthrough
+
+Both SDKs pass the `locale` to the widget via URL parameter and postMessage, so the widget renders in the correct language on the first frame with no flicker. If you omit `locale`, the widget auto-detects from the device language.
+
+<Note>
+The widget currently supports English, French, German, Spanish, and Arabic. If the device language isn't supported, the widget falls back to English.
+</Note>
+
+## Next steps
+
+- [Widget overview](/widget) - How the widget works and what users can do
+- [Identify users](/widget/identify-users) - HMAC verification and identity management
+- [Listen to widget events](/widget/events) - All available events and payloads

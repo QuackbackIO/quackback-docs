@@ -55,6 +55,7 @@ Pass options to `Quackback("init")` to customize the widget:
 | `defaultBoard` | string | - | Board slug to filter posts. Omit to show all boards |
 | `buttonColor` | string (hex) | Theme primary | Override the trigger button background color |
 | `trigger` | boolean | `true` | Set to `false` to hide the default floating button |
+| `locale` | string | Auto-detected | Force a locale: `"en"`, `"fr"`, `"de"`, `"es"`, or `"ar"`. Omit to auto-detect from the browser |
 
 When `trigger` is `false`, no floating button appears. Use `Quackback("open")` from your own UI to open the widget programmatically:
 
@@ -124,7 +125,7 @@ Quackback("open", { view: "new-post", title: "Bug: page crashes on save", board:
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `view` | `"home"` \| `"new-post"` | `"home"` | Which view to show |
+| `view` | `"home"` \| `"new-post"` \| `"changelog"` | `"home"` | Which view to show |
 | `title` | string | - | Pre-fill the post title (only with `view: "new-post"`) |
 | `board` | string | - | Board slug to pre-select (only with `view: "new-post"`) |
 
@@ -217,9 +218,21 @@ The widget renders a circular floating button (48px) with a chat bubble icon in 
 The button:
 - Appears after `identify()` is called
 - Lifts slightly on hover with a shadow transition
-- Hides when the panel is open
-- Reappears when the panel closes
+- Toggles between a chat icon (closed) and a close icon (open) with a smooth rotation
+- Stays visible while the panel is open on desktop so users can toggle it closed
+- Hides on mobile when the panel is open (the panel has its own close button)
 - Adapts to light/dark mode based on your theme settings
+
+## Mobile behavior
+
+On viewports under 640px, the widget switches from a desktop popover to a full-screen overlay:
+
+- The panel slides up from the bottom with a backdrop overlay
+- A close button appears inside the panel header
+- The trigger button hides while the panel is open
+- Closing the panel slides it back down and restores the trigger button
+
+This happens automatically based on viewport width — no configuration needed. If the user resizes the browser across the 640px breakpoint while the panel is open, the layout transitions smoothly.
 
 ## Next steps
 
