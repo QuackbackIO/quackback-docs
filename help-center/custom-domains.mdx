@@ -1,0 +1,80 @@
+---
+title: "Use a custom domain"
+description: "Serve your help center from your own domain instead of the default subdomain."
+icon: "globe"
+---
+
+# Use a custom domain
+
+Your help center works out of the box at `help.yourworkspace.quackback.app`. If you'd rather serve it from `help.yourcompany.com`, you can point any domain or subdomain you own at it.
+
+<Warning>
+The help center is an experimental feature. Enable the `helpCenter` flag in **Admin > Settings > Experimental** before using any help center features.
+</Warning>
+
+## Configure the domain
+
+1. Go to **Admin > Settings > Help Center**
+2. Find the **Custom Domain** field
+3. Enter your domain (e.g., `help.yourcompany.com`)
+4. Click **Save**
+
+Once saved, the system generates a CNAME target — a value like `cname.quackback.app`. Copy it. You'll need it in the next step.
+
+## Set up DNS
+
+Add a CNAME record at your DNS provider pointing your domain to the target the system generated.
+
+| Field | Value |
+|-------|-------|
+| Type | `CNAME` |
+| Name / Host | `help` (or the subdomain you chose) |
+| Value / Target | The CNAME target from the previous step |
+| TTL | 300 (or your provider's default) |
+
+**Common providers:**
+
+- **Cloudflare** — DNS > Add record. Set the proxy status to **DNS only** (grey cloud), not Proxied.
+- **Route 53** — Hosted zones > your domain > Create record. Choose CNAME, paste the target.
+- **Namecheap** — Advanced DNS > Add new record. Type: CNAME Record, Host: `help`, Value: the target.
+
+<Tip>
+Cloudflare users: keep the record in DNS-only mode. Proxied mode can interfere with SSL certificate provisioning.
+</Tip>
+
+Allow 5-10 minutes for DNS changes to propagate before checking the status.
+
+## Verify the domain
+
+The system checks your CNAME automatically after you save. The status appears in **Admin > Settings > Help Center**:
+
+| Status | Meaning |
+|--------|---------|
+| **Pending** | Verification in progress — check back in a few minutes |
+| **Verified** | Your custom domain is live |
+| **Failed** | CNAME not found or pointing to the wrong target |
+
+Once verified, your help center serves from the custom domain immediately. The default subdomain continues to redirect to your custom domain.
+
+## Troubleshoot DNS issues
+
+**CNAME not resolving** — Double-check the target value for typos. Copy it fresh from the admin settings if in doubt.
+
+**Still failing after 10 minutes** — Verify with `nslookup`:
+
+```bash
+nslookup help.yourcompany.com
+```
+
+The response should show your CNAME target in the answer. If it shows something else, your DNS record isn't set correctly.
+
+**Need to switch domains** — You can update the custom domain field at any time. The old domain stops working immediately when you save the new one.
+
+<Note>
+SSL certificates are provisioned automatically once verification succeeds. There's nothing extra to configure.
+</Note>
+
+## Next steps
+
+- [Search and discovery](/help-center/search) — How your help center finds and ranks articles
+- [Help Center API](/help-center/api) — Manage your help center programmatically

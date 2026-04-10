@@ -1,0 +1,66 @@
+---
+title: "Set up your help center"
+description: "Enable, configure, and launch a public knowledge base on your own subdomain."
+icon: "settings"
+---
+
+# Set up your help center
+
+Your users shouldn't have to file a support ticket to get a simple answer. The help center gives them a searchable, browsable knowledge base they can reach any time.
+
+<Warning>
+The help center is an experimental feature. Enable the `helpCenter` flag in **Admin > Settings > Experimental** before using any help center features.
+</Warning>
+
+## Enable the feature flag
+
+1. Go to **Admin > Settings > Experimental**
+2. Toggle **helpCenter** on
+
+A **Help Center** item appears in the admin sidebar once the flag is active.
+
+## Configure your help center
+
+Go to **Admin > Settings > Help Center** to configure the basics.
+
+| Setting | What it does |
+|---------|--------------|
+| Enable | Controls public visibility — separate from the feature flag |
+| Subdomain | Auto-generated from your workspace slug |
+
+<Note>
+The Enable toggle controls whether your help center is live to visitors. The feature flag just unlocks the admin UI — you still need to enable it here before anyone can see it.
+</Note>
+
+## Set access control
+
+Choose who can view your help center:
+
+- **Public** — Anyone can visit and browse. Search engines can index your articles.
+- **Authenticated** — Visitors must log in through your portal before they can read anything.
+
+<Tip>
+Start with public access. You can switch to authenticated later without losing any content or breaking article URLs.
+</Tip>
+
+## Customize the homepage
+
+Set the text your visitors see before they start searching.
+
+| Field | Default |
+|-------|---------|
+| Title | "How can we help?" |
+| Description | "Search our knowledge base or browse by category" |
+
+Keep your title short and your description action-oriented. Visitors read it for half a second before they start typing.
+
+## Verify it works
+
+Visit your help center URL — it looks like `help.yourworkspace.quackback.app` by default. You should see your homepage text and an empty category grid.
+
+If the page doesn't load, confirm the **Enable** toggle is on in **Admin > Settings > Help Center**.
+
+## Next steps
+
+- [Organize with categories](/help-center/categories) — Group your articles before you start writing
+- [Write and publish articles](/help-center/articles) — Create your first help article

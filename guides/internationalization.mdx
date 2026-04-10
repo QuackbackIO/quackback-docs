@@ -1,0 +1,74 @@
+---
+title: "Internationalize your widget"
+description: "Configure language and locale settings for the widget and portal across six supported languages."
+icon: "language"
+---
+
+# Internationalize your widget
+
+Reach users in their language without rebuilding anything. The widget and portal detect locale automatically and render all UI text — buttons, labels, placeholders — in the right language.
+
+## Supported locales
+
+| Code | Language | Direction |
+|------|----------|-----------|
+| `en` | English | LTR (default) |
+| `de` | German | LTR |
+| `fr` | French | LTR |
+| `es` | Spanish | LTR |
+| `ar` | Arabic | RTL |
+| `ru` | Russian | LTR |
+
+RTL layout is also enabled automatically for Hebrew (`he`), Farsi (`fa`), and Urdu (`ur`) if you pass those locale codes explicitly.
+
+## How locale is detected
+
+The widget and portal resolve locale in this order:
+
+1. **URL parameter** — `?locale=fr` overrides everything else
+2. **Widget SDK config** — `locale` set during `init` (see below)
+3. **Browser `Accept-Language` header** — used by the portal automatically
+4. **English** — the fallback if nothing matches
+
+Region subtags are stripped automatically. A browser sending `fr-FR` resolves to `fr`.
+
+## Set locale in the widget
+
+Pass `locale` when you initialize the widget:
+
+```js
+Quackback("init", {
+  locale: "de",
+});
+```
+
+All widget UI text renders in German immediately. You don't need to do anything else.
+
+<Tip>
+If your app lets users choose their language, pass their preference here. That way the widget stays consistent with the rest of your product, regardless of what the browser reports.
+</Tip>
+
+## Portal locale
+
+The portal reads the browser's `Accept-Language` header and switches language automatically. There's no admin setting to configure — it works for all supported locales out of the box.
+
+Users who set their browser to French see the portal in French. Users on Arabic get Arabic with RTL layout. No extra setup needed.
+
+## Test RTL layout
+
+Add `?rtl=1` to any URL to force right-to-left rendering:
+
+```
+https://feedback.example.com/portal?rtl=1
+```
+
+This is a development and QA tool. Use it to verify your portal looks correct in RTL before deploying to Arabic or Urdu users.
+
+<Note>
+The `?rtl=1` parameter is a debug tool only. In production, RTL activates automatically based on the detected locale. Don't use it in links you share with real users.
+</Note>
+
+## Next steps
+
+- [Install the widget](/widget/installation) — Add the widget snippet to your app
+- [Identify users](/widget/identify-users) — Pass user identity to the widget for personalized experiences
