@@ -19,6 +19,7 @@ Quackback includes an MCP server that gives AI agents direct access to your feed
 - **Merge duplicates** and manage roadmap assignments
 - **View activity logs**: see status changes, merges, and other events on a post
 - **Read resources**: boards, statuses, tags, roadmaps, and team members
+- **Manage help center**: create, update, publish, and delete articles and categories (when help center is enabled)
 
 See the [MCP Reference](/docs/mcp/reference) for the full tool and resource documentation.
 
@@ -170,8 +171,10 @@ Two authentication methods are supported:
 | `read:feedback` | Search posts and changelogs, get details, read resources |
 | `write:feedback` | Create posts, vote, comment, triage |
 | `write:changelog` | Create changelog entries |
+| `read:help-center` | Search and read help center articles and categories |
+| `write:help-center` | Create, update, publish, and delete articles and categories |
 
-API keys get all three scopes. OAuth tokens get only the scopes the user approved.
+API keys get all five scopes. OAuth tokens get only the scopes the user approved.
 
 ## Service principals
 

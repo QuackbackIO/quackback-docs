@@ -10,14 +10,29 @@ Stop guessing what's working. The analytics dashboard shows you how feedback flo
 
 ## Overview
 
-Access analytics from **Admin → Analytics** in the sidebar. The dashboard is organized into four sections:
+Access analytics from **Admin > Analytics** in the sidebar. The dashboard has a left sidebar for switching between sections and a top bar for selecting the time period.
 
-| Section | What it answers |
-|---------|-----------------|
-| Volume | How much feedback are you receiving? |
-| Status transitions | How does feedback move through your workflow? |
-| Engagement | Who's participating and how? |
-| Response time | How fast is your team responding? |
+### Sections
+
+| Section | What it shows |
+|---------|---------------|
+| Overview | Summary cards with key metrics, activity chart |
+| Feedback | Volume over time, breakdown by board and status |
+| Changelog | Changelog entry performance |
+| Users | Top contributors, active voters |
+
+### Time periods
+
+Select a preset range from the top bar:
+
+| Preset | Period |
+|--------|--------|
+| 7 days | Previous week |
+| 30 days | Previous month |
+| 90 days | Previous quarter |
+| 12 months | Previous year |
+
+Click a metric card to see its trend in the main chart area.
 
 ## Feedback volume
 
@@ -25,34 +40,15 @@ The volume chart shows how many posts your workspace receives over time. Toggle 
 
 ### Volume by board
 
-Break down volume by [board](/admin/boards) to see which areas of your product generate the most feedback. A stacked bar chart shows each board's contribution to total volume.
+Break down volume by [board](/admin/boards) to see which areas of your product generate the most feedback. A proportional bar list shows each board's share of total volume.
 
 ### Volume by status
 
-See how posts are distributed across [statuses](/admin/statuses). The status breakdown reveals bottlenecks — if most posts sit in "Open", your team may need to triage more frequently.
+A donut chart shows how posts are distributed across statuses. Hover over segments to see exact counts and percentages.
 
 <Tip>
 A growing backlog of "Open" posts is normal as your user base grows. Focus on the ratio of new posts to triaged posts rather than the absolute count.
 </Tip>
-
-## Status transitions
-
-Track how feedback moves through your workflow. The transition view shows:
-
-- **Flow diagram** — a visual path from initial status to resolution
-- **Average time in status** — how long posts spend at each stage
-- **Transition counts** — how many posts moved between specific statuses in the selected period
-
-| Metric | What it tells you |
-|--------|-------------------|
-| Avg. time in Open | How quickly your team starts triaging |
-| Avg. time in Under Review | How long evaluation takes |
-| Avg. time in Planned | How long items wait before development starts |
-| Open → Closed rate | Percentage of feedback declined without implementation |
-
-<Note>
-Status transition data starts tracking from the moment you create your workspace. Historical data before analytics was enabled is not included.
-</Note>
 
 ## User engagement
 
@@ -121,25 +117,6 @@ Choose a [user segment](/admin/segments) to see analytics for a specific custome
 <Tip>
 Combine board and segment filters for granular insights. For example, filter to "Feature Requests" board + "Enterprise" segment to see what your largest customers ask for most.
 </Tip>
-
-## Export reports
-
-Download analytics data for use in spreadsheets, presentations, or external BI tools.
-
-1. Apply the filters you want (date range, board, segment)
-2. Click **Export** in the top-right corner
-3. Choose a format:
-
-| Format | Best for |
-|--------|----------|
-| CSV | Spreadsheets and data analysis |
-| PDF | Presentations and stakeholder reports |
-
-Exports include all metrics visible on the dashboard for the selected filters and date range.
-
-<Note>
-Exports reflect the currently applied filters. Double-check your filter bar before exporting to make sure you're capturing the right data.
-</Note>
 
 ## Next steps
 

@@ -36,7 +36,7 @@ From the widget panel, users can:
 - **Browse posts** on your feedback boards, with board filter pills to narrow by category
 - **Search** for existing feedback
 - **Vote** on posts they care about
-- **Submit new posts** when no existing feedback matches, with rich text formatting and images
+- **Submit new posts** when no existing feedback matches, with rich text formatting and images (when enabled)
 - **Read your changelog** without leaving your app
 - **Browse your roadmap** to see what's planned
 
@@ -49,6 +49,7 @@ The SDK goes beyond embedding - you can hook into what happens inside the widget
 - **Events** - Subscribe to `post:created`, `vote`, `comment:created`, and other events to trigger analytics, show confirmations, or sync state. See [Listen to widget events](/widget/events).
 - **Metadata** - Attach session context (page URL, app version, user plan) that gets stored with every post submitted through the widget. See [Attach session metadata](/widget/metadata).
 - **Programmatic control** - Open the widget to a specific view with a pre-filled title, or hide the default trigger button and use your own UI. See the [`open` command](/widget/installation#open) and [`trigger` option](/widget/installation#configure-with-init-options).
+- **Help tab** — If the [help center](/admin/help-center) is enabled, users can search and browse help articles directly in the widget.
 
 ## Localization
 
@@ -73,6 +74,9 @@ Configure the widget from **Admin → Settings → Widget**:
 | **Enabled** | Turn the widget on or off globally |
 | **Position** | Bottom-right (default) or bottom-left |
 | **Default board** | Restrict the widget to a single board, or show all boards |
+| **Tabs** | Control which tabs appear: Feedback, Changelog, Help |
+| **Image uploads** | Allow users to attach images in feedback submissions |
+| **Verified identity** | Require server-signed JWT tokens for user identification |
 
 ## Next steps
 

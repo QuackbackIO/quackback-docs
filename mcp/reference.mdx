@@ -1,13 +1,13 @@
 ---
 title: "MCP Reference"
-description: "Complete reference for Quackback's MCP tools and resources. Parameters, return values, and examples for all 23 tools and 5 resources."
+description: "Complete reference for Quackback's MCP tools and resources. Parameters, return values, and examples for all 27 tools and 5 resources."
 icon: "book-open"
 order: 2
 ---
 
 # MCP Reference
 
-Quackback's MCP server exposes 23 tools and 5 resources. Tools perform actions (search, create, update, delete). Resources provide lookup data (boards, statuses, tags) that tools reference by ID.
+Quackback's MCP server exposes 27 tools and 5 resources. Tools perform actions (search, create, update, delete). Resources provide lookup data (boards, statuses, tags) that tools reference by ID.
 
 ## Tools
 
@@ -17,7 +17,7 @@ Search feedback posts or changelog entries. Returns paginated results with a cur
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `entity` | `"posts"` \| `"changelogs"` | `"posts"` | Entity type to search |
+| `entity` | `"posts"` \| `"changelogs"` \| `"articles"` | `"posts"` | Entity type to search |
 | `query` | string | - | Text search across titles and content |
 | `boardId` | string | - | Filter posts by board TypeID (ignored for changelogs) |
 | `status` | string | - | Filter by status slug. Posts: `"open"`, `"in_progress"`, etc. Changelogs: `"draft"`, `"published"`, `"scheduled"`, `"all"` |
@@ -34,6 +34,7 @@ Search feedback posts or changelog entries. Returns paginated results with a cur
 ```
 search({ query: "dark mode", sort: "votes", limit: 10 })
 search({ entity: "changelogs", status: "published" })
+search({ entity: "articles", query: "getting started", status: "published" })
 search({ boardId: "board_01abc...", status: "open" })
 search({ dateFrom: "2026-01-01", dateTo: "2026-02-01" })
 search({ showDeleted: true })
@@ -51,11 +52,13 @@ Get full details for any entity by TypeID. The entity type is auto-detected from
 
 **Scope:** `read:feedback`
 
-Returns all fields including comments (for posts), linked posts (for changelogs), tags, official response, and timestamps.
+Returns all fields including comments (for posts), linked posts (for changelogs), tags, official response, and timestamps. Also supports `helpcenter_article_*` and `helpcenter_category_*` IDs.
 
 ```
 get_details({ id: "post_01abc..." })
 get_details({ id: "changelog_01xyz..." })
+get_details({ id: "helpcenter_article_01abc..." })
+get_details({ id: "helpcenter_category_01abc..." })
 ```
 
 ---
@@ -495,6 +498,80 @@ Each activity entry includes the event type, actor name, metadata (e.g., old/new
 ```
 get_post_activity({ postId: "post_01abc..." })
 ```
+
+---
+
+## Help Center Tools
+
+<Note>
+Help center tools are only available when the help center feature flag is enabled. See [Help Center](/admin/help-center) for setup.
+</Note>
+
+### create_article
+
+Create a new help center article as a draft.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `categoryId` | string | Category TypeID to place the article in |
+| `title` | string | Article title (max 200 characters) |
+| `slug` | string | URL slug (lowercase, hyphens only) |
+| `content` | string | Article body in Markdown |
+| `description` | string | Short description for search results and SEO |
+
+**Scope:** `write:help-center` + team role
+
+Articles are created as drafts. Use `update_article` with `publish: true` to publish.
+
+---
+
+### update_article
+
+Update an existing help center article. Publish or unpublish by setting the `publish` parameter.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `articleId` | string | Article TypeID to update |
+| `title` | string | New title |
+| `content` | string | New content in Markdown |
+| `description` | string | New description |
+| `slug` | string | New URL slug |
+| `categoryId` | string | Move to a different category |
+| `publish` | boolean | `true` to publish, `false` to unpublish |
+
+**Scope:** `write:help-center` + team role
+
+All fields except `articleId` are optional. Only provided fields are updated.
+
+---
+
+### delete_article
+
+Soft-delete a help center article.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `articleId` | string | Article TypeID to delete |
+
+**Scope:** `write:help-center` + team role
+
+---
+
+### manage_category
+
+Create, update, or delete a help center category.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `action` | `"create"` \| `"update"` \| `"delete"` | Operation to perform |
+| `categoryId` | string | Category TypeID (required for update/delete) |
+| `name` | string | Category name (required for create) |
+| `slug` | string | URL slug (required for create) |
+| `description` | string | Category description |
+| `icon` | string | Icon identifier |
+| `parentId` | string | Parent category TypeID for nesting |
+
+**Scope:** `write:help-center` + team role
 
 ---
 

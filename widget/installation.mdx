@@ -55,6 +55,7 @@ Pass options to `Quackback("init")` to customize the widget:
 | `defaultBoard` | string | - | Board slug to filter posts. Omit to show all boards |
 | `buttonColor` | string (hex) | Theme primary | Override the trigger button background color |
 | `trigger` | boolean | `true` | Set to `false` to hide the default floating button |
+| `tabs` | object | All enabled | Control visible tabs: `{ feedback: true, changelog: true, help: false }` |
 | `locale` | string | Auto-detected | Force a locale: `"en"`, `"fr"`, `"de"`, `"es"`, or `"ar"`. Omit to auto-detect from the browser |
 
 When `trigger` is `false`, no floating button appears. Use `Quackback("open")` from your own UI to open the widget programmatically:
@@ -86,7 +87,15 @@ Quackback("init", { placement: "left", defaultBoard: "bugs" });
 
 Show the widget and associate it with a user session. The widget trigger button appears after the first `identify()` call. See [Identify users](/widget/identify-users) for the full guide.
 
-For logged-in users:
+For logged-in users, with verified identity (recommended):
+
+```js
+// Fetch ssoToken from your server (see Identify Users guide)
+const { ssoToken } = await fetch("/api/widget-token", { method: "POST" }).then(r => r.json());
+Quackback("identify", { ssoToken });
+```
+
+Without verified identity:
 
 ```js
 Quackback("identify", {
@@ -193,11 +202,11 @@ export function FeedbackWidget() {
 
   useEffect(() => {
     if (user) {
-      Quackback("identify", {
-        id: user.id,
-        email: user.email,
-        name: user.name,
-      });
+      fetch("/api/widget-token", { method: "POST" })
+        .then((res) => res.json())
+        .then(({ ssoToken }) => {
+          Quackback("identify", { ssoToken });
+        });
     } else {
       Quackback("identify", { anonymous: true });
     }
