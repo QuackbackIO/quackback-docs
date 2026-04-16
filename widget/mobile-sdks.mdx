@@ -48,10 +48,16 @@ Quackback.configure(QuackbackConfig(
 
 // 2. Identify the current user
 Quackback.identify(userId: "user_123", email: "user@example.com", name: "Jane Smith")
+// or, with a server-signed token (recommended for production):
+Quackback.identify(ssoToken: fetchedSsoToken)
+// or, for unauthenticated visitors:
+Quackback.identifyAnonymous()
 
 // 3. Show the floating trigger button
 Quackback.showTrigger()
 ```
+
+See [Identify users](/widget/identify-users) for when to use which option.
 
 ### Configuration options
 
@@ -140,6 +146,10 @@ Quackback.identify(
     email = "user@example.com",
     name = "Jane Smith"
 )
+// or, with a server-signed token (recommended for production):
+Quackback.identify(ssoToken = fetchedSsoToken)
+// or, for unauthenticated visitors:
+Quackback.identifyAnonymous()
 
 // Show the trigger button in your Activity
 Quackback.showTrigger()

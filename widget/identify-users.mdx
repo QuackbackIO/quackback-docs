@@ -4,7 +4,15 @@ description: Connect widget activity to real users so feedback is always attribu
 icon: "finger-print"
 ---
 
-Identifying users lets you tie every feedback submission, vote, and comment to a real account in your system. You get accurate attribution in the dashboard, and users see their own history when they open the widget.
+Linking widget activity to real users gives you accurate attribution in the dashboard, and lets users see their own votes, comments, and submissions when they open the widget.
+
+There are three ways to identify a user:
+
+- **With their details** — the simplest option. Pass `id`, `email`, and `name` directly from the client. Works out of the box.
+- **With a signed token** — sign a short-lived JWT on your server and pass it as `ssoToken`. Use this in production so nobody can impersonate another account.
+- **Anonymously** — don't identify them yet. The widget stays visible, and asks for an email inline the first time they post.
+
+You can mix and match — for example, identify signed-in users with an `ssoToken` and everyone else anonymously.
 
 ---
 
@@ -27,23 +35,23 @@ Quackback("identify", {
 | `name`  | string | No       | Display name shown in the dashboard    |
 
 <Note>
-If you have **Verified Identity** enabled (recommended for production), skip this unverified call and use `ssoToken` instead — see the section below.
+Unverified calls trust the client, so a determined user could spoof someone else's identity. For production, turn on **Verified identity only** and use `ssoToken` — see below.
 </Note>
 
 ---
 
-## Identify anonymous users
+## Anonymous sessions
 
-Pass `{ anonymous: true }` for users who aren't logged in. The widget assigns them a temporary ID so their session is still tracked.
+For visitors who aren't signed in, start with:
 
 ```js
 Quackback("identify", { anonymous: true });
 ```
 
-Anonymous activity merges into the user's account automatically when they log in and you call `identify` with their real ID.
+The widget stays visible, and the session is created the first time the user does something — a vote, comment, or post. If they later submit their email or you pass an `ssoToken`, everything they did anonymously moves across automatically.
 
 <Tip>
-A common pattern is to identify logged-in users with their details and fall back to anonymous for everyone else. That way the widget is always visible, but logged-in users get their feedback attributed.
+A common pattern: identify signed-in users with their details (or an `ssoToken`), and fall back to anonymous for everyone else. That way the widget is always visible, and feedback gets attributed as soon as you know who someone is.
 </Tip>
 
 ---
@@ -62,9 +70,9 @@ If the widget panel is open, it closes automatically before the trigger hides.
 
 ## Verified identity with JWT
 
-Unverified `identify` calls trust the client. A determined user could call `Quackback("identify", { id: "someone-elses-id", ... })` to spoof another account. Verified identity prevents this by requiring a server-signed JWT.
+Unverified calls and inline email capture both trust the client, so a determined user could post feedback as a different account. A signed token removes that possibility — Quackback only accepts identities your backend has vouched for.
 
-Enable it in **Admin > Settings > Widget**, then copy the **Widget Secret**.
+Turn on **Verified identity only** in **Admin → Settings → Widget** and copy the **Widget Secret**. Once it's on, unverified `identify` calls and the inline email prompt are both rejected — only a valid token from your server will identify a user.
 
 <Warning>
 Never expose the widget secret in client-side code. Sign tokens on your server only.
@@ -224,27 +232,41 @@ Fetch a fresh token on each login or page load. Tokens expire quickly by design 
 
 ---
 
-## Custom attributes in the JWT
+## Custom attributes
 
-Add any extra claims to the JWT payload to attach custom attributes to the user. Attributes must be configured in **Admin > Settings > User Attributes** before they appear in the dashboard.
+You can pass extra fields like `plan`, `company`, or `mrr` alongside the standard ones and they'll show up on the user's profile. This works for both unverified calls and signed tokens.
+
+With an unverified `identify` call:
 
 ```js
-// Server-side — add custom claims alongside the standard ones
+Quackback("identify", {
+  id: "user_123",
+  email: "ada@example.com",
+  name: "Ada Lovelace",
+  plan: "pro",
+  company: "Acme Corp",
+  mrr: 299,
+});
+```
+
+Or as extra claims inside a signed JWT:
+
+```js
+// Server-side
 const payload = {
   sub: user.id,
   email: user.email,
   name: user.name,
-  // Custom attributes
   plan: "pro",
   company: "Acme Corp",
   mrr: 299,
 };
 ```
 
-Custom claims are validated against your configured user attributes. Claims that don't match a configured attribute are ignored, not rejected.
+Attributes are validated against the ones you've configured. Anything that doesn't match a configured attribute is ignored, not rejected — so you can pass extra data without worrying about breaking the call.
 
 <Note>
-Set up your attributes in **Admin > Settings > User Attributes** first so nothing gets silently dropped.
+Set up your attributes in **Admin → Settings → User Attributes** first so nothing gets silently dropped.
 </Note>
 
 ---
@@ -253,7 +275,7 @@ Set up your attributes in **Admin > Settings > User Attributes** first so nothin
 
 If your secret is ever exposed, rotate it immediately:
 
-1. Go to **Admin > Settings > Widget** and click **Regenerate Secret**.
+1. Go to **Admin → Settings → Widget** and click **Regenerate Secret**.
 2. Deploy updated server-side token signing with the new secret.
 3. The old secret is invalidated instantly — users will see an auth error until your server is updated.
 
