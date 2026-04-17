@@ -14,7 +14,7 @@ The widget is a lightweight JavaScript SDK (~10 KB) that loads an iframe from yo
 
 The widget appears as soon as `Quackback("init")` runs — visible to every visitor, anonymous by default. Call `identify` once you know who the user is so their votes and posts are attributed to their account. Pass their details, or a server-signed `ssoToken` in production.
 
-**On desktop**, the widget opens as a 400 x 600px popover panel anchored to the bottom corner of the screen. The trigger button stays visible and toggles between open and close states.
+**On desktop**, the widget opens as a 400 x 600px popover panel anchored to the bottom corner of the screen. The launcher button stays visible and toggles between open and close states.
 
 **On mobile** (under 640px), it opens as a full-screen overlay that slides up from the bottom with a close button and backdrop. The transition between desktop and mobile layouts happens automatically based on viewport width.
 
@@ -48,7 +48,7 @@ The SDK goes beyond embedding - you can hook into what happens inside the widget
 
 - **Events** - Subscribe to `post:created`, `vote`, `comment:created`, and other events to trigger analytics, show confirmations, or sync state. See [Listen to widget events](/widget/events).
 - **Metadata** - Attach session context (page URL, app version, user plan) that gets stored with every post submitted through the widget. See [Attach session metadata](/widget/metadata).
-- **Programmatic control** - Open the widget to a specific view with a pre-filled title, or hide the default trigger button and use your own UI. See the [`open` command](/widget/installation#open) and [`trigger` option](/widget/installation#configure-with-init-options).
+- **Programmatic control** - Open the widget to a specific view with a pre-filled title, or hide the default launcher button and use your own UI. See the [`open` command](/widget/installation#open) and [`launcher` option](/widget/installation#configure-with-init-options).
 - **Help tab** — If the [help center](/admin/help-center) is enabled, users can search and browse help articles directly in the widget.
 
 ## Localization

@@ -6,7 +6,7 @@ icon: "device-phone-mobile"
 
 # Embed the widget in mobile apps
 
-Collect feedback directly inside your native iOS and Android apps. The mobile SDKs wrap the web widget in a native WebView with a floating trigger button, user identification, and event callbacks — the same experience as the web widget, optimized for mobile.
+Collect feedback directly inside your native iOS and Android apps. The mobile SDKs wrap the web widget in a native WebView with a floating launcher button, user identification, and event callbacks — the same experience as the web widget, optimized for mobile.
 
 ## iOS
 
@@ -53,8 +53,8 @@ Quackback.identify(ssoToken: fetchedSsoToken)
 // or, for unauthenticated visitors:
 Quackback.identify()
 
-// 3. Show the floating trigger button
-Quackback.showTrigger()
+// 3. Show the floating launcher button
+Quackback.showLauncher()
 ```
 
 See [Identify users](/widget/identify-users) for when to use which option.
@@ -169,8 +169,8 @@ Quackback.configure(
 )
 // Also accepts Identity.SsoToken("..."). Omit the `identity` parameter for anonymous sessions.
 
-// Show the trigger button in your Activity
-Quackback.showTrigger()
+// Show the launcher button in your Activity
+Quackback.showLauncher()
 ```
 
 ### Configuration options

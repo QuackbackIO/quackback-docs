@@ -50,18 +50,18 @@ Pass options to `Quackback("init")` to customize the widget:
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `placement` | `"left"` \| `"right"` | `"right"` | Which corner the trigger button and panel appear in |
+| `placement` | `"left"` \| `"right"` | `"right"` | Which corner the launcher button and panel appear in |
 | `defaultBoard` | string | - | Board slug to filter posts. Omit to show all boards |
-| `buttonColor` | string (hex) | Theme primary | Override the trigger button background color |
-| `trigger` | boolean | `true` | Set to `false` to hide the default floating button |
+| `buttonColor` | string (hex) | Theme primary | Override the launcher button background color |
+| `launcher` | boolean | `true` | Set to `false` to hide the default floating button |
 | `tabs` | object | All enabled | Control visible tabs: `{ feedback: true, changelog: true, help: false }` |
 | `locale` | string | Auto-detected | Force a locale: `"en"`, `"fr"`, `"de"`, `"es"`, or `"ar"`. Omit to auto-detect from the browser |
 | `identity` | object | - | Bundle identity at init time. Accepts the same payloads as [`identify`](#identify) — `{ id, email, name }` or `{ ssoToken }`. Omit for anonymous. Equivalent to calling `init` and then `identify` back-to-back |
 
-When `trigger` is `false`, no floating button appears. Use `Quackback("open")` from your own UI to open the widget programmatically:
+When `launcher` is `false`, no floating button appears. Use `Quackback("open")` from your own UI to open the widget programmatically:
 
 ```js
-Quackback("init", { trigger: false });
+Quackback("init", { launcher: false });
 
 // Your own button opens the widget
 document.getElementById("feedback-btn").addEventListener("click", () => {
@@ -220,7 +220,7 @@ export function FeedbackWidget() {
 Call `identify()` separately from `init()`, after your auth state resolves. The SDK queues commands and replays them once the iframe is ready.
 </Tip>
 
-## Trigger button
+## Launcher button
 
 The widget renders a circular floating button (48px) with a chat bubble icon in the bottom corner of the viewport. It uses your theme's primary color by default, or the `buttonColor` you specify.
 
@@ -238,8 +238,8 @@ On viewports under 640px, the widget switches from a desktop popover to a full-s
 
 - The panel slides up from the bottom with a backdrop overlay
 - A close button appears inside the panel header
-- The trigger button hides while the panel is open
-- Closing the panel slides it back down and restores the trigger button
+- The launcher button hides while the panel is open
+- Closing the panel slides it back down and restores the launcher button
 
 This happens automatically based on viewport width — no configuration needed. If the user resizes the browser across the 640px breakpoint while the panel is open, the layout transitions smoothly.
 
