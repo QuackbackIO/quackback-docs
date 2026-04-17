@@ -6,13 +6,14 @@ icon: "finger-print"
 
 Linking widget activity to real users gives you accurate attribution in the dashboard, and lets users see their own votes, comments, and submissions when they open the widget.
 
-There are three ways to identify a user:
+The widget loads anonymously as soon as `Quackback("init")` runs — no identify call is required to make it appear. You call `identify` when you know *who* the user is, so their activity is attributed to their account instead of to an anonymous session.
 
-- **With their details** — the simplest option. Pass `id`, `email`, and `name` directly from the client. Works out of the box.
+Two ways to identify a known user:
+
+- **With their details** — the simplest option. Pass `id`, `email`, and `name` directly from the client.
 - **With a signed token** — sign a short-lived JWT on your server and pass it as `ssoToken`. Use this in production so nobody can impersonate another account.
-- **Anonymously** — call `Quackback("identify")` with no arguments. The widget appears, and asks for an email inline the first time the user posts.
 
-You can mix and match — for example, identify signed-in users with an `ssoToken` and everyone else anonymously.
+If you never call identify, the widget stays anonymous and prompts for an email inline the first time the user posts.
 
 ---
 
@@ -42,29 +43,54 @@ Unverified calls trust the client, so a determined user could spoof someone else
 
 ## Anonymous sessions
 
-For visitors who aren't signed in, call `identify` with no arguments:
+Do nothing. The widget loads anonymously after `init`. If the visitor submits feedback or votes, a session is created on the fly and the widget prompts for an email inline at submission time.
 
 ```js
-Quackback("identify");
+Quackback("init", { placement: "right" });
+// That's it — no identify call needed for anonymous visitors.
 ```
 
-The widget appears, and the session is created the first time the user does something — a vote, comment, or post. If they later submit their email or you pass an `ssoToken`, everything they did anonymously moves across automatically.
+If they later log in and you call `identify`, everything they did anonymously moves across to their account automatically.
 
-<Tip>
-A common pattern: identify signed-in users with their details (or an `ssoToken`), and fall back to anonymous for everyone else. That way the widget is always visible, and feedback gets attributed as soon as you know who someone is.
-</Tip>
+---
+
+## Bundle identity into init
+
+If you already know the user when the widget loads, pass identity directly to `init` and skip the separate `identify` call:
+
+```js
+Quackback("init", {
+  placement: "right",
+  identity: { id: "user_123", email: "ada@example.com", name: "Ada" },
+});
+```
+
+The `identity` key accepts the same shapes as the standalone call — `{ id, email, name }` or `{ ssoToken }`. Omit it entirely for anonymous, or if you'll call `Quackback("identify", ...)` later (for example, once async auth resolves).
+
+---
+
+## Switch users mid-session
+
+Call `identify` again with a different user any time the signed-in user changes — account switching, post-login transitions, or profile updates. The widget picks up the new identity and subsequent activity is attributed correctly.
+
+```js
+// User A signs out, User B signs in:
+Quackback("identify", { id: "user_B", email: "bob@example.com", name: "Bob" });
+```
+
+No need to call `logout` in between — the new identify call replaces the previous session.
 
 ---
 
 ## Clear identity on logout
 
-Call `logout` to reset the widget to an unidentified state. Put this in your logout handler.
+Call `logout` to clear the current identity. The widget stays visible — just in an anonymous state, same as it started. Put this in your logout handler.
 
 ```js
 Quackback("logout");
 ```
 
-If the widget panel is open, it closes automatically before the trigger hides.
+If the widget panel is open, it closes automatically.
 
 ---
 

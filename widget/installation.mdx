@@ -6,7 +6,7 @@ icon: "code-bracket"
 
 # Install the widget
 
-Add the feedback widget to your site in two steps: paste the embed snippet, then call `identify()` to show the widget.
+Add the feedback widget to your site in one step: paste the embed snippet. The widget appears immediately in anonymous mode. Call `identify` later to attribute activity to a specific user.
 
 ## Embed the snippet
 
@@ -21,7 +21,6 @@ Paste this snippet before the closing `</body>` tag on any page where you want t
   d.head.appendChild(s)})(window,document);
 
   Quackback("init");
-  Quackback("identify");
 </script>
 ```
 
@@ -33,7 +32,7 @@ The snippet is also available in **Admin → Settings → Widget** with your ins
 
 The snippet creates a lightweight command queue, then loads the SDK asynchronously. Commands called before the SDK loads are replayed automatically.
 
-The widget stays hidden until `identify()` is called. With no arguments, it starts an anonymous session so the widget appears for every visitor. To attribute feedback to logged-in users, see [Identify users](/widget/identify-users).
+The widget appears for every visitor the moment the snippet loads. To attribute feedback to logged-in users, see [Identify users](/widget/identify-users).
 
 ## Configure with init options
 
@@ -57,12 +56,12 @@ Pass options to `Quackback("init")` to customize the widget:
 | `trigger` | boolean | `true` | Set to `false` to hide the default floating button |
 | `tabs` | object | All enabled | Control visible tabs: `{ feedback: true, changelog: true, help: false }` |
 | `locale` | string | Auto-detected | Force a locale: `"en"`, `"fr"`, `"de"`, `"es"`, or `"ar"`. Omit to auto-detect from the browser |
+| `identity` | object | - | Bundle identity at init time. Accepts the same payloads as [`identify`](#identify) — `{ id, email, name }`, `{ ssoToken }`, or `{ anonymous: true }`. Equivalent to calling `init` and then `identify` back-to-back |
 
 When `trigger` is `false`, no floating button appears. Use `Quackback("open")` from your own UI to open the widget programmatically:
 
 ```js
 Quackback("init", { trigger: false });
-Quackback("identify");
 
 // Your own button opens the widget
 document.getElementById("feedback-btn").addEventListener("click", () => {
@@ -76,16 +75,21 @@ The `Quackback()` function accepts the following commands:
 
 ### init
 
-Initialize the widget. Call this once on page load. The widget stays hidden until `identify()` is called.
+Initialize the widget. Call this once on page load. The widget appears immediately in anonymous mode. If you already know who the user is, pass an `identity` key to skip a separate `identify` call:
 
 ```js
 Quackback("init");
 Quackback("init", { placement: "left", defaultBoard: "bugs" });
+
+// Init + identify in one call
+Quackback("init", {
+  identity: { id: "user_123", email: "jane@example.com", name: "Jane" },
+});
 ```
 
 ### identify
 
-Show the widget and associate it with a user session. The widget trigger button appears after the first `identify()` call. See [Identify users](/widget/identify-users) for the full guide.
+Associate the current widget session with a user. Call once you know who the user is — you don't need to call it for anonymous visitors. See [Identify users](/widget/identify-users) for the full guide.
 
 For signed-in users, pass their details:
 
@@ -104,15 +108,11 @@ const { ssoToken } = await fetch("/api/widget-token", { method: "POST" }).then(r
 Quackback("identify", { ssoToken });
 ```
 
-For unauthenticated visitors, call with no arguments:
-
-```js
-Quackback("identify");
-```
+Calling `identify` again with different details switches the active user.
 
 ### logout
 
-Clear the current identity and hide the widget. Call this from your logout handler.
+Clear the current identity. The widget stays visible in anonymous mode. Call from your logout handler.
 
 ```js
 Quackback("logout");
@@ -208,9 +208,8 @@ export function FeedbackWidget() {
         .then(({ ssoToken }) => {
           Quackback("identify", { ssoToken });
         });
-    } else {
-      Quackback("identify");
     }
+    // No else — the widget is already anonymous after init.
   }, [user]);
 
   return null;
@@ -226,7 +225,7 @@ Call `identify()` separately from `init()`, after your auth state resolves. The 
 The widget renders a circular floating button (48px) with a chat bubble icon in the bottom corner of the viewport. It uses your theme's primary color by default, or the `buttonColor` you specify.
 
 The button:
-- Appears after `identify()` is called
+- Appears immediately after `Quackback("init")` runs
 - Lifts slightly on hover with a shadow transition
 - Toggles between a chat icon (closed) and a close icon (open) with a smooth rotation
 - Stays visible while the panel is open on desktop so users can toggle it closed

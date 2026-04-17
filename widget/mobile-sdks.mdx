@@ -59,6 +59,16 @@ Quackback.showTrigger()
 
 See [Identify users](/widget/identify-users) for when to use which option.
 
+If you already know the user at app startup, you can bundle identity directly into `configure`:
+
+```swift
+Quackback.configure(
+    QuackbackConfig(appId: "your-app-id", baseURL: URL(string: "https://feedback.yourapp.com")!),
+    identity: .user(id: "user_123", email: "user@example.com", name: "Jane Smith")
+)
+// Also accepts .ssoToken("...") and .anonymous
+```
+
 ### Configuration options
 
 ```swift
@@ -150,6 +160,14 @@ Quackback.identify(
 Quackback.identify(ssoToken = fetchedSsoToken)
 // or, for unauthenticated visitors:
 Quackback.identify()
+
+// If you already know the user at app startup, bundle identity into configure:
+Quackback.configure(
+    context = this,
+    config = QuackbackConfig(appId = "your-app-id", baseURL = "https://feedback.yourapp.com"),
+    identity = Identity.User(id = "user_123", email = "user@example.com", name = "Jane Smith")
+)
+// Also accepts Identity.SsoToken("...") and Identity.Anonymous
 
 // Show the trigger button in your Activity
 Quackback.showTrigger()
