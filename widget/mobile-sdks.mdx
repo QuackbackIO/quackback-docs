@@ -66,7 +66,7 @@ Quackback.configure(
     QuackbackConfig(appId: "your-app-id", baseURL: URL(string: "https://feedback.yourapp.com")!),
     identity: .user(id: "user_123", email: "user@example.com", name: "Jane Smith")
 )
-// Also accepts .ssoToken("...") and .anonymous
+// Also accepts .ssoToken("..."). Omit the `identity` parameter for anonymous sessions.
 ```
 
 ### Configuration options
@@ -167,7 +167,7 @@ Quackback.configure(
     config = QuackbackConfig(appId = "your-app-id", baseURL = "https://feedback.yourapp.com"),
     identity = Identity.User(id = "user_123", email = "user@example.com", name = "Jane Smith")
 )
-// Also accepts Identity.SsoToken("...") and Identity.Anonymous
+// Also accepts Identity.SsoToken("..."). Omit the `identity` parameter for anonymous sessions.
 
 // Show the trigger button in your Activity
 Quackback.showTrigger()

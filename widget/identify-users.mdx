@@ -50,7 +50,7 @@ Quackback("init", { placement: "right" });
 // That's it — no identify call needed for anonymous visitors.
 ```
 
-If they later log in and you call `identify`, everything they did anonymously moves across to their account automatically.
+Anonymous is the default state; there's no `{ anonymous: true }` flag to pass. If they later log in and you call `identify`, everything they did anonymously moves across to their account automatically.
 
 ---
 

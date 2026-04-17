@@ -56,7 +56,7 @@ Pass options to `Quackback("init")` to customize the widget:
 | `trigger` | boolean | `true` | Set to `false` to hide the default floating button |
 | `tabs` | object | All enabled | Control visible tabs: `{ feedback: true, changelog: true, help: false }` |
 | `locale` | string | Auto-detected | Force a locale: `"en"`, `"fr"`, `"de"`, `"es"`, or `"ar"`. Omit to auto-detect from the browser |
-| `identity` | object | - | Bundle identity at init time. Accepts the same payloads as [`identify`](#identify) — `{ id, email, name }`, `{ ssoToken }`, or `{ anonymous: true }`. Equivalent to calling `init` and then `identify` back-to-back |
+| `identity` | object | - | Bundle identity at init time. Accepts the same payloads as [`identify`](#identify) — `{ id, email, name }` or `{ ssoToken }`. Omit for anonymous. Equivalent to calling `init` and then `identify` back-to-back |
 
 When `trigger` is `false`, no floating button appears. Use `Quackback("open")` from your own UI to open the widget programmatically:
 
