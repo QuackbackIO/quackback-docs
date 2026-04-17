@@ -10,7 +10,7 @@ There are three ways to identify a user:
 
 - **With their details** — the simplest option. Pass `id`, `email`, and `name` directly from the client. Works out of the box.
 - **With a signed token** — sign a short-lived JWT on your server and pass it as `ssoToken`. Use this in production so nobody can impersonate another account.
-- **Anonymously** — don't identify them yet. The widget stays visible, and asks for an email inline the first time they post.
+- **Anonymously** — call `Quackback("identify")` with no arguments. The widget appears, and asks for an email inline the first time the user posts.
 
 You can mix and match — for example, identify signed-in users with an `ssoToken` and everyone else anonymously.
 
@@ -42,13 +42,13 @@ Unverified calls trust the client, so a determined user could spoof someone else
 
 ## Anonymous sessions
 
-For visitors who aren't signed in, start with:
+For visitors who aren't signed in, call `identify` with no arguments:
 
 ```js
-Quackback("identify", { anonymous: true });
+Quackback("identify");
 ```
 
-The widget stays visible, and the session is created the first time the user does something — a vote, comment, or post. If they later submit their email or you pass an `ssoToken`, everything they did anonymously moves across automatically.
+The widget appears, and the session is created the first time the user does something — a vote, comment, or post. If they later submit their email or you pass an `ssoToken`, everything they did anonymously moves across automatically.
 
 <Tip>
 A common pattern: identify signed-in users with their details (or an `ssoToken`), and fall back to anonymous for everyone else. That way the widget is always visible, and feedback gets attributed as soon as you know who someone is.
@@ -58,10 +58,10 @@ A common pattern: identify signed-in users with their details (or an `ssoToken`)
 
 ## Clear identity on logout
 
-Pass `null` to reset the widget to an unidentified state. Call this in your logout handler.
+Call `logout` to reset the widget to an unidentified state. Put this in your logout handler.
 
 ```js
-Quackback("identify", null);
+Quackback("logout");
 ```
 
 If the widget panel is open, it closes automatically before the trigger hides.

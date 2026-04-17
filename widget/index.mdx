@@ -12,7 +12,7 @@ Collect feedback without pulling users out of your product. The widget adds a fl
 
 The widget is a lightweight JavaScript SDK (~10 KB) that loads an iframe from your Quackback instance. It handles all rendering, authentication, and communication with your feedback portal.
 
-The widget stays hidden until you call `identify()` from your app, so you decide when it appears and who can use it. Pass a user's details (or a server-signed `ssoToken` in production) to attribute everything to their account, or pass `{ anonymous: true }` so unauthenticated visitors can still browse and vote.
+The widget stays hidden until you call `identify()` from your app, so you decide when it appears and who can use it. Pass a user's details (or a server-signed `ssoToken` in production) to attribute everything to their account, or call `identify()` with no arguments so unauthenticated visitors can still browse and vote.
 
 **On desktop**, the widget opens as a 400 x 600px popover panel anchored to the bottom corner of the screen. The trigger button stays visible and toggles between open and close states.
 

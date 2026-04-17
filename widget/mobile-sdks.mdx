@@ -51,7 +51,7 @@ Quackback.identify(userId: "user_123", email: "user@example.com", name: "Jane Sm
 // or, with a server-signed token (recommended for production):
 Quackback.identify(ssoToken: fetchedSsoToken)
 // or, for unauthenticated visitors:
-Quackback.identifyAnonymous()
+Quackback.identify()
 
 // 3. Show the floating trigger button
 Quackback.showTrigger()
@@ -149,7 +149,7 @@ Quackback.identify(
 // or, with a server-signed token (recommended for production):
 Quackback.identify(ssoToken = fetchedSsoToken)
 // or, for unauthenticated visitors:
-Quackback.identifyAnonymous()
+Quackback.identify()
 
 // Show the trigger button in your Activity
 Quackback.showTrigger()

@@ -21,7 +21,7 @@ Paste this snippet before the closing `</body>` tag on any page where you want t
   d.head.appendChild(s)})(window,document);
 
   Quackback("init");
-  Quackback("identify", { anonymous: true });
+  Quackback("identify");
 </script>
 ```
 
@@ -33,7 +33,7 @@ The snippet is also available in **Admin → Settings → Widget** with your ins
 
 The snippet creates a lightweight command queue, then loads the SDK asynchronously. Commands called before the SDK loads are replayed automatically.
 
-The widget stays hidden until `identify()` is called. In this example, `{ anonymous: true }` shows the widget to all visitors. To attribute feedback to logged-in users, see [Identify users](/widget/identify-users).
+The widget stays hidden until `identify()` is called. With no arguments, it starts an anonymous session so the widget appears for every visitor. To attribute feedback to logged-in users, see [Identify users](/widget/identify-users).
 
 ## Configure with init options
 
@@ -62,7 +62,7 @@ When `trigger` is `false`, no floating button appears. Use `Quackback("open")` f
 
 ```js
 Quackback("init", { trigger: false });
-Quackback("identify", { anonymous: true });
+Quackback("identify");
 
 // Your own button opens the widget
 document.getElementById("feedback-btn").addEventListener("click", () => {
@@ -104,16 +104,18 @@ const { ssoToken } = await fetch("/api/widget-token", { method: "POST" }).then(r
 Quackback("identify", { ssoToken });
 ```
 
-For unauthenticated visitors, start an anonymous session:
+For unauthenticated visitors, call with no arguments:
 
 ```js
-Quackback("identify", { anonymous: true });
+Quackback("identify");
 ```
 
-Pass `null` to clear the identity and hide the widget (e.g. on logout):
+### logout
+
+Clear the current identity and hide the widget. Call this from your logout handler.
 
 ```js
-Quackback("identify", null);
+Quackback("logout");
 ```
 
 ### open
@@ -207,7 +209,7 @@ export function FeedbackWidget() {
           Quackback("identify", { ssoToken });
         });
     } else {
-      Quackback("identify", { anonymous: true });
+      Quackback("identify");
     }
   }, [user]);
 
