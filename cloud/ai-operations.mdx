@@ -1,0 +1,34 @@
+---
+title: What counts as an AI operation?
+description: Understanding the aiOpsPerMonth quota on Pro and Scale.
+---
+
+An **AI operation** is one chat-completion (LLM) call. Embeddings, vector
+search, and full-text search do not count.
+
+| Action | Cost |
+|---|---|
+| Generate a summary for one post | 1 |
+| Assess one merge-suggestion candidate batch | 1 |
+| Classify sentiment for one signal | 1 |
+| Extract feedback from one external item (e.g. Intercom message, Zendesk ticket) | 1 |
+
+## Excluded from the counter
+
+- **Embeddings** — used for semantic search, merge prefilter, Help Center
+  search. Cheap and pervasive; counting them would feel arbitrary.
+- **Failed retries** — only the final successful attempt counts toward
+  your quota.
+- **Pure SQL operations** — full-text search, vector similarity search,
+  analytics aggregations.
+
+## Quotas by tier
+
+| Tier | AI operations / month |
+|---|---|
+| Starter | None — AI features are not included on Starter |
+| Pro | 2,500 |
+| Scale | 25,000 |
+
+If you exceed your quota, AI features pause until the start of the next
+month, or you can upgrade for a higher quota.
