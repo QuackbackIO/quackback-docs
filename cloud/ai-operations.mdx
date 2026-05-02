@@ -1,34 +1,45 @@
 ---
-title: What counts as an AI operation?
-description: Understanding the aiOpsPerMonth quota on Pro and Scale.
+title: AI token budget
+description: Understanding the aiTokensPerMonth quota on Pro and Scale.
 ---
 
-An **AI operation** is one chat-completion (LLM) call. Embeddings, vector
-search, and full-text search do not count.
+Pro and Scale include a monthly **token budget** that powers every AI
+feature: post summaries, duplicate / merge suggestions, sentiment, and
+feedback extraction from connected sources.
 
-| Action | Cost |
-|---|---|
-| Generate a summary for one post | 1 |
-| Assess one merge-suggestion candidate batch | 1 |
-| Classify sentiment for one signal | 1 |
-| Extract feedback from one external item (e.g. Intercom message, Zendesk ticket) | 1 |
-
-## Excluded from the counter
-
-- **Embeddings** — used for semantic search, merge prefilter, Help Center
-  search. Cheap and pervasive; counting them would feel arbitrary.
-- **Failed retries** — only the final successful attempt counts toward
-  your quota.
-- **Pure SQL operations** — full-text search, vector similarity search,
-  analytics aggregations.
+We bill by tokens because that's the actual cost driver — a 100-token
+summary is ~10× cheaper than a 1k-token batch assessment. Token-based
+pricing means you get more value out of small calls and the gauge maps
+directly to our underlying LLM spend.
 
 ## Quotas by tier
 
-| Tier | AI operations / month |
-|---|---|
-| Starter | None — AI features are not included on Starter |
-| Pro | 2,500 |
-| Scale | 25,000 |
+| Tier | Tokens / month | Approx. equivalent* |
+|---|---|---|
+| Starter | — | AI not included |
+| Pro | 5,000,000 | ~5,000 summaries |
+| Scale | 50,000,000 | ~50,000 summaries |
 
-If you exceed your quota, AI features pause until the start of the next
-month, or you can upgrade for a higher quota.
+\* Rough estimate based on a typical post summary using around 1k tokens
+(input + output combined). Merge assessments and sentiment use less;
+long-form extraction calls use more.
+
+## What does and doesn't count
+
+**Counts toward your budget**:
+- Every successful LLM (chat-completion) call: summaries, merge assessments,
+  sentiment classification, feedback extraction
+- Both input and output tokens combined (`total_tokens` from the LLM provider)
+
+**Does not count**:
+- Embeddings (semantic search, merge prefilter, Help Center search)
+- Vector similarity search and full-text search
+- Failed/retried calls — only the final successful attempt is billed
+- Pure SQL operations (analytics aggregations, etc.)
+
+## What happens when you hit the cap
+
+AI features pause until the start of the next billing month, or you can
+upgrade your plan for a larger budget. Existing AI-generated artifacts
+(summaries, sentiment scores) remain visible — only new AI work is
+blocked.
