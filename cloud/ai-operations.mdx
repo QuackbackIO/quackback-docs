@@ -1,45 +1,38 @@
 ---
-title: AI token budget
-description: Understanding the aiTokensPerMonth quota on Pro and Scale.
+title: AI features
+description: What AI features Quackback Cloud includes, and how usage works.
 ---
 
-Pro and Scale include a monthly **token budget** that powers every AI
-feature: post summaries, duplicate / merge suggestions, sentiment, and
-feedback extraction from connected sources.
+Pro and Scale include the full set of AI features that work alongside the
+core feedback workflow:
 
-We bill by tokens because that's the actual cost driver — a 100-token
-summary is ~10× cheaper than a 1k-token batch assessment. Token-based
-pricing means you get more value out of small calls and the gauge maps
-directly to our underlying LLM spend.
+- **AI post summaries** — multi-paragraph summaries that capture the core
+  user need, key quotes, and suggested next steps for each post.
+- **AI duplicate / merge suggestions** — embeddings prefilter + LLM
+  verification surface true duplicates before they fragment a roadmap.
+- **AI sentiment analysis** — every signal gets a positive / neutral /
+  negative classification, exposed in trend charts and breakdowns.
+- **AI feedback extraction** — pull individual feature requests and bug
+  reports out of long-form sources (Slack threads, Intercom conversations,
+  Zendesk tickets).
 
-## Quotas by tier
+## Usage limits
 
-| Tier | Tokens / month | Approx. equivalent* |
-|---|---|---|
-| Starter | — | AI not included |
-| Pro | 5,000,000 | ~5,000 summaries |
-| Scale | 50,000,000 | ~50,000 summaries |
+Pro and Scale include reasonable monthly usage limits to keep things fair.
+We size the limits so most teams never hit them; if you approach the cap,
+we'll surface a warning in the dashboard and you can upgrade for more
+headroom.
 
-\* Rough estimate based on a typical post summary using around 1k tokens
-(input + output combined). Merge assessments and sentiment use less;
-long-form extraction calls use more.
+## What doesn't count toward AI usage
 
-## What does and doesn't count
+- **Embeddings** used for semantic search, merge prefilter, and Help Center
+  search. Cheap, pervasive, and always unlimited.
+- **Vector similarity search** and **full-text search**.
+- **Failed retries** — only the final successful attempt is billed.
+- **Pure SQL operations** like analytics aggregations.
 
-**Counts toward your budget**:
-- Every successful LLM (chat-completion) call: summaries, merge assessments,
-  sentiment classification, feedback extraction
-- Both input and output tokens combined (`total_tokens` from the LLM provider)
-
-**Does not count**:
-- Embeddings (semantic search, merge prefilter, Help Center search)
-- Vector similarity search and full-text search
-- Failed/retried calls — only the final successful attempt is billed
-- Pure SQL operations (analytics aggregations, etc.)
-
-## What happens when you hit the cap
+## What happens at the cap
 
 AI features pause until the start of the next billing month, or you can
-upgrade your plan for a larger budget. Existing AI-generated artifacts
-(summaries, sentiment scores) remain visible — only new AI work is
-blocked.
+upgrade for more headroom. Existing AI-generated artifacts (summaries,
+sentiment scores) remain visible — only new AI work is paused.
