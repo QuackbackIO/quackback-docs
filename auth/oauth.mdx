@@ -27,7 +27,7 @@ OAuth lets users sign in with accounts they already have. No new passwords, no v
 | Reddit | Client ID, Client Secret | |
 | Twitter / X | Client ID, Client Secret | |
 
-All providers work for both portal users and team members. For enterprise identity providers (Okta, Auth0, Keycloak), see [Custom OIDC](/auth/sso).
+All providers work for both portal users and team members. For team-wide single sign-on with verified domains and enforcement, see [Single sign-on](/auth/sso). To offer a single custom OIDC button on the portal sign-in form, enable **Custom OIDC** on the Portal tab of the Authentication page (requires the Custom OIDC feature on your plan).
 
 ### How It Works
 
@@ -58,16 +58,17 @@ All providers work for both portal users and team members. For enterprise identi
 5. Note the **Client ID**
 6. Click **Generate a new client secret** and save it securely
 
-### Step 2: Configure Environment
+### Step 2: Add credentials in Quackback
 
-Add to your `.env` file:
+1. Go to **Admin → Settings → Security → Authentication** in Quackback.
+2. Switch to the **Portal** or **Team** tab.
+3. Find GitHub in the Social sign-in grid and click **Configure**.
+4. Paste the Client ID and Client Secret. Save.
+5. Toggle GitHub on for the surface(s) you want.
 
-```bash
-GITHUB_CLIENT_ID="your-client-id"
-GITHUB_CLIENT_SECRET="your-client-secret"
-```
+Credentials are stored encrypted in the database, not in environment variables.
 
-### Callback URL Format
+### Callback URL format
 
 ```
 https://YOUR_DOMAIN/api/auth/callback/github
@@ -77,11 +78,6 @@ For local development:
 ```
 http://localhost:3000/api/auth/callback/github
 ```
-
-### Scopes Requested
-
-- `read:user` - Read user profile information
-- `user:email` - Access user email addresses
 
 ## Google Setup
 
@@ -116,39 +112,30 @@ http://localhost:3000/api/auth/callback/github
 5. Click **Create**
 6. Note the **Client ID** and **Client Secret**
 
-### Step 3: Configure Environment
+### Step 3: Add credentials in Quackback
 
-```bash
-GOOGLE_CLIENT_ID="your-client-id.apps.googleusercontent.com"
-GOOGLE_CLIENT_SECRET="your-client-secret"
-```
+1. Go to **Admin → Settings → Security → Authentication** in Quackback.
+2. Switch to the **Portal** or **Team** tab.
+3. Find Google in the Social sign-in grid and click **Configure**.
+4. Paste the Client ID and Client Secret. Save.
+5. Toggle Google on for the surface(s) you want.
 
-### Callback URL Format
+### Callback URL format
 
 ```
 https://YOUR_DOMAIN/api/auth/callback/google
 ```
 
-### Scopes Requested
-
-- `openid` - OpenID Connect authentication
-- `email` - User email address
-- `profile` - Basic profile information
-
 ## Enable OAuth in Quackback
 
-OAuth providers are configured in the admin dashboard, not through environment variables. Credentials are stored encrypted in the database.
+Every provider is configured once and can be enabled per surface (Portal, Team). Credentials are stored encrypted in the platform credentials table.
 
-### Admin Settings
+1. Go to **Admin → Settings → Security → Authentication**.
+2. Switch to the **Portal** or **Team** tab.
+3. Click **Configure** on the provider tile, paste Client ID and Client Secret, save.
+4. Toggle the provider on for that surface. The same credentials power both surfaces; configure once, enable independently.
 
-**[Dashboard]**
-
-1. Navigate to **Admin → Settings → Portal Authentication** (or **Security** for team auth)
-2. Click on the provider you want to configure
-3. Enter the Client ID, Client Secret, and any provider-specific fields
-4. Toggle the provider on
-
-Providers only appear on the sign-in page when they're configured and enabled.
+Providers only appear on the sign-in page when credentials are saved and the toggle is on.
 
 ## Other Providers
 
@@ -237,12 +224,11 @@ If you see CORS errors in the browser console:
 
 ## Security Best Practices
 
-### Protect Client Secrets
+### Protect client secrets
 
-- Never commit secrets to version control
-- Use environment variables or secret management
-- Rotate secrets periodically
-- Use separate OAuth apps for development/production
+- Quackback stores OAuth credentials encrypted in the platform credentials table; you don't need to manage them in environment variables.
+- Rotate client secrets periodically and update them in **Configure** for each provider.
+- Use separate OAuth apps for development and production so leaking one set doesn't expose the other.
 
 ### Verify Callback URLs
 
@@ -284,5 +270,5 @@ No write access or sensitive permissions are requested.
 ## Next steps
 
 - [Custom OIDC](/auth/sso) - Enterprise identity providers (Okta, Auth0, Keycloak)
-- [Email OTP](/auth/email-otp) - Magic code authentication
+- [Magic link](/auth/magic-link) - Passwordless email sign-in
 - [Authentication Overview](/auth/overview) - All auth options

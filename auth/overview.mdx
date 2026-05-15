@@ -1,174 +1,66 @@
 ---
 title: "Authentication"
-description: "Passwordless authentication with email codes and OAuth."
+description: "Understand Quackback's sign-in methods for portal users and team members."
 icon: "lock"
 ---
 
 # Authentication
 
-Quackback supports multiple sign-in methods: email and password, passwordless email codes (OTP), and OAuth providers. Choose the combination that fits your users.
+Quackback has two sign-in surfaces: one for the customers who submit feedback, one for the team that manages it. Each has its own methods and its own settings page.
 
-## Authentication Flows
+## Two audiences
 
-Quackback has two distinct authentication systems for different audiences:
+| Audience | Who they are | Where you configure it |
+|----------|--------------|------------------------|
+| **Portal users** | Customers who submit and vote on feedback | [Admin → Settings → Security → Authentication → Portal tab](/admin/portal-auth) |
+| **Team members** | Admins and members who manage feedback | [Admin → Settings → Security → Authentication → Team tab](/admin/security) |
 
-| Audience | Who | Settings Location |
-|----------|-----|-------------------|
-| **Portal Users** | Customers who submit feedback | [Admin → Settings → Portal Authentication](/admin/portal-auth) |
-| **Team Members** | Employees who manage feedback | [Admin → Settings → Security](/admin/security) |
+A team member can also use the public portal like any other user.
 
-### Portal Users
+## Sign-in methods
 
-Regular users who submit and vote on feedback:
+| Method | Portal users | Team members |
+|--------|--------------|--------------|
+| **Password** | Yes (on by default) | Yes (on by default) |
+| **[Magic link](/auth/magic-link)** | Optional (off by default) | Yes (on by default) |
+| **[OAuth social](/auth/oauth)** | 10 providers (Apple, Discord, Facebook, GitHub, GitLab, Google, LinkedIn, Microsoft, Reddit, Twitter / X) | Same 10 providers - GitHub and Google on by default |
+| **Custom OIDC (portal button)** | One OIDC button on the portal sign-in form, tier-gated | Use full team [SSO](/auth/sso) instead |
+| **[Single sign-on](/auth/sso)** | Routes via verified-domain dispatch | Verified domains, optional enforcement, JIT provisioning |
 
-| Method | Description | Default |
-|--------|-------------|---------|
-| Password | Email and password sign-in | Enabled |
-| Email OTP | 6-digit code sent to email | Disabled |
-| OAuth | [10 social providers](/auth/oauth) (GitHub, Google, Apple, Discord, etc.) | Per-provider |
-| Custom OIDC | [Enterprise SSO](/auth/sso) (Okta, Auth0, Keycloak, etc.) | Disabled |
+Each method is a toggle. Turn on the combination that fits your users. At least one method always stays enabled per surface.
 
-Configure in: **[Admin → Settings → Portal Authentication](/admin/portal-auth)**
+## Team security
 
-### Team Members
+The [Security page](/admin/security) adds protections specific to the team:
 
-Admins and staff who manage feedback in the admin dashboard:
+- **[Two-factor authentication](/admin/security#two-factor-authentication)**: TOTP codes on top of a password, optionally required workspace-wide.
+- **[Single sign-on](/auth/sso)**: connect an OIDC provider, verify your domains, and require SSO so company emails can only sign in through your IdP.
+- **[Recovery codes](/auth/sso#recovery-codes)**: break-glass sign-in when SSO is unavailable.
+- **[Audit log](/admin/security#audit-log)**: an append-only record of every security-sensitive change.
 
-| Method | Description |
-|--------|-------------|
-| Password | Email and password sign-in |
-| Email OTP | 6-digit code sent to email |
-| OAuth | [10 social providers](/auth/oauth) (GitHub, Google, Apple, Discord, etc.) |
-| Custom OIDC | [Enterprise SSO](/auth/sso) (Okta, Auth0, Keycloak, etc.) |
+## Sign-in hardening
 
-Configure in: **[Admin → Settings → Security](/admin/security)**
-
-## Quick Setup
-
-### Minimal Configuration
-
-```bash
-# Required
-SECRET_KEY="your-32-char-secret"  # openssl rand -base64 32
-BASE_URL="https://feedback.yourcompany.com"
-```
-
-With just these settings:
-- Password sign-in works for all users
-- Email OTP is available if enabled (codes print to console without email configured)
-
-### With Email Delivery
-
-```bash
-# SMTP
-EMAIL_SMTP_HOST="smtp.sendgrid.net"
-EMAIL_SMTP_PORT="587"
-EMAIL_SMTP_USER="apikey"
-EMAIL_SMTP_PASS="your-api-key"
-EMAIL_FROM="feedback@yourcompany.com"
-```
-
-## OAuth Providers
-
-Quackback supports 10 built-in social providers plus custom OIDC for enterprise identity. All providers are configured through the admin dashboard - enter your Client ID and Client Secret, then toggle the provider on.
-
-See [Set up OAuth providers](/auth/oauth) for detailed setup instructions for each provider, and [Custom OIDC](/auth/sso) for enterprise identity providers.
+Quackback rate-limits password and magic-link sign-in attempts per IP and email address, tracks devices, and emails the account owner the first time an account signs in from a new device. The new-device email is on by default and configurable on the Team tab.
 
 ## Sessions
 
-### Session Duration
+- Sessions last 7 days and refresh every 24 hours on activity.
+- Signing out invalidates the session immediately.
+- Sessions are stored in PostgreSQL and expired ones are cleaned up automatically.
 
-- Default: 7 days
-- Refreshed every 24 hours on activity
-- Invalidated on logout
+## Roles
 
-### Session Storage
+| Role | Capabilities |
+|------|--------------|
+| **User** | Submit, vote, and comment on the public portal. |
+| **Member** | Everything a user can do, plus access the admin dashboard and manage feedback. |
+| **Admin** | Everything a member can do, plus workspace settings, team management, and integrations. |
 
-Sessions are stored in PostgreSQL:
-- `session` table for active sessions
-- Automatic cleanup of expired sessions
-
-## Roles & Permissions
-
-### Portal User
-
-- Submit feedback
-- Vote on posts
-- Comment on posts
-- Manage notifications
-
-### Team Member
-
-- All portal user permissions
-- Access admin dashboard
-- Manage feedback
-- Change post statuses
-
-### Admin
-
-- All member permissions
-- Workspace settings
-- Team management
-- Integration configuration
-
-## Security Features
-
-### CSRF Protection
-
-Better Auth provides automatic CSRF protection using trusted origin validation. The application dynamically trusts origins based on the request host.
-
-### OTP Settings
-
-- OTP code length: 6 digits
-- OTP expiration: 10 minutes
-- Magic link expiration: 7 days (used for team member invitations)
-
-<Warning>
-Rate limiting for authentication is not currently implemented at the application level. The resend cooldown (60 seconds) is enforced client-side only. Consider using a reverse proxy (nginx, Cloudflare) for rate limiting in production.
-</Warning>
-
-## Customization
-
-### Portal Authentication
-
-Control what sign-in methods are available to portal users (customers):
-
-1. Go to **Admin → Settings → Portal Authentication**
-2. Toggle methods on/off (Password, Email OTP, social providers, Custom OIDC)
-
-See [Portal Authentication](/admin/portal-auth) for details.
-
-### Team Authentication
-
-Control what sign-in methods are available to team members (employees):
-
-1. Go to **Admin → Settings → Security**
-2. Toggle methods on/off (Password, Email OTP, social providers, Custom OIDC)
-
-See [Security](/admin/security) for details.
-
-## Troubleshooting
-
-### "Invalid session" errors
-
-1. Clear browser cookies
-2. Try incognito mode
-3. Check `BASE_URL` matches your domain
-
-### OTP not received
-
-1. Check spam folder
-2. Verify email configuration
-3. Check console for OTP in development
-
-### OAuth redirect errors
-
-1. Verify callback URL matches exactly
-2. Check client ID and secret
-3. Ensure provider is properly configured
+See [Roles & permissions](/admin/roles-permissions) for the full breakdown.
 
 ## Next steps
 
-- [Email OTP](/auth/email-otp) - Email code setup
-- [OAuth](/auth/oauth) - Social login configuration
-- [Custom OIDC](/auth/sso) - Enterprise SSO setup
+- [Set up magic-link sign-in](/auth/magic-link): passwordless email sign-in
+- [Set up OAuth providers](/auth/oauth): social login
+- [Set up single sign-on](/auth/sso): enterprise SSO with domain enforcement
+- [Configure team security](/admin/security): 2FA and the audit log

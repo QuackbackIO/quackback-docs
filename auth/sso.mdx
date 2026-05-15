@@ -1,60 +1,145 @@
 ---
-title: "Set up custom OIDC"
-description: "Let users sign in with Okta, Auth0, Keycloak, or any OIDC provider."
+title: "Set up single sign-on"
+description: "Connect an OIDC provider, verify your domains, and require SSO for your team."
 icon: "building"
 ---
 
-# Set up custom OIDC
+# Set up single sign-on
 
-One less password for your users. Connect any OpenID Connect provider - Okta, Auth0, Keycloak, or your own identity server - and let users sign in with their existing work accounts.
+One less password for your team. Connect any OpenID Connect provider — Okta, Entra ID, Auth0, Keycloak — and let admins and members sign in with their existing work accounts. Verify your domains and you can require SSO so company emails can *only* sign in through your IdP.
 
-## Overview
+<Note>
+This page covers **team SSO** — sign-in for admins and members managing feedback. To let *portal users* (customers) sign in with a custom OIDC provider, see [Portal Authentication](/admin/portal-auth).
+</Note>
 
-Custom OIDC lets you integrate any OAuth 2.0 / OpenID Connect identity provider beyond the [built-in social logins](/auth/oauth). This is ideal for:
+## What you get
 
-- **Enterprise SSO** - Okta, Azure AD, Auth0, OneLogin, PingFederate
-- **Self-hosted identity** - Keycloak, Authentik, Zitadel, Authelia
-- **Custom providers** - Any service that supports OIDC discovery or manual OAuth 2.0 configuration
+- **Connection** — link your OIDC provider once.
+- **Test sign-in** — a real end-to-end handshake that proves the connection works before you turn anything on.
+- **Verified domains** — prove you own a domain so its emails route to SSO.
+- **Require SSO** — hard-bind a verified domain so its users can only sign in through your IdP.
+- **Recovery codes** — break-glass sign-in for when your IdP is unreachable.
+- **Attribute mapping** — assign Quackback roles from a claim on the IdP token.
 
-## Configure Custom OIDC
+Everything lives under **Admin → Settings → Security**, on the **Single sign-on** page.
 
-### Step 1: Register Quackback in your identity provider
+## Step 1: Register Quackback in your IdP
 
-Create an OAuth / OIDC application in your identity provider with these settings:
+Create an OIDC application in your identity provider:
 
 | Field | Value |
 |-------|-------|
 | Application type | Web application |
-| Redirect URI | `https://YOUR_DOMAIN/api/auth/callback/custom-oidc` |
+| Redirect URI | `https://YOUR_DOMAIN/api/auth/oauth2/callback/sso` |
 | Scopes | `openid email profile` |
 
-Note the **Client ID** and **Client Secret**.
+Note the **Client ID** and **Client Secret**, and your provider's **discovery URL** (the `/.well-known/openid-configuration` endpoint).
 
-### Step 2: Add credentials in Quackback
+<Warning>
+The redirect URI must match exactly — including `https`, no trailing slash, and the `oauth2/callback/sso` path. A mismatch is the most common cause of a failed test sign-in.
+</Warning>
 
-**[Dashboard]**
+## Step 2: Add the connection
 
-1. Go to **Admin → Settings → Portal Authentication** (or **Security** for team auth)
-2. Find **Custom OIDC** in the provider list
-3. Fill in the required fields:
+1. Go to **Admin → Settings → Security → Single sign-on**.
+2. Enter the **Discovery URL**, **Client ID**, and **Client Secret**.
+3. Save.
 
-| Field | Description | Required |
-|-------|-------------|----------|
-| Display Name | Name shown on the sign-in button (e.g. "Okta", "Company SSO") | Yes |
-| Client ID | From your identity provider | Yes |
-| Client Secret | From your identity provider | Yes |
-| Discovery URL | OIDC discovery endpoint (recommended) | No |
-| Authorization URL | OAuth authorize endpoint | If no Discovery URL |
-| Token URL | OAuth token endpoint | If no Discovery URL |
-| Scopes | Space-separated scopes | No (defaults to `openid email profile`) |
+The client secret is encrypted at rest. Changing the discovery URL, client ID, or secret invalidates any previous test sign-in — you'll need to test again before enabling.
+
+## Step 3: Run a test sign-in
+
+Before you can enable SSO or enforce it on a domain, Quackback makes you prove the connection works.
+
+1. Click **Test sign-in** on the SSO page.
+2. A popup opens your IdP. Sign in.
+3. Quackback runs the full OIDC handshake — discovery, token exchange, signature verification, claim checks — and reports exactly which step failed if any.
 
 <Tip>
-Use the **Discovery URL** when your provider supports it. Quackback auto-discovers the authorization and token endpoints from `/.well-known/openid-configuration`, so you don't need to enter them manually.
+The test runs in an isolated session and never creates a real login. Run it as often as you need while configuring your IdP.
 </Tip>
 
-### Step 3: Enable the provider
+A passing test unlocks the **Enabled** toggle and the per-domain **Require SSO** switches.
 
-Toggle **Custom OIDC** on in the Portal Authentication or Security settings. The sign-in button appears immediately.
+## Step 4: Enable SSO
+
+Toggle **Enabled** on. The SSO sign-in option now appears on the team sign-in page. At this point SSO is *available* — it doesn't replace other methods yet.
+
+## Verify your domains
+
+A verified domain tells Quackback that you own an email domain, so emails at that domain route to SSO by default.
+
+1. On the SSO page, under **Verified domains**, add a domain (for example `acme.com`).
+2. Quackback shows a DNS TXT record to publish:
+
+   | Name | Value |
+   |------|-------|
+   | `_quackback-verify.acme.com` | `qb-domain-verify=<token>` |
+
+3. Add the record at your DNS registrar, wait for it to propagate, then click **Verify**.
+
+You can verify up to 10 domains. Once verified, `*@acme.com` users see "Continue with SSO" as the default option on sign-in.
+
+<Note>
+Verifying a domain only changes the *default* sign-in route. Other methods still work until you turn on **Require SSO**.
+</Note>
+
+## Require SSO for a domain
+
+Turn on the **Require SSO** switch next to a verified domain to hard-bind it: `*@acme.com` emails can then **only** sign in through your IdP. Password, magic link, and other OAuth providers are refused for those addresses.
+
+Enabling enforcement has two preconditions:
+
+- A passing **test sign-in** since the last connection change.
+- **Email delivery** configured — magic link is the break-glass path for the rest of the workspace.
+
+A confirmation dialog spells out the impact before you commit. Enforcement takes effect immediately.
+
+<Warning>
+If your IdP goes down, an enforced domain's users can't sign in normally. Recover with a [recovery code](#recovery-codes), or with an admin whose email is at a non-enforced domain.
+</Warning>
+
+Enforcement **fails open**: if SSO stops being viable at runtime - the client secret is removed, or the connection is disabled - Quackback suspends enforcement so the team isn't locked out. Re-enable it once SSO is healthy again.
+
+When a user at a verified domain tries to sign in but SSO isn't actually live (the connection is off, the secret is missing, or the feature isn't on your plan), they see: *"Single sign-on is configured for your domain but is not currently available. Contact your administrator."* This shows up instead of a broken redirect so the user knows to reach out rather than retry blindly.
+
+## Recovery codes
+
+Recovery codes are single-use passcodes that get an admin in when SSO is unavailable.
+
+1. On the SSO page, under **Recovery codes**, click **Generate new codes**.
+2. Quackback shows 10 codes **once**. Copy, download, or print them and store them somewhere safe.
+3. Generating a new batch invalidates the previous one.
+
+To use a code, go to `/auth/recovery`, enter your email and a code. Each code works once. Quackback warns you when fewer than three codes remain.
+
+<Tip>
+Generate recovery codes *before* you turn on Require SSO — running out during a broken-SSO incident is the worst possible time to discover you have none.
+</Tip>
+
+## Auto-provision users
+
+By default, the first time someone signs in through SSO with an email at a verified domain, Quackback creates their account automatically (just-in-time provisioning) with the **member** role.
+
+You can change the default role, or turn auto-provisioning off entirely, in the SSO connection settings. With it off, a user must already exist in Quackback before they can sign in through SSO.
+
+<Note>
+The very first SSO sign-in into a workspace that has no admin is promoted to admin. This is a recovery path for a workspace that lost its last admin — a healthy workspace already has one, so it never triggers.
+</Note>
+
+## Map roles from IdP claims
+
+Instead of giving every provisioned user the same role, you can source their role from a claim on the IdP's ID token.
+
+Under **Attribute mapping** on the SSO page:
+
+1. Turn on **Attribute mapping**.
+2. Set the **Claim path** — a dotted path (`realm_access.roles`) or a URL-shaped claim (`https://acme.com/roles`). Copy it from your IdP's docs.
+3. Add **rules** — first-match-wins. Each rule maps a value the claim contains to a role, for example `platform-admins → admin`.
+4. Set a **Default role** for users no rule matches.
+5. Optionally turn on **Sync on every sign-in** to re-apply the role on each login. This *demotes* a team member if their IdP group changes.
+
+Role changes from mapping are written to the [audit log](/admin/security#audit-log).
 
 ## Provider examples
 
@@ -62,80 +147,61 @@ Toggle **Custom OIDC** on in the Portal Authentication or Security settings. The
 
 | Field | Value |
 |-------|-------|
-| Display Name | `Okta` |
 | Discovery URL | `https://your-org.okta.com/.well-known/openid-configuration` |
-| Client ID | From Okta app |
-| Client Secret | From Okta app |
+| Redirect URI | `https://YOUR_DOMAIN/api/auth/oauth2/callback/sso` |
+
+### Microsoft Entra ID
+
+| Field | Value |
+|-------|-------|
+| Discovery URL | `https://login.microsoftonline.com/<tenant-id>/v2.0/.well-known/openid-configuration` |
+| Redirect URI | `https://YOUR_DOMAIN/api/auth/oauth2/callback/sso` |
 
 ### Auth0
 
 | Field | Value |
 |-------|-------|
-| Display Name | `Auth0` |
 | Discovery URL | `https://your-tenant.auth0.com/.well-known/openid-configuration` |
-| Client ID | From Auth0 app |
-| Client Secret | From Auth0 app |
+| Redirect URI | `https://YOUR_DOMAIN/api/auth/oauth2/callback/sso` |
 
 ### Keycloak
 
 | Field | Value |
 |-------|-------|
-| Display Name | `Keycloak` |
-| Discovery URL | `https://keycloak.example.com/realms/your-realm/.well-known/openid-configuration` |
-| Client ID | From Keycloak client |
-| Client Secret | From Keycloak client |
-
-### Manual configuration (no discovery)
-
-If your provider doesn't support OIDC discovery, provide the URLs directly:
-
-| Field | Value |
-|-------|-------|
-| Authorization URL | `https://provider.example.com/oauth/authorize` |
-| Token URL | `https://provider.example.com/oauth/token` |
-| Scopes | `openid email profile` |
+| Discovery URL | `https://keycloak.example.com/realms/<realm>/.well-known/openid-configuration` |
+| Redirect URI | `https://YOUR_DOMAIN/api/auth/oauth2/callback/sso` |
 
 ## How it works
 
-1. User clicks the custom sign-in button on the login page
-2. Quackback redirects to your identity provider's authorization endpoint
-3. User authenticates with their existing credentials
-4. Provider redirects back to Quackback with an authorization code
-5. Quackback exchanges the code for user information (email, name)
-6. A session is created
+1. A user clicks **Continue with SSO** (or is auto-redirected if their email is at a verified domain).
+2. Quackback redirects to your IdP's authorization endpoint.
+3. The user authenticates with their existing work credentials.
+4. The IdP redirects back with an authorization code.
+5. Quackback exchanges the code, verifies the ID token signature, and reads the `email` claim.
+6. If the account exists it's linked; otherwise it's provisioned per your settings.
 
-Quackback uses the `email` claim from the OIDC token to identify users. If a user with that email already exists, the account is linked automatically.
+Quackback requires an `email` claim from your IdP. If your provider doesn't release it by default, add it to the application's claim mapping.
 
 ## Troubleshooting
 
-### "Redirect URI mismatch"
+### Test sign-in fails at "token exchange"
 
-The redirect URI in your identity provider must match exactly:
+Usually a wrong client secret or a redirect URI mismatch. The test report names the failing step — check the exact value against your IdP application.
 
-```
-https://YOUR_DOMAIN/api/auth/callback/custom-oidc
-```
+### Test sign-in fails at "claim check"
 
-Check for protocol mismatches (`http` vs `https`), trailing slashes, and port numbers.
+The ID token is missing `email` or `sub`. Configure your IdP to release the `email` claim (Okta: client scopes; Entra: API permissions; Keycloak: client scopes).
 
-### "Invalid client_id"
+### "Verified domain requires SSO"
 
-Verify the Client ID and Client Secret are copied correctly with no extra whitespace. Check that the OIDC application is active in your identity provider.
+The email is at an enforced domain and tried a non-SSO method. Sign in through the IdP, or use a [recovery code](#recovery-codes).
 
-### "Unable to get email"
+### Domain verification won't pass
 
-Quackback requires an email address from the OIDC provider. Ensure:
-- The `email` scope is included
-- Your provider returns the `email` claim in the ID token or userinfo response
-
-### Discovery URL not working
-
-If auto-discovery fails:
-1. Verify the URL returns valid JSON when accessed in a browser
-2. Try providing the Authorization URL and Token URL manually instead
+DNS changes can take time to propagate. Confirm the TXT record with `dig +short TXT _quackback-verify.YOUR_DOMAIN` before clicking Verify again.
 
 ## Next steps
 
-- [OAuth](/auth/oauth) - Built-in social login providers
-- [Authentication Overview](/auth/overview) - All auth options
-- [Portal Authentication](/admin/portal-auth) - Configure sign-in for portal users
+- [Configure team security](/admin/security) — 2FA, audit log, and sign-in methods
+- [Authentication overview](/auth/overview) — all sign-in options
+- [Declarative config](/self-hosting/config-file) — manage the SSO connection from a config file
