@@ -1,102 +1,98 @@
 ---
 title: "Configure team security"
-description: "Control how your team signs in, from email OTP to OAuth."
+description: "Set team sign-in methods, require 2FA, and review the audit log."
 icon: "shield-check"
 ---
 
 # Configure team security
 
-Protect your admin dashboard with the right level of security for your team. Use simple email magic links or require OAuth through GitHub or Google.
-
-## Overview
-
-Team authentication controls how team members (admins and members) sign in to the admin dashboard. By default, email OTP, GitHub, and Google are all enabled.
+Control how your team signs in to the admin dashboard. Pick sign-in methods, require two-factor authentication, and review a tamper-evident log of every security-sensitive change.
 
 <Note>
-Team authentication controls **team member** sign-in (employees managing feedback). For **portal user** authentication (customers submitting feedback), see [Portal Authentication](/admin/portal-auth).
+The Security page controls **team member** sign-in (admins and members). For **portal user** sign-in (customers submitting feedback), see [Portal Authentication](/admin/portal-auth).
 </Note>
 
-## Team Sign-in Methods
+Everything here lives under **Admin → Settings → Security**, which has a **Team** tab and a **Portal** tab. This page covers the Team tab plus the [Audit log](#audit-log).
 
-Team members can sign in using the following methods:
+## Team sign-in methods
 
-### Password
+On the **Team** tab, the **Sign-in methods** card controls how team members sign in.
 
-Allow team members to sign in with their email and password.
+| Method | Description |
+|--------|-------------|
+| **Password** | Email and password. Can't be turned off while it's the only method, or while Require 2FA is on. |
+| **Magic link** | A one-click link emailed to the user. See [magic-link sign-in](/auth/magic-link). |
+| **Require 2FA for team members** | Forces a TOTP code on every password sign-in. |
+| **Email me when a new device signs in** | Notifies the account owner on sign-in from an unrecognized browser or network. On by default. |
 
-- **How it works**: User enters email + password → signed in
-- **Best for**: Familiar sign-in experience
-- **Always available**: Yes
+Single sign-on is configured separately on the [SSO page](/auth/sso).
 
-### Email OTP (Magic Link)
+<Note>
+Magic link is always used for team invitations and recovery-code sign-in, even when the magic-link toggle is off. The toggle only controls whether magic link appears on the sign-in form.
+</Note>
 
-Allow team members to sign in using magic link codes sent to their email.
+## Two-factor authentication
 
-- **How it works**: User enters email → receives 6-digit code → enters code to sign in
-- **Best for**: Teams who want passwordless login
-- **Always available**: Yes
+Two-factor authentication (2FA) adds a 6-digit code from an authenticator app on top of a password. It has no effect on SSO sign-ins — SSO MFA is handled by your identity provider.
 
-### GitHub
+### Enroll in 2FA
 
-Allow team members to sign in using their GitHub accounts.
+Each team member enrolls themselves from their **account settings**:
 
-- **How it works**: User clicks "Continue with GitHub" → authorizes access → signed in
-- **Best for**: Developer teams already using GitHub
-- **Requires**: GitHub OAuth app configured in environment
-- **Enabled by default**: Yes
+1. Open **Account settings** and find **Two-factor authentication**.
+2. Click **Set up authenticator** and confirm your password.
+3. Scan the QR code with Google Authenticator, 1Password, Authy, or any TOTP app.
+4. Enter the 6-digit code to verify.
+5. Save the backup codes shown — each works once if you lose your authenticator.
 
-### Google
+To turn it off, click **Disable two-factor** and confirm your password.
 
-Allow team members to sign in using their Google accounts.
+### Require 2FA for everyone
 
-- **How it works**: User clicks "Continue with Google" → authorizes access → signed in
-- **Best for**: Teams using Google Workspace
-- **Requires**: Google OAuth credentials configured in environment
-- **Enabled by default**: Yes
+Turn on **Require 2FA for team members** on the Team tab to enforce it workspace-wide:
 
-## OAuth Provider Setup
+- Every admin and member must complete a TOTP challenge on each password sign-in.
+- Magic-link sign-in is refused for anyone who has enrolled — they must use the password + TOTP flow.
+- Members who haven't enrolled yet are sent to set up 2FA before they can continue.
 
-OAuth providers (GitHub, Google) require environment configuration:
+<Note>
+Require 2FA needs **Password** sign-in enabled, because enrolling a TOTP authenticator requires confirming a password.
+</Note>
 
-### GitHub
+### Reset a member's 2FA
 
-```bash
-GITHUB_CLIENT_ID=your-client-id
-GITHUB_CLIENT_SECRET=your-client-secret
-```
+If a team member loses their authenticator and their backup codes, an admin can clear their enrollment from **Admin → Settings → Members** — open the member's actions and choose **Reset 2FA**. The member re-enrolls on their next sign-in. The reset is recorded in the [audit log](#audit-log).
 
-### Google
+## Recovery codes
 
-```bash
-GOOGLE_CLIENT_ID=your-client-id
-GOOGLE_CLIENT_SECRET=your-client-secret
-```
+Recovery codes are break-glass passcodes for signing in when SSO is unavailable. They're generated and managed on the [SSO page](/auth/sso#recovery-codes), not here.
 
-See [Environment Variables](/reference/environment-variables) for complete configuration.
+## Audit log
 
-## Best Practices
+The audit log is an append-only record of security-sensitive admin actions. Find it at **Admin → Settings → Audit log**.
 
-### Multi-Factor Authentication
+It captures:
 
-While Quackback doesn't have built-in MFA, you can achieve equivalent security by:
+- SSO connection changes and per-domain enforcement toggles
+- Sign-in method changes (password, magic link)
+- 2FA admin resets
+- Recovery-code generation and use
+- Bulk session revocations
+- Role changes, including those from SSO attribute mapping
+- Sign-ins, new-device sign-ins, and rate-limited attempts
 
-- Using OAuth providers that require MFA (GitHub, Google)
-
-### Principle of Least Privilege
-
-- Review team member access regularly
-- Only grant Admin role to those who need full settings access
-
-### Secure Defaults
+Each entry records the actor, their IP and user agent, the event type and outcome, and before/after values. Filter by actor and time range to investigate a specific change.
 
 <Tip>
-For most teams, we recommend:
-
-1. Enable **Email** for backup access
-2. Enable **one OAuth provider** that matches your workflow (GitHub for devs, Google for business)
+Review the audit log after any access change — a new admin, a removed member, or an SSO reconfiguration. It's the fastest way to confirm who did what.
 </Tip>
 
-## Next Steps
+## Sign-in hardening
 
-- [Portal Authentication](/admin/portal-auth) - Configure how portal users sign in
-- [Team Members](/admin/team) - Manage your team
+Quackback rate-limits password and magic-link sign-in attempts per IP and email address, and tracks devices so it can email the account owner the first time a new device signs in. The new-device email is on by default and can be turned off on the Team tab.
+
+## Next steps
+
+- [Set up single sign-on](/auth/sso) — connect your IdP and require SSO
+- [Portal Authentication](/admin/portal-auth) — configure sign-in for customers
+- [Team Members](/admin/team) — invite and manage your team

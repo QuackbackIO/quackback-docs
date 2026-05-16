@@ -1,0 +1,134 @@
+---
+title: "Declarative configuration"
+description: "Manage workspace settings as code with a config file and lock them from UI edits."
+icon: "file-text"
+---
+
+# Declarative configuration
+
+Keep workspace settings in version control instead of clicking through the dashboard. Quackback reads an optional config file on startup and whenever it changes, reconciles its values into your workspace, and locks those fields from in-app edits.
+
+<Note>
+The config file is entirely optional. Without it, every setting stays editable in the dashboard as normal. It's most useful when you manage Quackback alongside other infrastructure as code.
+</Note>
+
+## How it works
+
+Quackback watches `/etc/quackback/config.yaml`. When the file is present:
+
+- Every value it declares is **reconciled** into the workspace settings.
+- Those fields become **read-only in the dashboard** — the UI shows them with a "Managed" badge and rejects writes.
+- Any field the file *doesn't* declare stays freely editable.
+
+Edit the file and Quackback re-reconciles automatically. Remove a field and that setting becomes editable again.
+
+<Warning>
+Secrets are never read from this file. OAuth client secrets and the SSO client secret stay encrypted in the database — set them through the dashboard.
+</Warning>
+
+## File format
+
+The file is a Kubernetes-style manifest:
+
+```yaml
+apiVersion: quackback.io/v1
+kind: QuackbackConfig
+metadata:
+  source: ops-repo            # optional, free-form label
+spec:
+  workspace:
+    name: Acme Feedback
+    slug: acme
+    useCase: saas             # saas | consumer | marketplace | internal
+  state: active               # active | suspended | deleting
+  auth:
+    openSignup: false
+    oauth:
+      password: true
+      google: true
+      github: false
+    ssoOidc:
+      enabled: true
+      discoveryUrl: https://your-org.okta.com/.well-known/openid-configuration
+      clientId: 0oa1example
+      autoCreateUsers: true
+  features:
+    helpCenter: true
+  tierLimits:
+    maxBoards: 10
+    maxPosts: null            # null means unlimited
+    features:
+      webhooks: true
+      customCss: false
+```
+
+`apiVersion`, `kind`, and `spec` are required. Everything inside `spec` is optional — declare only what you want to manage.
+
+## Schema reference
+
+### `spec.workspace`
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `name` | string | Workspace display name. |
+| `slug` | string | Lowercase letters, digits, and hyphens. |
+| `useCase` | enum | `saas`, `consumer`, `marketplace`, or `internal`. |
+
+### `spec.state`
+
+| Value | Effect |
+|-------|--------|
+| `active` | Normal operation (the default when omitted). |
+| `suspended` | The workspace is read-blocked until the state changes. |
+| `deleting` | The workspace is being torn down and rejects writes. |
+
+### `spec.auth`
+
+| Field | Type | Notes |
+|-------|------|-------|
+| `openSignup` | boolean | Allow new users to self-register. |
+| `oauth.password` | boolean | Password sign-in. |
+| `oauth.google` | boolean | Google sign-in (client secret set in the dashboard). |
+| `oauth.github` | boolean | GitHub sign-in (client secret set in the dashboard). |
+| `ssoOidc.enabled` | boolean | Turn the SSO connection on. |
+| `ssoOidc.discoveryUrl` | https URL | The IdP's `/.well-known/openid-configuration`. |
+| `ssoOidc.clientId` | string | The OIDC client ID. |
+| `ssoOidc.autoCreateUsers` | boolean | Just-in-time provisioning on first SSO sign-in. Defaults to `true`. |
+
+<Note>
+Per-domain **Require SSO** enforcement isn't declared in the file — manage it on the [SSO page](/auth/sso#require-sso-for-a-domain).
+</Note>
+
+### `spec.features`
+
+A map of feature-flag names to booleans. Each key locks one flag while leaving the others UI-toggleable.
+
+### `spec.tierLimits`
+
+Numeric limits — `null` means unlimited. Partial objects are allowed; the file only needs the limits it wants to lock.
+
+| Field | Type |
+|-------|------|
+| `maxBoards`, `maxPosts`, `maxTeamSeats` | integer or `null` |
+| `aiTokensPerMonth` | integer or `null` |
+| `apiRequestsPerMonth`, `apiRequestsPerMinute` | integer or `null` |
+| `features` | map of capability flags to booleans (`webhooks`, `mcpServer`, `customDomain`, `customCss`, and others) |
+
+## Mount the file
+
+With Docker, mount your config into the container:
+
+```yaml
+services:
+  quackback:
+    volumes:
+      - ./quackback-config.yaml:/etc/quackback/config.yaml:ro
+```
+
+For a manual install, place the file at `/etc/quackback/config.yaml` and make sure the Quackback process can read it.
+
+## Next steps
+
+- [Deploy with Docker](/self-hosting/docker) — Docker Compose setup
+- [Environment variables](/reference/environment-variables) — runtime configuration
+- [Set up single sign-on](/auth/sso) — the SSO connection this file can manage
