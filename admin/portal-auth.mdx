@@ -90,7 +90,7 @@ Use [segments](/admin/segments) to grant portal access to a whole cohort at once
 2. Under **Allowed segments**, pick one or more segments from the multi-select.
 3. The selection saves automatically.
 
-Segment access works for any authenticated visitor whose principal is a member of one of the chosen segments. Unlike the domain channel, segment access does **not** require a verified email — segment membership is admin-curated, so the [segment evaluator](/admin/segments#dynamic-segments) is the trust anchor.
+Segment access works for any authenticated visitor whose principal is a member of one of the chosen segments **and** has a verified email. The verified-email guard mirrors the domain and invite channels: dynamic segments can predicate on email (e.g. "email ends with @acme.com"), so without verification an attacker could claim someone else's address and walk in.
 
 <Note>
 If you change a segment's rules, membership re-evaluates on the next hourly run (or trigger it manually from the Segments list). Visitors who fall out of a segment lose portal access on their next request.
