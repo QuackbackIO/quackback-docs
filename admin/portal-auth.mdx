@@ -1,89 +1,169 @@
 ---
-title: "Set up portal sign-in"
-description: "Choose how users sign in: password, magic link, OAuth, or custom OIDC."
+title: "Control portal access and sign-in"
+description: "Choose who can view your portal and how they sign in."
 icon: "lock"
 ---
 
-# Set up portal sign-in
+# Control portal access and sign-in
 
-Pick which sign-in methods appear on your feedback portal. Password is on by default; add magic link, social OAuth, or your own OpenID Connect provider as you need them.
+Pick who can see your feedback portal and which sign-in methods they use. Quackback separates the two concerns: **Portal access** decides who's allowed in, and **Sign-in providers** decides how they authenticate.
 
-Configure everything at **Admin → Settings → Security → Authentication**, then switch to the **Portal** tab. The **Team** tab on the same page controls how your team members sign in. The two surfaces are independent, so changing one never locks the other out.
+Configure both at **Admin → Settings → Security → Authentication**. The page has three tabs:
+
+| Tab | Controls |
+|-----|----------|
+| **Portal access** | Visibility, allowed domains, email invites, allowed segments, widget sign-in |
+| **Team access** | Team-side 2FA and the SSO summary — see [Security](/admin/security) |
+| **Sign-in providers** | Password, magic link, social OAuth, and Custom OIDC for both surfaces |
 
 <Note>
 For team-wide single sign-on with verified domains and enforcement, see [Single sign-on](/auth/sso).
 </Note>
 
-## Anonymous voting
+## Portal access
 
-Visitors can vote on feedback without creating an account. Anonymous voting is **enabled by default**; the toggle lives at **Admin → Settings → Security → Authentication → Portal tab**. It applies to both the portal and the [embeddable widget](/widget).
+A portal is either **public** or **private**. Public portals are open to everyone, including unsigned visitors. Private portals admit only the visitors you authorize through the channels below.
 
-When a visitor casts their first anonymous vote, a browser session is created transparently. Their vote registers instantly with no sign-in prompt. If they later create an account, their existing anonymous votes are linked over automatically.
+| Visibility | Who gets in |
+|------------|-------------|
+| **Public** | Anyone, no sign-in required. Signed-in users can still vote, comment, and post. |
+| **Private** | Your team, plus anyone covered by an allow-channel below. |
 
-Anonymous sign-in is rate-limited to **50 new anonymous sessions per IP per hour**. Once a visitor has a session, casting or un-casting votes doesn't count against the limit.
+<Warning>
+Switching from Public to Private hides your portal from anonymous visitors immediately. Confirm the change in the dialog that appears. You can flip it back at any time.
+</Warning>
 
-To require accounts for voting, toggle Anonymous Voting off. Existing anonymous votes still count toward totals.
+A private portal evaluates these channels in order. The first match grants access.
 
-## Sign-in methods
+1. **Team** — admins and members always have access.
+2. **Allowed email domains** — verified-email users on a listed domain.
+3. **Email invite** — anyone you've sent and who's accepted a portal invite.
+4. **Allowed segments** — members of a [segment](/admin/segments) you've authorized.
+5. **Widget sign-in** — visitors who already signed in via your embedded widget.
+
+Visitors who don't match any channel are redirected to sign in. Authenticated visitors who still don't match see a clear "no access" screen with sign-out and account links.
+
+### Allowed email domains
+
+Auto-admit any verified-email user whose address ends with a domain you list. Useful for "all `@acme.com` employees can see the portal" without sending individual invites.
+
+1. Open the **Portal access** tab.
+2. Under **Allowed email domains**, type a domain (e.g. `acme.com`) and press Enter.
+3. Repeat for additional domains. Domains save automatically.
+
+<Warning>
+Domain access requires the visitor's email to be **verified**. Quackback never trusts an unverified email claim for an allowlist match — anyone could otherwise sign up with `someone@acme.com` they don't own.
+</Warning>
+
+### Email invites
+
+Invite specific people by email. Each invite is good for a magic link that signs the recipient in and grants portal access automatically.
+
+1. Open the **Portal access** tab (or **Admin → Users → Invitations**).
+2. Click **Invite people**.
+3. Paste up to 50 email addresses separated by commas, spaces, or newlines.
+4. Optionally add a short personal message (up to 500 characters) — it's included in the email.
+5. Click **Send invites**.
+
+Each recipient gets a branded email with the personal message and a sign-in link. The link is good for 14 days; pending invites expire automatically after that.
+
+<Tip>
+Need to share a link directly (e.g. in Slack)? On any pending invite row, click **Copy link** to grab the same magic link that's in the email. The link is recorded in the [audit log](/admin/security#audit-log) so you can see who minted it.
+</Tip>
+
+Track invite status from **Admin → Users → Invitations**:
+
+| Status | Meaning |
+|--------|---------|
+| Pending | Sent, not yet accepted. Resend or revoke from the row. |
+| Accepted | Recipient followed the link and now has portal access. |
+| Revoked | Admin cancelled the invite. The link no longer works. |
+| Expired | Pending past the 14-day window. Send a fresh invite to retry. |
+
+Every send, resend, accept, revoke, link-mint, and expiry is recorded in the audit log.
+
+### Allowed segments
+
+Use [segments](/admin/segments) to grant portal access to a whole cohort at once — for example, "everyone on the Pro plan" or "all users from `@bigcorp.com`".
+
+1. Open the **Portal access** tab.
+2. Under **Allowed segments**, pick one or more segments from the multi-select.
+3. The selection saves automatically.
+
+Segment access works for any authenticated visitor whose principal is a member of one of the chosen segments. Unlike the domain channel, segment access does **not** require a verified email — segment membership is admin-curated, so the [segment evaluator](/admin/segments#dynamic-segments) is the trust anchor.
+
+<Note>
+If you change a segment's rules, membership re-evaluates on the next hourly run (or trigger it manually from the Segments list). Visitors who fall out of a segment lose portal access on their next request.
+</Note>
+
+### Widget sign-in
+
+When your product embeds the [Quackback widget](/widget) and uses [verified identity](/widget/identify-users#verified-identity-with-jwt), you can let those visitors carry their widget identity over to the portal — no password, no second sign-up.
+
+1. Verify your widget runs with **Verified identity only** on (Admin → Settings → Widget).
+2. On the Portal access tab, toggle **Widget sign-in** on.
+
+Visitors who open your portal from inside a verified widget session are signed into the portal automatically. Behind the scenes the widget mints a one-time token (OTT) and the portal exchanges it for a session.
+
+<Warning>
+Widget sign-in requires HMAC-verified widget identity. If you turn off **Verified identity only** in the Widget settings, the widget falls back to email-capture mode and Quackback refuses to grant portal access through this channel — email-capture trust isn't strong enough to imply portal access.
+</Warning>
+
+## Sign-in providers
+
+The **Sign-in providers** tab controls *how* visitors authenticate. Each method has independent toggles for the **Portal** (your customers) and **Team** (your admins). At least one method per surface always stays enabled.
+
+| Method | Default (Portal) | Default (Team) |
+|--------|------------------|----------------|
+| Password | On | On |
+| [Magic link](/auth/magic-link) | Off | On |
+| [Social OAuth](/auth/oauth) (10 providers) | Off (configure first) | GitHub & Google on |
+| Custom OIDC button | Off | Use [SSO](/auth/sso) instead |
 
 ### Password
 
-Email + password sign-in.
-
-- **Default**: On
-- **Password requirements**: 8 to 128 characters
-- **Reset flow**: Users request a reset link by email
+Email + password sign-in. 8 to 128 characters. Users request reset links by email.
 
 ### Magic link
 
 One-click sign-in link sent by email.
 
-- **Default**: Off
-- **Requires**: Email delivery configured (SMTP or Resend). The toggle stays locked off until email is set up.
+- Default: Off
+- Requires: Email delivery configured (SMTP or Resend). The toggle stays locked off until email is set up.
 
-When both Password and Magic link are enabled, users can switch between methods on the sign-in form. See [magic-link sign-in](/auth/magic-link) for details.
+When both Password and Magic link are enabled, users can switch between methods on the sign-in form.
 
 ### OAuth providers
 
 Quackback ships with 10 built-in social providers. Configure each one once and enable it for the Portal, Team, or both. Credentials are stored encrypted in the database; no environment variables to set.
 
-| Provider | Default |
-|----------|---------|
-| GitHub | On |
-| Google | On |
-| Microsoft | Off |
-| Apple | Off |
-| GitLab | Off |
-| LinkedIn | Off |
-| Facebook | Off |
-| Discord | Off |
-| Reddit | Off |
-| Twitter / X | Off |
-
-A provider's toggle stays locked off until you've saved its Client ID and Client Secret. See [OAuth setup](/auth/oauth) for the per-provider walkthrough.
+A provider's toggle stays locked off until you've saved its Client ID and Client Secret. See [OAuth providers](/auth/oauth) for the per-provider walkthrough.
 
 ### Custom OIDC
 
-Bring your own OpenID Connect identity provider. Configure the discovery URL (or authorization and token URLs manually), then enable the toggle.
+Bring your own OpenID Connect identity provider for a single button on the portal sign-in form. The configuration form auto-detects common providers (Microsoft Entra ID, Okta, Google Workspace, OneLogin) from the issuer URL and prefills sensible defaults.
 
-- **Default**: Off
-- **Availability**: Plans with the Custom OIDC feature. Lower tiers see a tier-lock badge on the toggle.
+- Default: Off
+- Availability: Plans with the Custom OIDC feature. Lower tiers see a tier-lock badge.
 
 For full team-wide SSO with verified domains, enforcement, and JIT provisioning, use [Single sign-on](/auth/sso) instead.
 
-## Enable or disable methods
+## Anonymous voting
 
-1. Go to **Admin → Settings → Security → Authentication** and switch to the **Portal** tab.
-2. Toggle each method on or off. Changes save automatically.
+Visitors can vote on feedback without creating an account. Anonymous voting is **enabled by default**; the toggle lives on the **Sign-in providers** tab. It applies to both the portal and the [embeddable widget](/widget).
 
-The UI keeps at least one method enabled. When only one is on, its toggle is disabled. OAuth provider tiles show a small lock icon with a tooltip; password, magic link, and Custom OIDC just grey out the switch.
+When a visitor casts their first anonymous vote, a browser session is created transparently. Their vote registers instantly with no sign-in prompt. If they later create an account, their existing anonymous votes are linked over automatically.
 
-## When all methods are disabled
+Anonymous sign-in is rate-limited to **50 new anonymous sessions per IP per hour**. Once a visitor has a session, casting or un-casting votes doesn't count against the limit.
 
-The Authentication tab refuses to disable the last enabled method, but if you've edited the configuration file or the database directly and turned every portal sign-in method off, the portal degrades gracefully:
+To require accounts for voting, toggle Anonymous voting off. Existing anonymous votes still count toward totals.
 
-- The **Log in** and **Sign up** buttons are hidden from the public portal header. Clicking them would open a dialog with no usable path forward, so they're suppressed.
-- **Team members can still sign in** by visiting `/admin/login` directly (or `/admin`, which redirects). The Team tab is independent from the Portal tab, so disabling portal auth never locks admins out.
+## When all sign-in methods are disabled
+
+The Sign-in providers tab refuses to disable the last enabled method, but if you've edited the configuration file or the database directly and turned every portal sign-in method off, the portal degrades gracefully:
+
+- The **Log in** and **Sign up** buttons are hidden from the public portal header.
+- **Team members can still sign in** by visiting `/admin/login` directly. The Team and Portal toggles are independent.
 - **Portal users on a verified SSO domain** still see the Log in / Sign up buttons. The portal email dispatcher routes matching addresses into the SSO flow even when no other method is enabled. You can run an "SSO-only portal" by turning off every other portal method while keeping [Single sign-on](/auth/sso) configured for your domain.
 
 ## Access control
@@ -93,9 +173,12 @@ The Authentication tab refuses to disable the last enabled method, but if you've
 | Admin | Yes | Yes |
 | Member | No | No |
 
+Every change to portal access, sign-in providers, or invites is recorded in the [audit log](/admin/security#audit-log).
+
 ## Next steps
 
-- [Team Members](/admin/team) - Manage your team and their access
-- [Magic link sign-in](/auth/magic-link) - Passwordless email sign-in
-- [OAuth providers](/auth/oauth) - Per-provider setup walkthroughs
-- [Single sign-on](/auth/sso) - Team-wide SSO with verified domains
+- [Team Members](/admin/team) — manage your team and their access
+- [Magic link sign-in](/auth/magic-link) — passwordless email sign-in
+- [OAuth providers](/auth/oauth) — per-provider setup walkthroughs
+- [Single sign-on](/auth/sso) — team-wide SSO with verified domains
+- [Segments](/admin/segments) — group users for inbox filtering and access

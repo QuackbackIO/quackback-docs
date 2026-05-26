@@ -91,14 +91,17 @@ const getBoardSchema = z.object({
   id: z.string(),
 })
 
-// Schema with validation rules
+// Schema with validation rules. Note: board audience (public /
+// authenticated / team / specific segments) is set separately via
+// `updateBoardAccessFn` after creation — see
+// apps/web/src/lib/server/functions/boards.ts.
 const createBoardSchema = z.object({
   name: z
     .string()
     .min(1, 'Board name is required')
     .max(100, 'Board name must be 100 characters or less'),
   description: z.string().max(500).optional(),
-  isPublic: z.boolean().default(true),
+  isPublic: z.boolean().default(true),  // shorthand: true → 'public', false → 'team'
 })
 
 // Schema with complex types

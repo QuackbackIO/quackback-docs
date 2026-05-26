@@ -117,9 +117,17 @@ boards: {
   name: string,
   slug: string,
   description: string | null,
-  isPublic: boolean,
+  audience: BoardAudience,  // discriminated union, see below
   createdAt: timestamp,
+  deletedAt: timestamp | null,
 }
+
+// BoardAudience (jsonb column)
+type BoardAudience =
+  | { kind: 'public' }
+  | { kind: 'authenticated' }
+  | { kind: 'team' }
+  | { kind: 'segments'; segmentIds: SegmentId[] }
 
 // statuses
 statuses: {

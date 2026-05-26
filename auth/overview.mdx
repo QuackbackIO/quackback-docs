@@ -6,16 +6,36 @@ icon: "lock"
 
 # Authentication
 
-Quackback has two sign-in surfaces: one for the customers who submit feedback, one for the team that manages it. Each has its own methods and its own settings page.
+Quackback splits authentication into two concerns: **who's allowed in** and **how they sign in**. Both live on **Admin → Settings → Security → Authentication**, which has three tabs:
+
+| Tab | Controls | Doc |
+|-----|----------|-----|
+| **Portal access** | Visibility, allowed domains, email invites, allowed segments, widget sign-in | [Control portal access and sign-in](/admin/portal-auth#portal-access) |
+| **Team access** | Team-side 2FA and the SSO summary | [Configure team security](/admin/security) |
+| **Sign-in providers** | Password, magic link, social OAuth, Custom OIDC — per-surface toggles | [Sign-in providers](/admin/portal-auth#sign-in-providers) |
 
 ## Two audiences
 
-| Audience | Who they are | Where you configure it |
-|----------|--------------|------------------------|
-| **Portal users** | Customers who submit and vote on feedback | [Admin → Settings → Security → Authentication → Portal tab](/admin/portal-auth) |
-| **Team members** | Admins and members who manage feedback | [Admin → Settings → Security → Authentication → Team tab](/admin/security) |
+| Audience | Who they are |
+|----------|--------------|
+| **Portal users** | Customers who submit and vote on feedback. |
+| **Team members** | Admins and members who manage feedback. |
 
 A team member can also use the public portal like any other user.
+
+## Portal access channels
+
+A private portal admits visitors through these channels, evaluated in order:
+
+| Channel | Who it lets in | Requires |
+|---------|----------------|----------|
+| Team | Admins and members | Real authenticated session |
+| Allowed domain | Anyone whose verified email matches a listed domain | Email verified |
+| Email invite | A specific person you invited | Email verified |
+| Allowed segment | Any member of a permitted segment | Authenticated |
+| Widget sign-in | A visitor signed into your embedded widget | Verified-identity widget + admin opt-in |
+
+See [Control portal access](/admin/portal-auth#portal-access) for the full setup walkthrough.
 
 ## Sign-in methods
 

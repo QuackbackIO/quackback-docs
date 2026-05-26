@@ -73,18 +73,19 @@ The audit log is an append-only record of security-sensitive admin actions. Find
 
 It captures:
 
-- SSO connection changes and per-domain enforcement toggles
-- Sign-in method changes (password, magic link)
-- 2FA admin resets
-- Recovery-code generation and use
-- Bulk session revocations
-- Role changes, including those from SSO attribute mapping
-- Sign-ins, new-device sign-ins, and rate-limited attempts
+- **Authentication** — sign-in success and failure, new-device sign-ins, rate-limited attempts, sign-in method toggles (password, magic link).
+- **SSO** — connection changes, per-domain enforcement, recovery-code generation and use.
+- **Team** — role changes (including those from SSO attribute mapping), 2FA admin resets, bulk session revocations.
+- **Portal access** — visibility flips, allowed-domain edits, allowed-segment edits, widget sign-in toggle, and authenticated-but-unauthorized denials at the portal gate.
+- **Portal invites** — sends, resends, accepts, revokes, link copies (`portal.invite.link_minted`), and expirations from the daily sweep.
+- **Boards** — per-board audience changes.
+- **Moderation** — workspace moderation defaults, plus per-post approve / reject / hold actions.
+- **Widget handshake** — OTT exchanges that succeeded or were rejected. Grouped as **Widget activity** in the filter and hidden by default to keep noise down; turn it on when you're debugging a handoff issue.
 
-Each entry records the actor, their IP and user agent, the event type and outcome, and before/after values. Filter by actor and time range to investigate a specific change.
+Each entry records the actor, their IP, user agent, request id, actor type (user / service / api key / anonymous / system), and the auth method used (`password`, `sso`, `magic_link`, `ott`, `api_key`, `session`). Filter by actor, event type, or time range to investigate a specific change. Export the filtered view as CSV for forensics or compliance.
 
 <Tip>
-Review the audit log after any access change — a new admin, a removed member, or an SSO reconfiguration. It's the fastest way to confirm who did what.
+Review the audit log after any access change — a new admin, a removed member, an SSO reconfiguration, or a portal-access edit. It's the fastest way to confirm who did what.
 </Tip>
 
 ## Sign-in hardening

@@ -1,21 +1,24 @@
 ---
 title: "Group users with segments"
-description: "Create user segments to filter feedback by customer group and understand who's asking for what."
+description: "Create user segments to filter feedback, scope boards, and gate portal access."
 icon: "users"
 ---
 
 # Group users with segments
 
-Not all feedback is equal. Segments let you group users by plan, company size, region, or any attribute you track, so you can filter feedback by the customers who matter most to a given decision.
+Not all feedback is equal. Segments let you group users by plan, country, activity, or any attribute you track, so you can filter feedback by the customers who matter most — and use the same groups to scope which [boards](/admin/boards#access-tab) or [portals](/admin/portal-auth#allowed-segments) they can see.
 
 ## Overview
 
-Access segments from **Admin → Settings → Segments**. You can:
+Segments live at **Admin → Settings → People**, alongside [User Attributes](/admin/users). From there you can:
 
 - Create manual segments by hand-picking users
 - Create dynamic segments with rule-based auto-membership
 - Filter the feedback inbox by segment
 - Filter the users list by segment
+- Reference segments from per-board access and portal allowlists
+
+The same People page also lets you define the [custom attributes](/widget/identify-users#custom-attributes) your dynamic rules read from.
 
 ## Segment types
 
@@ -30,7 +33,7 @@ Assign users to a segment individually. Use manual segments for curated groups l
 
 ### Dynamic segments
 
-Define rules and let Quackback auto-populate the segment. Use dynamic segments for attribute-based groups like "Enterprise plan" or "Signed up in the last 30 days".
+Define rules and let Quackback auto-populate the segment. Use dynamic segments for attribute-based groups like "Enterprise plan", "Signed up in the last 30 days", or "US-based active accounts".
 
 1. Click **New Segment**
 2. Enter a name and optional description
@@ -42,19 +45,46 @@ Define rules and let Quackback auto-populate the segment. Use dynamic segments f
 Start with one or two broad segments (e.g., "Enterprise" and "Free"). You can always refine later.
 </Tip>
 
-## Configure rules
+## Built-in attributes
 
-Dynamic segments support conditions on these attributes:
+The rule builder ships with attributes grouped by source. You can also reference any [custom attribute](/widget/identify-users#custom-attributes) you've defined.
 
-| Attribute | Operators | Example |
-|-----------|-----------|---------|
-| Email domain | equals, contains | `acme.com` |
-| Email verified | is true, is false | Verified users only |
-| Days since joined | greater than, less than | Joined in the last 90 days |
-| Post count | greater than, less than, equals | Users with 5+ posts |
-| Vote count | greater than, less than, equals | Active voters |
-| Comment count | greater than, less than, equals | Engaged commenters |
-| Custom attributes | varies by type | Any user metadata field |
+### Profile
+
+| Attribute | Type | Notes |
+|-----------|------|-------|
+| **Name** | string | Display name from the user's profile. |
+| **Email** | string | Email address. Operators are case-insensitive. |
+| **Email Verified** | boolean | Whether the user has verified their email. |
+| **Locale** | string | BCP-47 locale from the identity provider (`en`, `en-US`). Only set when SSO or OAuth supplies the claim. |
+
+### Account
+
+| Attribute | Type | Notes |
+|-----------|------|-------|
+| **Principal Type** | enum | `user` or `anonymous`. Useful for excluding anonymous voters from rules. |
+| **Account Age (days)** | number | How many days since the principal was created. |
+| **Country** | string | ISO-3166-1 alpha-2 (`US`, `GB`), captured from your CDN's geo header on sign-in. Only populated when a geo-aware proxy is in front of the app. |
+| **Last Active (days ago)** | number | Days since the most recent session. The `has ever signed in` / `has never signed in` operators target users with no session at all. |
+| **Sign-up Source** | string | The auth provider the user first signed up with (`credential`, `google`, `github`, `sso`, …) or `email` for magic-link / OTP only. |
+
+### Activity
+
+| Attribute | Type | Notes |
+|-----------|------|-------|
+| **Post Count** | number | Feedback posts the user has submitted. |
+| **Vote Count** | number | Votes the user has cast. |
+| **Comment Count** | number | Comments the user has made. |
+
+### Custom attributes
+
+Anything you've defined in **Admin → Settings → People → Attributes** is available too. Pass values via the [widget](/widget/identify-users#custom-attributes) or the [API](/api/overview) and reference them by key in the rule builder.
+
+## Operators
+
+Each attribute exposes the operators its data type supports. Numbers add `greater than`, `at least`, `less than`, `at most`. Strings add `contains`, `starts with`, `ends with`. Every attribute also supports `is set` and `is not set` — handy for finding users with a missing locale or no `plan` value yet.
+
+The value field autosuggests existing values from your workspace as you type, so spelling stays consistent.
 
 You can combine multiple conditions. Choose **all** to require every condition (AND logic), or **any** to match at least one (OR logic).
 
@@ -62,27 +92,33 @@ You can combine multiple conditions. Choose **all** to require every condition (
 
 Dynamic segments re-evaluate automatically on an hourly schedule. You can also trigger a manual re-evaluation:
 
-- **Re-evaluate all** - click the button at the top of the segments list to refresh all dynamic segments at once
-- **Re-evaluate one** - click the refresh icon on an individual segment row
+- **Re-evaluate all** — click the button at the top of the segments list to refresh every dynamic segment at once
+- **Re-evaluate one** — hover a segment row in the **Admin → Users** sidebar and click the refresh icon
 
-Manual segments are not affected by re-evaluation.
+Manual segments aren't affected by re-evaluation.
 
 ## Edit and delete segments
 
-Click **Edit** on any segment to change its name, description, or rules. For dynamic segments, you can add, modify, or remove conditions.
+Click a segment in the People page (or the Users sidebar) to edit its name, description, or rules. For dynamic segments, you can add, modify, or remove conditions.
 
-Click **Delete** to remove a segment. A confirmation dialog warns that all user memberships are removed.
+Click **Delete** to remove a segment. The confirmation warns that all user memberships are removed.
 
 <Note>
 You cannot convert a manual segment to a dynamic one (or vice versa). Create a new segment if you need to change the type.
 </Note>
 
-## Filter feedback by segment
+## Use segments elsewhere
 
-Once you have segments, use them as filters in the [feedback inbox](/admin/inbox) and the [users list](/admin/users). Select a segment from the filter sidebar to see only feedback or users in that group.
+Once a segment exists you can reference it from other admin surfaces:
+
+- **Inbox** — filter posts by who submitted them. See [Inbox](/admin/inbox).
+- **Users list** — show only members of a segment via the sidebar on **Admin → Users**.
+- **Per-board access** — limit a board's audience to one or more segments. See [Board audience](/admin/boards#access-tab).
+- **Portal access** — let segment members into a private portal without an individual invite. See [Allowed segments](/admin/portal-auth#allowed-segments).
 
 ## Next steps
 
-- [Inbox](/admin/inbox) - Filter feedback by segment
-- [Users](/admin/users) - View and manage portal users
-- [Tags](/admin/tags) - Categorize feedback with tags
+- [Inbox](/admin/inbox) — filter feedback by segment
+- [Users](/admin/users) — view and manage portal users
+- [Boards](/admin/boards#access-tab) — scope a board to specific segments
+- [Portal access](/admin/portal-auth#allowed-segments) — let segment members into a private portal

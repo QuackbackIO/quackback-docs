@@ -14,8 +14,9 @@ Access Portal Users from **Admin → Users** in the sidebar. You can:
 
 - See all users who've signed up to give feedback
 - Find your most active contributors
-- Filter by verification status or sign-up date
+- Filter by [segment](/admin/segments), verification status, or sign-up date
 - Search by name or email
+- Send and manage [portal invites](#invitations)
 
 <Note>
 Portal Users are different from Team Members. Portal users are your customers who submit and vote on feedback. Team members are your employees who manage feedback in the admin dashboard.
@@ -144,12 +145,39 @@ If you notice spam accounts:
 2. Review recent sign-ups
 3. Remove suspicious accounts
 
+## Invitations
+
+The **Invitations** entry in the sidebar opens a dedicated view for portal email invites. Use it when you want to bring specific people into a private portal without configuring an allowlist by domain or segment.
+
+To send invites:
+
+1. Click **Invite people** in the top right.
+2. Paste up to 50 email addresses, separated by commas, spaces, or newlines.
+3. Optionally add a personal message (up to 500 characters) — it's included in the email.
+4. Click **Send invites**.
+
+Pending invites appear in the list with status, expiry, and per-row actions:
+
+| Action | What it does |
+|--------|--------------|
+| Copy link | Copies the same magic link from the email so you can share it directly. |
+| Resend | Sends a fresh email with the same link. |
+| Revoke | Cancels the invite immediately. The link stops working. |
+
+Each invite is valid for 14 days. Past that, the daily sweep marks it **Expired** and emits a `portal.invite.expired` event to the [audit log](/admin/security#audit-log).
+
+<Tip>
+Switch between Pending, Accepted, Revoked, and Expired tabs to audit your invite history. Bulk sends share a batch id so you can correlate everything that went out in a single click.
+</Tip>
+
+For setup guidance on the portal-side controls (visibility, segments, widget sign-in), see [Control portal access](/admin/portal-auth#portal-access).
+
 ## Access Control
 
-| Role | Can View Users | Can Remove Users |
-|------|----------------|------------------|
-| Admin | Yes | Yes |
-| Member | Yes | No |
+| Role | Can View Users | Can Remove Users | Can Invite |
+|------|----------------|------------------|------------|
+| Admin | Yes | Yes | Yes |
+| Member | Yes | No | No |
 
 ## Next steps
 

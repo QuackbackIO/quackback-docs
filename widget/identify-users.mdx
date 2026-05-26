@@ -311,8 +311,26 @@ Rotate and deploy atomically. Any lag between invalidating the old secret and de
 
 ---
 
+---
+
+## Sign portal users in from the widget
+
+If you run a private portal, you can use the widget identity as a sign-in for the portal too — visitors who are already known to the widget don't need to sign in again to open the full portal.
+
+Two things have to be true:
+
+1. **Verified identity only** is on (Admin → Settings → Widget). The widget is signing JWTs, not just capturing emails.
+2. **Widget sign-in** is on for the portal (Admin → Settings → Security → Authentication → Portal access).
+
+When both are on, visitors who follow a "View full portal" link from the widget are signed in automatically via a one-time token. Email-capture mode (unverified) does **not** grant portal access — there's no cryptographic guarantee of identity in that flow.
+
+See [Control portal access](/admin/portal-auth#widget-sign-in) for the admin-side toggle and the full grant rules.
+
+---
+
 ## Next steps
 
 - [Custom attributes](/widget/custom-attributes) — configure which attributes appear in the dashboard
 - [Widget configuration](/widget/configuration) — full list of widget init options
 - [Install the widget](/widget/installation) — embed snippet and SDK command reference
+- [Control portal access](/admin/portal-auth) — gate the standalone portal in addition to the widget

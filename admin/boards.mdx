@@ -31,9 +31,10 @@ Start with just 2-3 boards. You can always add more later, but too many boards c
 |-------|--------------|
 | Board name | Display name (e.g., "Feature Requests") |
 | Description | Optional text shown on the board page |
-| Public board | Toggle to make it visible to everyone |
 
 4. Click **Create board**
+
+New boards default to **Public**. Change the audience on the [Access tab](#access-tab) after the board is created.
 
 <Note>
 The URL slug is automatically generated from the board name. For example, "Feature Requests" becomes `/b/feature-requests`.
@@ -53,9 +54,24 @@ The Danger Zone at the bottom lets you delete the board.
 
 ### Access Tab
 
-Control board visibility:
-- **Public** - Anyone can view this board on your portal. Signed-in users can vote, comment, and submit feedback.
-- **Private** - Only team members can view this board.
+Pick who can see this board. The Access tab is admin-only — members editing the board can read the current setting but can't change it. Every change is recorded in the [audit log](/admin/security#audit-log).
+
+| Audience | Who can view |
+|----------|--------------|
+| **Public** | Anyone, including unsigned visitors. Signed-in users can vote, comment, and submit feedback. |
+| **Authenticated** | Any signed-in portal user. Hidden from anonymous visitors and search engines. |
+| **Team only** | Only admins and members. Use for internal boards. |
+| **Specific segments** | Only members of the [segments](/admin/segments) you pick. |
+
+<Tip>
+Use **Specific segments** to keep a board scoped to one customer cohort — beta testers, enterprise accounts, or a single workspace's domain. Combine with [dynamic segments](/admin/segments#dynamic-segments) so membership stays accurate automatically.
+</Tip>
+
+Switching to **Specific segments** shows a picker below the radio. Save is disabled until you pick at least one segment. Toggling between options preserves your previous picks, so a round trip won't lose the list.
+
+<Note>
+Per-board audience interacts with [portal visibility](/admin/portal-auth#portal-access). If the whole portal is private, a Public board is still hidden from anonymous visitors — the portal gate runs first.
+</Note>
 
 ### Import Data Tab
 
@@ -87,12 +103,14 @@ Deleting a board also deletes all posts in that board. This cannot be undone.
 
 ## Need to Keep Feedback Internal?
 
-Use private boards for:
-- Internal team feedback
-- Beta feature requests
-- Enterprise customer feedback
+Pick the smallest audience that fits the use case:
 
-Private boards are only visible to team members.
+| Use case | Audience |
+|----------|----------|
+| Internal team feedback | **Team only** |
+| Beta program | **Specific segments** (your beta-testers segment) |
+| Enterprise-only roadmap | **Specific segments** (an enterprise plan segment) |
+| Hide a board from search engines but keep it open to signed-in users | **Authenticated** |
 
 ## Migrate from another platform?
 
