@@ -27,12 +27,18 @@ Every tool has different export formats. Here's what to expect for common migrat
 
 ### From Canny
 
-Quackback has a dedicated Canny importer that connects directly to your Canny account. It migrates posts, votes, comments, users, and statuses automatically — no CSV wrangling needed.
+Quackback ships a dedicated Canny importer — a command-line tool that connects to the Canny API and migrates posts, votes, comments, users, statuses, tags, and changelog entries automatically. No CSV wrangling needed.
 
-1. Go to **Admin → Settings → Import**
-2. Select **Canny** and connect your account
-3. Map your Canny boards to Quackback boards
-4. Start the import
+1. Create a Quackback API key in **Admin → Settings → API Keys**, and create your target boards first (the importer matches Canny boards by name).
+2. Validate with a dry run, then run it for real:
+
+   ```bash
+   bun scripts/import/cli.ts canny \
+     --api-key YOUR_CANNY_API_KEY \
+     --quackback-url https://feedback.yourapp.com \
+     --quackback-key qb_xxx \
+     --dry-run --verbose   # drop --dry-run to import for real
+   ```
 
 See [Import and export data](/admin/import-export#migrate-from-canny) for full details.
 

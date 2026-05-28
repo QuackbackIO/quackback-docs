@@ -128,25 +128,44 @@ Export is per-board. Select the board you want to export from the board dropdown
 
 ## Migrate from Canny
 
-Quackback has a dedicated Canny importer that connects directly to your Canny account and migrates everything automatically — no CSV export needed.
+Quackback ships a dedicated Canny importer — a command-line tool that connects to the Canny API and migrates everything automatically. No manual CSV export needed.
 
 ### What gets imported
 
-- **Posts** — titles, descriptions, and creation dates
-- **Votes** — full vote counts preserved per post
-- **Comments** — threaded discussions with author attribution
-- **Users** — names, emails, and avatars
-- **Statuses** — mapped to your Quackback workflow
+- **Posts** — titles, descriptions, statuses, images, and creation dates
+- **Votes** — individual voter attribution preserved (proxy voting per email)
+- **Comments** — threaded, with internal comments routed to private notes
+- **Tags & categories** — Canny categories imported as tags
+- **Changelog entries** — with linked post relationships preserved
+- **Merge relationships** — resolved and replayed
+- **Users** — collected from all entities, identified by email
 
 ### Run the import
 
-1. Go to **Admin → Settings → Import**
-2. Select **Canny** as the source
-3. Follow the authentication flow to connect your Canny account
-4. Choose which Canny boards to import and map them to Quackback boards
-5. Start the import
+The Canny importer is a command-line tool that reads from the Canny API and writes through your Quackback REST API.
 
-The importer runs in the background. You'll see progress and a summary when it completes.
+1. Create a Quackback API key in **Admin → Settings → API Keys**
+2. Create your target boards in the admin UI first — the importer matches Canny boards by name
+3. Grab your Canny API key from your Canny settings
+4. Validate with a dry run, then run the import:
+
+```bash
+# Validate only — no data written
+bun scripts/import/cli.ts canny \
+  --api-key YOUR_CANNY_API_KEY \
+  --quackback-url https://feedback.yourapp.com \
+  --quackback-key qb_xxx \
+  --dry-run --verbose
+
+# Run it for real
+bun scripts/import/cli.ts canny \
+  --api-key YOUR_CANNY_API_KEY \
+  --quackback-url https://feedback.yourapp.com \
+  --quackback-key qb_xxx \
+  --verbose
+```
+
+The import is additive — existing posts are not deleted, and duplicate votes (same user and post) are skipped.
 
 <Tip>
 Set up your Quackback boards and statuses before importing so the mapping step goes smoothly. See [Organize feedback with boards](/admin/boards) if you haven't created boards yet.
