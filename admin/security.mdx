@@ -78,8 +78,8 @@ It captures:
 - **Team** — role changes (including those from SSO attribute mapping), 2FA admin resets, bulk session revocations.
 - **Portal access** — visibility flips, allowed-domain edits, allowed-segment edits, widget sign-in toggle, and authenticated-but-unauthorized denials at the portal gate.
 - **Portal invites** — sends, resends, accepts, revokes, link copies (`portal.invite.link_minted`), and expirations from the daily sweep.
-- **Boards** — per-board audience changes.
-- **Moderation** — workspace moderation defaults, plus per-post approve / reject / hold actions.
+- **Boards** — per-board access matrix changes (View / Vote / Comment / Submit tiers and segment allowlists).
+- **Moderation** — workspace moderation default changes, plus approve, reject, and hold actions on individual posts and comments.
 - **Widget handshake** — OTT exchanges that succeeded or were rejected. Grouped as **Widget activity** in the filter and hidden by default to keep noise down; turn it on when you're debugging a handoff issue.
 
 Each entry records the actor, their IP, user agent, request id, actor type (user / service / api key / anonymous / system), and the auth method used (`password`, `sso`, `magic_link`, `ott`, `api_key`, `session`). Filter by actor, event type, or time range to investigate a specific change. Export the filtered view as CSV for forensics or compliance.

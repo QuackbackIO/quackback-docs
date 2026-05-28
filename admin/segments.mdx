@@ -82,7 +82,7 @@ Anything you've defined in **Admin → Settings → People → Attributes** is a
 
 ## Operators
 
-Each attribute exposes the operators its data type supports. Numbers add `greater than`, `at least`, `less than`, `at most`. Strings add `contains`, `starts with`, `ends with`. Every attribute also supports `is set` and `is not set` — handy for finding users with a missing locale or no `plan` value yet.
+Each attribute exposes the operators its data type supports. Numbers add `greater than`, `at least`, `less than`, `at most`. Strings add `contains`, `starts with`, `ends with`. Most attributes also support `is set` and `is not set` — handy for finding users with a missing locale or no `plan` value yet. Principal Type and Sign-up Source are the exceptions: they support only `equals` and `not equals` comparisons.
 
 The value field autosuggests existing values from your workspace as you type, so spelling stays consistent.
 
@@ -113,7 +113,7 @@ Once a segment exists you can reference it from other admin surfaces:
 
 - **Inbox** — filter posts by who submitted them. See [Inbox](/admin/inbox).
 - **Users list** — show only members of a segment via the sidebar on **Admin → Users**.
-- **Per-board access** — limit a board's audience to one or more segments. See [Board audience](/admin/boards#access-tab).
+- **Per-board access** — limit a board to one or more segments. See [Board access](/admin/boards#access-tab).
 - **Portal access** — let segment members into a private portal without an individual invite. See [Allowed segments](/admin/portal-auth#allowed-segments).
 
 ## Next steps

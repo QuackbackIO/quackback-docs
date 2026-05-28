@@ -34,7 +34,16 @@ Start with just 2-3 boards. You can always add more later, but too many boards c
 
 4. Click **Create board**
 
-New boards default to **Public**. Change the audience on the [Access tab](#access-tab) after the board is created.
+New boards default to the **Public** preset: anyone can view, and sign-in is required to vote, comment, and submit. The create dialog shows two preset tiles:
+
+- **Public** — "Anyone can view. Sign-in for vote, comment, submit."
+- **Private** — "Workspace members only. Hidden from the portal."
+
+Below the tiles, the **Customize access after create** checkbox ("open the Access tab to fine-tune.") controls where you land. Leave it unchecked to return to the board list. Check it to open the new board's [Access tab](#access-tab), where you can adjust per-action tiers and segments right away.
+
+<Note>
+Segments and per-action tiers are configured only after creation, on the [Access tab](#access-tab). The create dialog offers the two presets and nothing more.
+</Note>
 
 <Note>
 The URL slug is automatically generated from the board name. For example, "Feature Requests" becomes `/b/feature-requests`.
@@ -42,7 +51,7 @@ The URL slug is automatically generated from the board name. For example, "Featu
 
 ## Board Settings
 
-Select a board to see its settings. You'll find tabs for:
+Select a board to see its settings. Each board has five tabs, in order: **General**, **Access**, **Moderation**, **Import Data**, and **Export Data**.
 
 ### General Tab
 
@@ -52,25 +61,71 @@ Edit the board's basic information:
 
 The Danger Zone at the bottom lets you delete the board.
 
-### Access Tab
+### Access tab
 
-Pick who can see this board. The Access tab is admin-only — members editing the board can read the current setting but can't change it. Every change is recorded in the [audit log](/admin/security#audit-log).
+Who can do what on this board is set in a per-action permissions matrix. Changing board access is admin-only — the update is enforced on the server, and every change is recorded in the [audit log](/admin/security#audit-log).
 
-| Audience | Who can view |
-|----------|--------------|
-| **Public** | Anyone, including unsigned visitors. Signed-in users can vote, comment, and submit feedback. |
-| **Authenticated** | Any signed-in portal user. Hidden from anonymous visitors and search engines. |
-| **Team only** | Only admins and members. Use for internal boards. |
-| **Specific segments** | Only members of the [segments](/admin/segments) you pick. |
+The matrix is a permanent 4×4 grid. The rows are four independent actions:
 
-<Tip>
-Use **Specific segments** to keep a board scoped to one customer cohort — beta testers, enterprise accounts, or a single workspace's domain. Combine with [dynamic segments](/admin/segments#dynamic-segments) so membership stays accurate automatically.
-</Tip>
+- **View** — see posts and discussion
+- **Vote** — upvote posts to signal interest
+- **Comment** — reply on existing posts
+- **Submit posts** — create new feedback
 
-Switching to **Specific segments** shows a picker below the radio. Save is disabled until you pick at least one segment. Toggling between options preserves your previous picks, so a round trip won't lose the list.
+The columns are four tiers, from most open to most restrictive:
+
+- **Anyone** — public, no sign-in
+- **Signed-in** — any logged-in user
+- **Segments** — specific audience groups
+- **Team only** — workspace members
+
+Each action gets its own tier, so access can be asymmetric. A board can let **Anyone** View while only **Signed-in** users Vote, Comment, and Submit posts.
+
+#### Presets
+
+Two presets summarize the common setups:
+
+- **Public** — View: **Anyone**; Vote, Comment, Submit posts: **Signed-in**.
+- **Private** — all four actions: **Team only** (hidden from the portal).
+
+Clicking a preset restores all tiers to it. Editing any cell switches the matrix to **Custom** — Custom is derived from the grid, not a button you pick.
 
 <Note>
-Per-board audience interacts with [portal visibility](/admin/portal-auth#portal-access). If the whole portal is private, a Public board is still hidden from anonymous visitors — the portal gate runs first.
+Vote, Comment, and Submit posts can never be more open than View. Raising the View tier automatically bumps the other three up to keep this rule, and clears any segment lists on actions that get bumped off the **Segments** tier. Cells that would break the rule are locked, with a tooltip naming the minimum tier you can pick.
+</Note>
+
+#### Choose segments per action
+
+When you set an action to **Segments**, click the cell to open a picker and choose one or more [segments](/admin/segments) — up to 50 per action. Each action keeps its own allowlist. The cell previews the first segment name, a count badge for the rest, and an estimated reach.
+
+If an action is set to **Segments** with no segments chosen, the cell shows a red "Pick segments" warning, and Save is disabled with the message "Some rules use Segments but no segments are selected." Switching an action away from **Segments** clears that action's list.
+
+<Tip>
+Combine the **Segments** tier with [dynamic segments](/admin/segments#dynamic-segments) so membership stays accurate automatically — beta testers, enterprise accounts, or a single domain.
+</Tip>
+
+<Note>
+A workspace-wide setting, **Allow anonymous interaction** (Admin → Settings → Moderation, see [Moderation](/admin/moderation)), acts as a ceiling. When it's off, the **Anyone** tier is disabled for Vote, Comment, and Submit posts on every board. View is never affected — anyone viewing a public board is the definition of public. The Access tab shows a banner: "Workspace policy disables the Anyone tier for: Vote, Comment, Submit posts." Existing **Anyone** cells for those actions are bumped up to **Signed-in**.
+</Note>
+
+The Access tab controls **who** can perform each action. Whether non-team posts and comments need approval before publishing is set separately on the Moderation tab — see [Moderation](/admin/moderation).
+
+### Moderation tab
+
+The Moderation tab sets per-board approval rules, separate from access. There are three rules, each a tri-state segmented control:
+
+- **Anonymous posts**
+- **Signed-in posts**
+- **Comments**
+
+Each rule has three options: **Inherit**, **On**, and **Off**. **Inherit** defers to the workspace moderation default, and the Inherit pill shows the resolved value (for example, "Inherit (On)"). **On** force-holds matching submissions for review. **Off** always publishes them.
+
+A banner reads "Inheriting all workspace defaults" or "This board overrides some workspace defaults", with a link to workspace settings. Held items appear in the [moderation review queue](/admin/moderation#review-queue). Team members' own posts and comments always publish immediately and bypass moderation.
+
+For the full two-level model — workspace defaults plus per-board overrides — see [Moderation](/admin/moderation).
+
+<Note>
+Saving here only patches the board's moderation rules. It doesn't touch the Access matrix.
 </Note>
 
 ### Import Data Tab
@@ -103,14 +158,18 @@ Deleting a board also deletes all posts in that board. This cannot be undone.
 
 ## Need to Keep Feedback Internal?
 
-Pick the smallest audience that fits the use case:
+Set each action's tier to fit the use case:
 
-| Use case | Audience |
-|----------|----------|
-| Internal team feedback | **Team only** |
-| Beta program | **Specific segments** (your beta-testers segment) |
-| Enterprise-only roadmap | **Specific segments** (an enterprise plan segment) |
-| Hide a board from search engines but keep it open to signed-in users | **Authenticated** |
+| Use case | How to set it |
+|----------|---------------|
+| Internal team feedback | View, Vote, Comment, Submit posts all **Team only** (this is the **Private** preset). |
+| Beta program | View → **Segments** (your beta-testers segment); Vote, Comment, Submit posts → **Signed-in** or the same segment. |
+| Enterprise-only roadmap | View → **Segments** (an enterprise segment); keep Submit posts → **Team only** so only your team posts; Vote and Comment → **Segments**. |
+| Hide from search engines but open to signed-in users | View → **Signed-in**; set Vote, Comment, and Submit posts as you like. |
+
+<Tip>
+Combine the **Segments** tier with [dynamic segments](/admin/segments#dynamic-segments) so membership stays accurate automatically.
+</Tip>
 
 ## Migrate from another platform?
 

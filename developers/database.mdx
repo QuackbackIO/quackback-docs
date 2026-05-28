@@ -117,17 +117,34 @@ boards: {
   name: string,
   slug: string,
   description: string | null,
-  audience: BoardAudience,  // discriminated union, see below
+  access: BoardAccess,  // per-action permissions matrix, see below
   createdAt: timestamp,
   deletedAt: timestamp | null,
 }
 
-// BoardAudience (jsonb column)
-type BoardAudience =
-  | { kind: 'public' }
-  | { kind: 'authenticated' }
-  | { kind: 'team' }
-  | { kind: 'segments'; segmentIds: SegmentId[] }
+// BoardAccess (jsonb column)
+// Each action has its own tier; per-action segment allowlists apply
+// wherever a tier is 'segments'. Moderation is tri-state per board.
+type AccessTier = 'anonymous' | 'authenticated' | 'segments' | 'team'
+type ModerationRule = 'inherit' | 'on' | 'off'
+
+interface BoardAccess {
+  view: AccessTier
+  vote: AccessTier
+  comment: AccessTier
+  submit: AccessTier
+  segments: {
+    view: SegmentId[]
+    vote: SegmentId[]
+    comment: SegmentId[]
+    submit: SegmentId[]
+  }
+  moderation: {
+    anonPosts: ModerationRule
+    signedPosts: ModerationRule
+    comments: ModerationRule
+  }
+}
 
 // statuses
 statuses: {

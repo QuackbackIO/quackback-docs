@@ -1,0 +1,80 @@
+---
+title: "Moderation"
+description: "Hold incoming posts and comments for review, and control who can interact anonymously."
+icon: "shield-check"
+---
+
+# Moderation
+
+Keep low-quality posts and spam out without slowing real users down. Moderation lets you hold non-team posts and comments for review before they go public, and decide whether anonymous visitors can interact at all.
+
+Workspace-wide controls live at **Admin → Settings → Moderation**. Per-board overrides and the review queue are covered below.
+
+## Allow anonymous interaction
+
+Decide whether visitors without an account can interact with your portal at all. The master switch is **Allow anonymous interaction**: "When off, all boards require sign-in for voting, commenting, and submitting posts."
+
+By default this is **on** — new workspaces let anonymous visitors take part. It acts as a ceiling across every board for **Vote**, **Comment**, and **Submit** only. **View** is never gated by it, because anyone being able to view a public board is the definition of public.
+
+When you turn it off:
+
+- The board [Access tab](/admin/boards#access-tab) disables the **Anyone** tier for Vote, Comment, and Submit.
+- The server rejects anonymous votes, comments, and submissions.
+
+<Note>
+This is a ceiling, not a floor. Turning it back on does not re-open boards that restrict an action through their per-board tiers. A board with **Vote = Signed-in** still blocks anonymous votes.
+</Note>
+
+<Note>
+Team members and admins always bypass anonymous-interaction rules. The switch only affects portal visitors.
+</Note>
+
+## Approval rules
+
+Require approval before submissions appear publicly. Two independent toggles set the workspace defaults:
+
+- **Require approval for anonymous posts** — posts from visitors without an account wait for review before they appear.
+- **Require approval for signed-in posts** — posts from signed-in portal users wait for review before they appear.
+
+Turn on either one to hold those submissions for review. Leave both off to publish everything immediately. You can hold one group without the other — for example, hold anonymous posts while letting signed-in users post straight through.
+
+<Note>
+Comments follow the post-approval setting only when **both** toggles are on — that is, when you require approval for everyone. Otherwise comments publish immediately, unless a board overrides comments explicitly.
+</Note>
+
+These are workspace defaults. Individual boards can override them on the [board Moderation tab](/admin/boards#moderation-tab).
+
+## Per-board overrides
+
+Need a different rule for one board? Each board can override the workspace defaults on three axes — **Anonymous posts**, **Signed-in posts**, and **Comments** — from the [board Moderation tab](/admin/boards#moderation-tab).
+
+Each axis is set to one of three values:
+
+| Value | What it does |
+|-------|--------------|
+| **Inherit** | Use the workspace default. The pill shows the resolved value, e.g. **Inherit (On)**. |
+| **On** | Always hold submissions for review. |
+| **Off** | Always publish submissions immediately. |
+
+<Tip>
+A moderation badge appears in the admin sidebar whenever review is active — the workspace default is on, items are pending, or any board forces a rule **On**. This keeps per-board moderation discoverable even when the workspace default is off.
+</Tip>
+
+## Review queue
+
+Approve or reject held items at **Admin → Moderation**, titled **Moderation Queue**. The queue has two sections, **Pending posts** and **Pending comments**. Each item shows the author (or **Anonymous**), the board, and the content, with **Approve** and **Reject** buttons.
+
+- **Approve** publishes the item. A held comment then counts toward the post's public comment total.
+- **Reject** removes it from the queue. Rejected items are soft-deleted and can be restored from the admin.
+
+The queue is available to team members — both admins and members.
+
+<Note>
+Team members' own posts and comments are never held. They publish immediately, regardless of workspace or per-board rules.
+</Note>
+
+## Next steps
+
+- [Boards](/admin/boards) — set per-board access and moderation on the Access and Moderation tabs
+- [Portal access](/admin/portal-auth) — choose who can view and sign in to your portal
+- [Audit log](/admin/security#audit-log) — review every moderation and access change

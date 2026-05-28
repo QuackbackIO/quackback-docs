@@ -17,13 +17,24 @@ Each user gets **one vote per post**. Votes help the team:
 
 ## Vote without an account
 
-When anonymous voting is enabled, you can vote on posts without signing in. Click the vote button on any post and your vote is counted immediately - no account required.
+You can vote without signing in when two things line up: your workspace allows anonymous interaction, and the board's Vote permission allows it. When both apply, click the vote button on any post and your vote is counted immediately - no account required.
+
+Some boards require sign-in to vote (or restrict voting to specific groups or team members) even when your workspace allows anonymous interaction. Voting is set per board, separate from who can view.
 
 Your votes are tracked per browser session. If you clear your cookies, your anonymous votes can't be recovered.
 
 <Tip>
 If you sign up for an account later, your anonymous votes carry over automatically. You won't lose any votes you've already cast.
 </Tip>
+
+### When a board requires sign-in to vote
+
+Each board independently sets who can vote - **Anyone**, **Signed-in** users, specific audience **Segments**, or **Team only** - and this is separate from who can view the board. So a board you can read may still require sign-in to vote.
+
+If you can't vote, you'll see a message explaining why:
+- "Sign in to vote on this board"
+- "Only specific groups can vote on this board"
+- "Only team members can vote on this board"
 
 ## Vote on posts
 
@@ -145,7 +156,9 @@ High votes don't guarantee implementation, but they ensure visibility.
 
 ### Why do I need to sign in to vote?
 
-Some workspaces require sign-in to ensure one vote per person, deliver status update notifications, and prevent vote manipulation. If the workspace has [anonymous voting](/admin/portal-auth#enable-anonymous-voting) enabled, you can vote without an account.
+Some workspaces require sign-in for voting to prevent manipulation and keep the signal accurate. Individual boards can also restrict voting to signed-in users, specific segments, or team members, regardless of the workspace setting.
+
+Admins control the workspace setting at **Admin → Settings → Moderation** ("Allow anonymous interaction"). See [Moderation](/admin/moderation#allow-anonymous-interaction) for details.
 
 ### Can I vote on my own posts?
 
@@ -161,7 +174,7 @@ This depends on workspace settings. Some organizations show voter counts only; o
 
 ### Can admins vote on my behalf?
 
-Yes. Workspace admins can add votes on behalf of users — for example, when a customer requests a feature through a support channel. These proxy votes count toward the total vote count and you receive the same status update notifications as if you voted yourself.
+Yes. Workspace admins can add votes on behalf of users — for example, when a customer requests a feature through a support channel. These proxy votes count toward the total vote count and you receive the same status update notifications as if you voted yourself. Proxy votes aren't subject to a board's Vote permission, so admins can add votes on any board.
 
 ### Can admins remove my vote?
 

@@ -148,15 +148,17 @@ Bring your own OpenID Connect identity provider for a single button on the porta
 
 For full team-wide SSO with verified domains, enforcement, and JIT provisioning, use [Single sign-on](/auth/sso) instead.
 
-## Anonymous voting
+## Anonymous interaction
 
-Visitors can vote on feedback without creating an account. Anonymous voting is **enabled by default**; the toggle lives on the **Sign-in providers** tab. It applies to both the portal and the [embeddable widget](/widget).
+Visitors can vote, comment, and submit feedback without creating an account when the workspace allows it. A single workspace switch, **Allow anonymous interaction**, controls all three. Find it at **Admin → Settings → [Moderation](/admin/moderation)**. It applies to both the portal and the [embeddable widget](/widget).
 
-When a visitor casts their first anonymous vote, a browser session is created transparently. Their vote registers instantly with no sign-in prompt. If they later create an account, their existing anonymous votes are linked over automatically.
+When it's off, every board requires sign-in to vote, comment, and submit. Viewing is unaffected.
+
+This switch is a ceiling, not a per-board setting. Even when anonymous interaction is allowed, an individual board can still require sign-in or restrict an action to segments or your team on its [Access tab](/admin/boards#access-tab).
+
+When a visitor first interacts anonymously, a browser session is created transparently. Their action registers instantly with no sign-in prompt. If they later create an account, their existing anonymous votes are linked over automatically.
 
 Anonymous sign-in is rate-limited to **50 new anonymous sessions per IP per hour**. Once a visitor has a session, casting or un-casting votes doesn't count against the limit.
-
-To require accounts for voting, toggle Anonymous voting off. Existing anonymous votes still count toward totals.
 
 ## When all sign-in methods are disabled
 
