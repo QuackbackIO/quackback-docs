@@ -13,28 +13,40 @@ The fastest way to get Quackback into production. Docker handles dependencies, d
 - Docker Engine 20.10+
 - Docker Compose v2+
 - 1 GB RAM minimum (2 GB recommended)
-- PostgreSQL 18+ (included in docker-compose, or bring your own)
+- PostgreSQL 18+ (included in the compose stack, or bring your own)
+
+<Note>
+The published image is multi-arch (`linux/amd64` + `linux/arm64`), so it runs natively on Apple Silicon and ARM servers (AWS Graviton, Ampere, Raspberry Pi).
+</Note>
 
 ## Quick Deploy
 
 ### Use Docker Compose (recommended)
 
-**[Server]**
+`docker-compose.prod.yml` is a self-contained, single-host stack: the Quackback app plus PostgreSQL, Dragonfly (Redis), and MinIO (S3-compatible storage). The app is the only service with a published port; the datastores stay on the internal network and the upload bucket is private.
 
 ```bash
-# Clone the repository
-git clone https://github.com/quackbackio/quackback.git
+# Clone the repository (the Postgres image is built locally for pg_cron + pgvector)
+git clone https://github.com/QuackbackIO/quackback.git
 cd quackback
 
-# Configure environment
-cp .env.example .env
-# Edit .env with your settings (see Configuration below)
+# Create your environment file and fill in every value
+cp .env.prod.example .env
+# Generate secrets with: openssl rand -base64 32
 
-# Start services
-docker compose up -d
+# Start the stack
+docker compose -f docker-compose.prod.yml up -d
 ```
 
-### Use Docker Run
+Open `http://localhost:3000` (or your `BASE_URL` behind a reverse proxy).
+
+<Warning>
+The repository's root `docker-compose.yml` is for **local development only** — it starts the datastores (with insecure defaults and a world-readable bucket) but **no app service**. Use `docker-compose.prod.yml` for self-hosting.
+</Warning>
+
+### Use Docker Run (bring your own datastores)
+
+If you already run managed PostgreSQL, Redis, and S3, run the app container on its own:
 
 ```bash
 docker run -d \
@@ -47,6 +59,10 @@ docker run -d \
   ghcr.io/quackbackio/quackback:latest
 ```
 
+<Tip>
+If you pass configuration with `--env-file` instead of `-e`, do **not** wrap values in quotes and do not add inline `# comments` on a value line. Docker's `--env-file` reads everything after `=` literally, so `DATABASE_URL="postgres://..."` is parsed with the quotes attached and fails with `ERR_INVALID_URL`.
+</Tip>
+
 ## How the Docker Image Works
 
 The Quackback Docker image uses a multi-stage build:
@@ -58,153 +74,87 @@ The Quackback Docker image uses a multi-stage build:
 - **Health endpoint** at `/api/health`
 
 <Tip>
-Because migrations run on every startup, upgrading is as simple as pulling the latest image and restarting. No manual migration step needed.
+Because migrations run on every startup, upgrading is as simple as pulling the latest image and restarting. No manual migration step needed. (Set `SKIP_MIGRATIONS=true` if you run migrations out-of-band, e.g. a Kubernetes pre-upgrade hook.)
 </Tip>
 
 ## Configuration
 
-### Required Environment Variables
+With the compose stack you set everything in `.env` (copied from `.env.prod.example`). The compose file derives the internal connection strings (`DATABASE_URL`, `REDIS_URL`, `S3_*`) from your secrets and wires them to the bundled services automatically — so you only provide the secrets, not the URLs.
+
+### Required
 
 ```bash
-# Database connection
-DATABASE_URL="postgresql://postgres:postgres@postgres:5432/quackback"
-
-# Redis/Dragonfly connection for background job queue (BullMQ)
-REDIS_URL="redis://localhost:6379"
-
-# Authentication (generate with: openssl rand -base64 32)
-SECRET_KEY="your-32-character-minimum-secret-key"
-
 # Public URL (must match your domain)
-BASE_URL="https://feedback.yourcompany.com"
+BASE_URL=https://feedback.yourcompany.com
+
+# Auth/encryption key — generate with: openssl rand -base64 32
+SECRET_KEY=
+
+# Bundled PostgreSQL
+POSTGRES_USER=quackback
+POSTGRES_PASSWORD=
+POSTGRES_DB=quackback
+
+# Bundled MinIO (also used as the S3 access key / secret)
+MINIO_ROOT_USER=quackback
+MINIO_ROOT_PASSWORD=
+S3_BUCKET=quackback
+S3_REGION=us-east-1
+
+# Image tag to run (pin to a release in production)
+QUACKBACK_TAG=latest
 ```
 
-### Email Configuration
+### Email
 
 <Note>
-Without email configuration, OTP codes are printed to the console. For production, configure one of the providers below.
+Without email configuration, OTP login codes are printed to the container logs. For production, configure one of the providers below.
 </Note>
 
-**SMTP (Recommended)**
+**SMTP (recommended)**
 ```bash
-EMAIL_SMTP_HOST="smtp.example.com"
-EMAIL_SMTP_PORT="587"
-EMAIL_SMTP_USER="your-username"
-EMAIL_SMTP_PASS="your-password"
-EMAIL_FROM="feedback@yourcompany.com"
+EMAIL_SMTP_HOST=smtp.example.com
+EMAIL_SMTP_PORT=587
+EMAIL_SMTP_USER=your-username
+EMAIL_SMTP_PASS=your-password
+EMAIL_FROM=Quackback <feedback@yourcompany.com>
 ```
 
 **Resend**
 ```bash
-EMAIL_RESEND_API_KEY="re_xxxxxxxxxxxx"
-EMAIL_FROM="feedback@yourcompany.com"
+EMAIL_RESEND_API_KEY=re_xxxxxxxxxxxx
+EMAIL_FROM=Quackback <feedback@yourcompany.com>
 ```
 
-### OAuth Providers (Optional)
+### OAuth providers & integrations (optional)
 
-```bash
-# GitHub
-GITHUB_CLIENT_ID="your-github-client-id"
-GITHUB_CLIENT_SECRET="your-github-client-secret"
+OAuth providers (GitHub, Google, Discord, etc.) and integrations (Slack, etc.) are configured in the admin UI under **Settings → Authentication / Integrations**. See the [Environment Variables Reference](/docs/reference/environment-variables) for the full list.
 
-# Google
-GOOGLE_CLIENT_ID="your-google-client-id"
-GOOGLE_CLIENT_SECRET="your-google-client-secret"
-```
+## Object Storage
 
-### Integrations (Optional)
+The bundled MinIO has no public port, so uploads are served through the app's `/api/storage` proxy (`S3_PROXY=true` is set for you in the compose file). To use an external S3 provider (AWS S3, Cloudflare R2, Backblaze B2) instead, point `S3_*` at your provider and remove the `minio` and `minio-init` services from the compose file.
 
-```bash
-# Slack
-SLACK_CLIENT_ID="your-slack-client-id"
-SLACK_CLIENT_SECRET="your-slack-client-secret"
-```
+## Database
 
-See [Environment Variables Reference](/docs/reference/environment-variables) for all options.
+### Use the bundled PostgreSQL
 
-## Docker Compose Configuration
-
-The included `docker-compose.yml` uses a custom PostgreSQL image with required extensions, plus MinIO for file storage and Dragonfly for the background job queue:
-
-```yaml
-services:
-  postgres:
-    build:
-      context: ./docker/postgres
-      dockerfile: Dockerfile
-    container_name: quackback-db
-    restart: unless-stopped
-    environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: password
-      POSTGRES_DB: quackback
-    ports:
-      - '5432:5432'
-    volumes:
-      - postgres_data:/var/lib/postgresql
-      - ./docker/postgres/init-pgcron.sql:/docker-entrypoint-initdb.d/init-pgcron.sql
-    command: postgres -c shared_preload_libraries=pg_cron -c cron.database_name=quackback -c max_connections=200
-    healthcheck:
-      test: ['CMD-SHELL', 'pg_isready -U postgres']
-      interval: 5s
-      timeout: 5s
-      retries: 5
-
-  minio:
-    image: minio/minio:latest
-    container_name: quackback-minio
-    restart: unless-stopped
-    environment:
-      MINIO_ROOT_USER: minioadmin
-      MINIO_ROOT_PASSWORD: minioadmin
-    ports:
-      - '9000:9000'
-      - '9001:9001'
-    volumes:
-      - minio_data:/data
-    command: server /data --console-address ":9001"
-
-  dragonfly:
-    image: docker.dragonflydb.io/dragonflydb/dragonfly:v1.27.1
-    container_name: quackback-dragonfly
-    restart: unless-stopped
-    command: dragonfly --cluster_mode=emulated --lock_on_hashtags
-    ports:
-      - '6379:6379'
-    volumes:
-      - dragonfly_data:/data
-
-volumes:
-  postgres_data:
-  minio_data:
-  dragonfly_data:
-```
-
-<Tip>
-The custom Dockerfile (`docker/postgres/Dockerfile`) installs `pg_cron` and `pgvector` extensions on top of PostgreSQL 18. Dragonfly is a Redis-compatible in-memory store used by BullMQ for background job processing. MinIO provides S3-compatible file storage for image uploads.
-</Tip>
-
-## Database Setup
-
-### Use the included PostgreSQL
-
-The docker-compose setup includes PostgreSQL with the required extensions (`pgvector`, `pg_cron`). Migrations run automatically when the container starts.
+The compose stack builds a PostgreSQL 18 image with the required extensions (`pgvector`, `pg_cron`) and runs migrations automatically on startup.
 
 ### Use an external database
 
-**[Database Provider]** For managed databases (AWS RDS, Supabase, Neon, etc.):
+For managed databases (AWS RDS, Supabase, Neon, etc.):
 
 1. Create a PostgreSQL 18+ database
-2. Enable the `pgvector` extension
-3. Set `DATABASE_URL` in your `.env`
+2. Enable the `pgvector` extension (and `pg_cron` if you want scheduled analytics refreshes)
+3. Point `DATABASE_URL` at it (via the Docker Run path, or by editing the compose file)
 
-**[Server]** Migrations run automatically when the Docker container starts, so no manual migration step is needed. If you need to run migrations outside of Docker:
+Migrations run automatically when the container starts. To run them manually:
 
 ```bash
 docker run --rm \
   -e DATABASE_URL="your-external-db-url" \
   ghcr.io/quackbackio/quackback:latest \
-  bun run db:migrate
+  bun /app/migrate.mjs
 ```
 
 ## Reverse Proxy
@@ -219,31 +169,32 @@ Always back up your database before upgrading.
 
 ```bash
 # 1. Back up your database
-docker compose exec postgres pg_dump -U postgres quackback > backup.sql
+docker compose -f docker-compose.prod.yml exec postgres \
+  pg_dump -Fc -U "$POSTGRES_USER" "$POSTGRES_DB" > backup-$(date +%Y%m%d).dump
 
-# 2. Pull the latest image
-docker compose pull
+# 2. Pull the latest source + image (bump QUACKBACK_TAG in .env to pin a version)
+git pull
+docker compose -f docker-compose.prod.yml pull
 
 # 3. Restart (migrations run automatically)
-docker compose up -d
+docker compose -f docker-compose.prod.yml up -d
 ```
 
 Drizzle migrations are sequential and safe to re-run, so the container handles schema updates on startup without any manual steps.
 
 ### Rollback
 
-If something goes wrong:
-
 ```bash
 # Stop containers
-docker compose down
+docker compose -f docker-compose.prod.yml down
 
 # Restore the backup
-docker compose up -d postgres
-docker compose exec -T postgres psql -U postgres quackback < backup.sql
+docker compose -f docker-compose.prod.yml up -d postgres
+docker compose -f docker-compose.prod.yml exec -T postgres \
+  pg_restore -U "$POSTGRES_USER" -d "$POSTGRES_DB" --clean < backup-YYYYMMDD.dump
 
-# Start with the previous image
-docker compose up -d app
+# Start the previous image (set QUACKBACK_TAG to the old version in .env first)
+docker compose -f docker-compose.prod.yml up -d
 ```
 
 ## Health Checks
@@ -255,34 +206,36 @@ curl http://localhost:3000/api/health
 
 ## Troubleshooting
 
-### Container won't start
+### Containers start but the app isn't reachable
 
-Check logs:
+Make sure you used `docker-compose.prod.yml`. A bare `docker compose up -d` uses the root `docker-compose.yml`, which only starts the dev datastores and **no app**:
+
 ```bash
-docker compose logs app
+docker compose -f docker-compose.prod.yml ps
+docker compose -f docker-compose.prod.yml logs app
 ```
+
+### `ERR_INVALID_URL` on startup
+
+A quoted value in an `--env-file` `.env` (e.g. `DATABASE_URL="postgres://..."`). Remove the quotes — Docker keeps them literally. See the Tip under [Use Docker Run](#use-docker-run-bring-your-own-datastores).
 
 ### Database connection failed
 
 1. Verify PostgreSQL is healthy:
    ```bash
-   docker compose ps
+   docker compose -f docker-compose.prod.yml ps
    ```
-
-2. Test connection:
+2. Test the connection:
    ```bash
-   docker compose exec postgres psql -U postgres -c "SELECT 1"
+   docker compose -f docker-compose.prod.yml exec postgres psql -U "$POSTGRES_USER" -c "SELECT 1"
    ```
 
 ### Port already in use
 
-```bash
-# Find process using port 3000
-lsof -i :3000
+Change the published port via `APP_PORT` in your `.env` (the container always listens on 3000 internally):
 
-# Or change the port in docker-compose.yml
-# ports:
-#   - "8080:3000"
+```bash
+APP_PORT=8080
 ```
 
 ## Security
@@ -291,11 +244,12 @@ lsof -i :3000
 Follow these practices for production deployments.
 </Warning>
 
-1. **Use strong secrets** - Generate with `openssl rand -base64 32`
-2. **Enable HTTPS** - Always use TLS in production
-3. **Restrict database access** - Do not expose PostgreSQL publicly
-4. **Back up regularly** - Automate database backups
-5. **Keep updated** - Pull latest images regularly
+1. **Use strong secrets** — generate with `openssl rand -base64 32`
+2. **Enable HTTPS** — always use TLS in production (via a reverse proxy)
+3. **Don't expose datastores** — the prod compose keeps Postgres/Dragonfly/MinIO off public ports; keep it that way
+4. **Pin the image** — set `QUACKBACK_TAG` to a specific version rather than `latest`
+5. **Back up regularly** — automate database (and object-storage) backups
+6. **Keep updated** — pull latest images regularly
 
 ## Next Steps
 
