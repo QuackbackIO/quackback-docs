@@ -285,6 +285,24 @@ In development mode without email configuration, OTP codes are printed to the se
 
 ## Docker Issues
 
+### App isn't reachable / no app container
+
+**Symptoms**: `docker compose up -d` starts the datastores but Quackback itself never runs.
+
+**Solution**: Use the production compose file. A bare `docker compose up -d` uses the repo's root `docker-compose.yml`, which is **development infrastructure only** (Postgres, Dragonfly, MinIO — no app service). Self-host with:
+
+```bash
+cp .env.prod.example .env   # fill in your values
+docker compose -f docker-compose.prod.yml up -d
+docker compose -f docker-compose.prod.yml logs app
+```
+
+### `ERR_INVALID_URL` at startup (with `--env-file`)
+
+**Symptoms**: The container exits immediately with `ERR_INVALID_URL`, often on `DATABASE_URL`.
+
+**Solution**: Remove quotes from your `.env`. Docker's `--env-file` does **not** strip quotes or inline `# comments` — it reads everything after `=` literally, so `DATABASE_URL="postgresql://..."` is passed with the quotes attached. Use plain `KEY=value`.
+
 ### Container keeps restarting
 
 **Symptoms**: Container in restart loop.
