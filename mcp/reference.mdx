@@ -575,6 +575,86 @@ Create, update, or delete a help center category.
 
 ---
 
+## Conversation Tools
+
+Work the support inbox programmatically: list and read conversations, reply to visitors, and change conversation status. All conversation tools require a team role (admin or member) and the support inbox to be enabled.
+
+### list_conversations
+
+List support-inbox conversations, newest activity first. Returns a compact, paginated list.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `status` | `"open"` \| `"pending"` \| `"closed"` | - | Filter by conversation status |
+| `priority` | `"none"` \| `"low"` \| `"medium"` \| `"high"` \| `"urgent"` | - | Filter by priority |
+| `assignedAgentPrincipalId` | string | - | Filter to a specific assigned agent (principal TypeID) |
+| `limit` | number (1-100) | `20` | Max results per page |
+| `cursor` | string | - | Pagination cursor from a previous response |
+
+**Scope:** `read:chat` + team role (admin or member)
+
+```
+list_conversations({ status: "open" })
+list_conversations({ assignedAgentPrincipalId: "principal_01xyz...", priority: "high" })
+```
+
+---
+
+### get_conversation
+
+Get a conversation and its most recent messages.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `conversationId` | string | - | Conversation TypeID |
+| `includeInternal` | boolean | `false` | Include agent-only internal notes |
+| `cursor` | string | - | Cursor from a previous response to fetch older messages |
+
+**Scope:** `read:chat` + team role (admin or member)
+
+Internal notes are excluded unless `includeInternal` is `true`. Anonymous visitors' synthetic emails are never returned.
+
+```
+get_conversation({ conversationId: "conversation_01abc..." })
+get_conversation({ conversationId: "conversation_01abc...", includeInternal: true })
+```
+
+---
+
+### reply_to_conversation
+
+Send an agent reply in a conversation (visible to the visitor). Auto-assigns the conversation to the calling agent if it's unassigned.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `conversationId` | string | Conversation TypeID |
+| `content` | string | Reply text sent to the visitor (max 4000 characters) |
+
+**Scope:** `write:chat` + team role (admin or member)
+
+```
+reply_to_conversation({ conversationId: "conversation_01abc...", content: "Thanks for reaching out — we're on it." })
+```
+
+---
+
+### set_conversation_status
+
+Change a conversation's status. Closing stamps the resolution time; a later visitor reply reopens it.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `conversationId` | string | Conversation TypeID |
+| `status` | `"open"` \| `"pending"` \| `"closed"` | New status |
+
+**Scope:** `write:chat` + team role (admin or member)
+
+```
+set_conversation_status({ conversationId: "conversation_01abc...", status: "closed" })
+```
+
+---
+
 ## Resources
 
 Resources provide lookup data for boards, statuses, tags, roadmaps, and team members. Use them to find IDs before calling tools like `triage_post` or `create_post`.

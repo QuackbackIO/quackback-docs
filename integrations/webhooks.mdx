@@ -59,6 +59,18 @@ Store the `secret` immediately. It cannot be retrieved again. If you lose it, us
 | `post.created` | New feedback post submitted |
 | `post.status_changed` | Post status updated |
 | `comment.created` | New comment added to a post |
+| `conversation.created` | A visitor starts a new conversation |
+| `conversation.status_changed` | A conversation moves between open, pending, and closed |
+| `conversation.assigned` | A conversation is assigned to or unassigned from an agent (includes auto-routing) |
+| `conversation.priority_changed` | A conversation's priority changes |
+| `conversation.csat_submitted` | A visitor submits a satisfaction rating |
+| `message.created` | A visitor or agent sends a public message |
+| `message.note_created` | An agent adds an internal note (private — subscribe only if your endpoint should receive it) |
+| `message.deleted` | A public message is deleted |
+
+<Note>
+Conversation and message events require the support inbox. Anonymous visitors' emails are never included (synthetic addresses are stripped). System messages (like "chat ended") are represented by `conversation.*` events rather than `message.created`, and internal-note deletions are not emitted.
+</Note>
 
 ## Request Headers
 
@@ -144,6 +156,10 @@ Also check that the timestamp is recent (within 5 minutes) to prevent replay att
 ## Board Filtering
 
 Pass `boardIds` when creating a webhook to only receive events from specific boards. If omitted, the webhook receives events from all boards.
+
+<Note>
+Board filtering applies only to post and comment events. Conversation and message events aren't tied to a board, so a webhook with `boardIds` set still receives every chat event it subscribed to.
+</Note>
 
 ```bash
 # Only events from a specific board
