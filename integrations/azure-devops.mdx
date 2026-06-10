@@ -72,9 +72,18 @@ Map Azure DevOps work item states to Quackback statuses:
 2. Configure status mappings between work item states and Quackback statuses
 3. Azure DevOps states are project-specific (e.g., New, Active, Resolved, Closed) -- map each to the corresponding Quackback status, or set it to ignore
 
-Status sync works via Azure DevOps service hooks. When a linked work item changes state, the corresponding Quackback post status updates automatically.
+### 5. Set Up the Service Hook
 
-### 5. Configure Events
+Status sync needs an Azure DevOps service hook so work item changes reach Quackback:
+
+1. In Quackback, enable **Status sync** in the Azure DevOps integration settings
+2. Copy the **Webhook URL** and **Signing secret** shown below the toggle
+3. In Azure DevOps, go to **Project Settings → Service hooks** and create a **Web Hooks** subscription for the **Work item updated** event
+4. Paste the webhook URL as the subscription URL and the signing secret as the **Basic authentication password** (leave the username empty)
+
+Quackback verifies each delivery against the signing secret and rejects requests that don't match.
+
+### 6. Configure Events
 
 Choose which events trigger Azure DevOps actions:
 
@@ -86,7 +95,7 @@ Choose which events trigger Azure DevOps actions:
 The Azure DevOps integration currently creates work items only for `post.created` events. Status changes and comments are handled through the status sync mechanism rather than creating new work items.
 </Note>
 
-### 6. Save and Test
+### 7. Save and Test
 
 1. Click **Save**
 2. Submit test feedback to verify a work item is created in the selected project
@@ -105,7 +114,7 @@ The description uses HTML formatting, which Azure DevOps renders natively in the
 When status sync is configured, Quackback receives inbound webhooks from Azure DevOps when work items are updated. When a linked work item's state changes:
 
 1. Azure DevOps sends a `workitem.updated` webhook to Quackback
-2. Quackback verifies the request using Basic Authentication
+2. Quackback verifies the request using Basic Authentication -- the password must match the signing secret from your integration settings
 3. Quackback checks for a `System.State` field change in the payload
 4. If a status mapping exists for the new state, the linked feedback post's status is updated
 
@@ -158,7 +167,7 @@ Disconnecting removes the connection from Quackback. The Personal Access Token i
 
 1. **Check status mappings** -- ensure Azure DevOps states are mapped to Quackback statuses
 2. **Verify service hook** -- confirm the Azure DevOps service hook is configured and pointing to the correct callback URL
-3. **Check authentication** -- the Basic Auth credentials must match
+3. **Check authentication** -- the Basic authentication password in the service hook must match the signing secret shown in Quackback
 
 ### "Authentication Failed" or "Forbidden" Error
 

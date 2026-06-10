@@ -18,12 +18,12 @@ Your help center uses a hybrid approach that combines two complementary search s
 
 **Keyword search (40% weight)** — PostgreSQL full-text search on article titles and content. Fast and precise for exact terms. Works without any external services.
 
-**Semantic search (60% weight)** — Vector similarity search using OpenAI's `text-embedding-3-small` model and pgvector. Understands meaning, not just words. A user searching "can't log in" will match an article titled "Reset your password" even though the words don't overlap.
+**Semantic search (60% weight)** — Vector similarity search using your configured embedding model and pgvector. Understands meaning, not just words. A user searching "can't log in" will match an article titled "Reset your password" even though the words don't overlap.
 
 The two scores are combined and ranked. The result is search that handles both "what's my API rate limit" and "why is my data not updating" equally well.
 
 <Note>
-Without `OPENAI_API_KEY`, search falls back to keyword matching only. It still works, but it won't understand natural language queries or synonyms.
+Without [AI configured](/admin/ai-features), search falls back to keyword matching only. It still works, but it won't understand natural language queries or synonyms.
 </Note>
 
 ## Where search appears
@@ -36,11 +36,11 @@ Search is available in three places:
 
 ## How embeddings are generated
 
-When you create or update an article, Quackback automatically generates a vector embedding for it using `text-embedding-3-small`. The embedding captures the semantic meaning of the title and content as a 1536-dimensional vector stored in pgvector.
+When you create or update an article, Quackback automatically generates a vector embedding for it using your configured embedding model. The embedding captures the semantic meaning of the title and content as a 1536-dimensional vector stored in pgvector.
 
 You don't need to trigger this manually. Save an article and the embedding updates in the background.
 
-The same `OPENAI_API_KEY` used for other AI features in Quackback (AI responses, summaries) powers the embeddings. There's no separate key to configure.
+The same [AI configuration](/admin/ai-features) used for other AI features powers the embeddings — set `AI_EMBEDDING_MODEL` alongside your API key and endpoint. Choose a model that produces 1536-dimensional vectors, such as `text-embedding-3-small`. There's nothing separate to configure for the help center.
 
 ## Optimize articles for search
 

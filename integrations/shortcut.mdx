@@ -57,9 +57,20 @@ Map Shortcut workflow states to Quackback statuses:
 2. Configure status mappings between Shortcut workflow state names and Quackback statuses
 3. Each Shortcut workflow state can be mapped to a corresponding Quackback status, or set to ignore
 
-Shortcut uses workflow state IDs internally. Quackback maintains a mapping of workflow state IDs to their names, so status sync resolves the ID to a name before looking up the configured mapping.
+Shortcut uses workflow state IDs internally. Quackback resolves the ID to a state name from the webhook payload itself before looking up your mapping, so renaming or adding workflow states in Shortcut doesn't break the sync.
 
-### 5. Configure Events
+### 5. Set Up the Inbound Webhook
+
+Status sync needs a webhook in Shortcut so story changes reach Quackback:
+
+1. In Quackback, enable **Status sync** in the Shortcut integration settings
+2. Copy the **Webhook URL** and **Signing secret** shown below the toggle
+3. In Shortcut, go to **Settings → Integrations → Webhooks** and add a new outgoing webhook
+4. Paste the webhook URL as the payload URL and the signing secret as the secret
+
+Quackback verifies each delivery against the signing secret and rejects requests that don't match.
+
+### 6. Configure Events
 
 Choose which events trigger Shortcut actions:
 
@@ -71,7 +82,7 @@ Choose which events trigger Shortcut actions:
 The Shortcut integration currently creates stories only for `post.created` events. Status changes and comments are handled through the status sync mechanism rather than creating new stories.
 </Note>
 
-### 6. Save and Test
+### 7. Save and Test
 
 1. Click **Save**
 2. Submit test feedback to verify a story is created in Shortcut
@@ -91,10 +102,10 @@ When status sync is configured, Quackback receives webhook events from Shortcut.
 
 1. Shortcut sends a webhook event to Quackback
 2. Quackback looks for story update actions with `workflow_state_id` changes
-3. The new workflow state ID is resolved to a state name using the cached workflow states mapping
+3. The new workflow state ID is resolved to a state name using the workflow-state references included in the payload
 4. If a status mapping exists for that state name, the linked feedback post's status is updated
 
-The webhook signature is verified using HMAC-SHA256 via the `Payload-Signature` header.
+The webhook signature is verified using HMAC-SHA256 via the `Payload-Signature` header, using the signing secret from your integration settings.
 
 ## On post delete
 
@@ -139,8 +150,8 @@ To fully remove the integration:
 ### Status Sync Not Working
 
 1. **Check status mappings** -- ensure Shortcut workflow states are mapped to Quackback statuses
-2. **Verify workflow states** -- the integration needs a mapping of workflow state IDs to names; if new states were added in Shortcut, they may need to be configured
-3. **Check webhook** -- the Shortcut webhook may need to be re-registered
+2. **Check the webhook** -- confirm the webhook exists in Shortcut and its payload URL matches the webhook URL in your integration settings
+3. **Check the secret** -- the secret in Shortcut must match the signing secret shown in Quackback; deliveries with a wrong or missing signature are rejected
 
 ### "Authentication Failed" Error
 

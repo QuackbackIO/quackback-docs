@@ -81,12 +81,26 @@ Integration credentials (Slack, Microsoft Teams, Linear, etc.) are configured th
 
 ## AI
 
-Enable AI features: post summaries, duplicate detection, feedback extraction, and help center semantic search. All AI features use the same API key via the OpenAI-compatible API.
+Enable AI features: post summaries, duplicate detection, feedback extraction, and help center semantic search. AI is off unless you set the key, the endpoint, and a model for each role -- Quackback works with any OpenAI-compatible endpoint but never assumes one.
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `OPENAI_API_KEY` | OpenAI API key | `sk-...` |
-| `OPENAI_BASE_URL` | Custom endpoint (e.g., Azure OpenAI, Cloudflare AI Gateway) | `https://your-endpoint.com/v1` |
+| `OPENAI_API_KEY` | API key for your AI endpoint | `sk-...` |
+| `OPENAI_BASE_URL` | OpenAI-compatible endpoint. Required -- there is no default | `https://api.openai.com/v1` |
+| `AI_CHAT_MODEL` | Default model for chat features (summaries, suggestions, merge verification) | `gpt-4o-mini` |
+| `AI_EMBEDDING_MODEL` | Model for embeddings (duplicate detection, semantic search) | `text-embedding-3-small` |
+| `AI_SUMMARY_MODEL` | Per-feature override of `AI_CHAT_MODEL` for post summaries | `off` |
+| `AI_SENTIMENT_MODEL` | Per-feature override for sentiment analysis | `gpt-4o-mini` |
+| `AI_EXTRACTION_MODEL` | Per-feature override for suggestion extraction | `gpt-4o-mini` |
+| `AI_QUALITY_GATE_MODEL` | Per-feature override for the suggestion quality gate | `gpt-4o-mini` |
+| `AI_INTERPRETATION_MODEL` | Per-feature override for feedback interpretation | `gpt-4o-mini` |
+| `AI_MERGE_MODEL` | Per-feature override for merge verification | `gpt-4o` |
+
+Per-feature overrides fall back to `AI_CHAT_MODEL` when unset. Set an override to `off` to disable just that feature. Use model ids your endpoint accepts -- gateways typically want provider-prefixed ids like `google/gemini-3.1-flash-lite-preview`.
+
+<Note>
+Before v0.12.0, `OPENAI_API_KEY` alone enabled AI with an implicit OpenAI endpoint and built-in model names. If you upgraded and AI features turned off, add `OPENAI_BASE_URL`, `AI_CHAT_MODEL`, and `AI_EMBEDDING_MODEL`.
+</Note>
 
 ## File Storage
 

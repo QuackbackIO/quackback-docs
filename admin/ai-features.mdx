@@ -19,25 +19,44 @@ Quackback includes four AI capabilities:
 | **AI suggestions** | Turns integration feedback (Slack, API) into actionable suggestions: merge, vote, or create |
 | **Embeddings** | Vector representations of post content, used for similarity search |
 
-All features require an OpenAI-compatible API key. Without one, AI features are inactive and the UI elements don't appear.
+All features are off until you configure an endpoint and models. Without configuration, AI features stay inactive and the UI elements don't appear.
 
 ## Configure AI
 
-Set the `OPENAI_API_KEY` [environment variable](/reference/environment-variables) to enable AI features.
+To enable AI, set four [environment variables](/reference/environment-variables): an API key, an endpoint, and a model for each of the two roles.
 
 ```bash
 OPENAI_API_KEY="sk-..."
+OPENAI_BASE_URL="https://api.openai.com/v1"
+AI_CHAT_MODEL="gpt-4o-mini"
+AI_EMBEDDING_MODEL="text-embedding-3-small"
 ```
 
-To route requests through a proxy or use an OpenAI-compatible provider (Azure OpenAI, Cloudflare AI Gateway), set `OPENAI_BASE_URL`:
+Quackback works with any OpenAI-compatible endpoint but never assumes one. Point `OPENAI_BASE_URL` at OpenAI directly (`https://api.openai.com/v1`), OpenRouter (`https://openrouter.ai/api/v1`), a gateway like Cloudflare AI Gateway, or a local server. Use model ids your endpoint accepts -- gateways typically want provider-prefixed ids like `google/gemini-3.1-flash-lite-preview`.
 
-```bash
-OPENAI_BASE_URL="https://your-endpoint.com/v1"
-```
+The two model roles cover everything:
+
+- **`AI_CHAT_MODEL`** -- powers summaries, duplicate verification, and the suggestion pipeline
+- **`AI_EMBEDDING_MODEL`** -- powers duplicate detection and help center semantic search; must produce 1536-dimensional vectors (like `text-embedding-3-small`)
 
 <Tip>
-Add both variables to your `.env` file and restart Quackback. AI features activate automatically once a valid key is detected.
+Add the variables to your `.env` file and restart Quackback. If the configuration is incomplete (for example, a key without an endpoint), AI stays off and a warning is logged at startup.
 </Tip>
+
+<Warning>
+Upgrading from a version before 0.12.0? `OPENAI_API_KEY` alone no longer enables AI. Add `OPENAI_BASE_URL` and the two model variables to keep AI features working.
+</Warning>
+
+### Per-feature model overrides
+
+You can give an individual feature its own chat model, or switch one feature off while keeping the rest:
+
+```bash
+AI_SUMMARY_MODEL="off"     # disable post summaries only
+AI_MERGE_MODEL="gpt-4o"    # use a stronger model for merge verification
+```
+
+Available overrides: `AI_SUMMARY_MODEL`, `AI_SENTIMENT_MODEL`, `AI_EXTRACTION_MODEL`, `AI_QUALITY_GATE_MODEL`, `AI_INTERPRETATION_MODEL`, and `AI_MERGE_MODEL`. Each falls back to `AI_CHAT_MODEL` when unset. A value of `off` disables just that feature.
 
 ## Post summaries
 
@@ -107,13 +126,13 @@ When AI features are enabled, Quackback sends the following data to your configu
 - **Comment text** -- used for summary generation (only user comments, not team replies)
 - **Candidate post pairs** -- sent for LLM verification during duplicate detection
 
-No user emails, names, or account metadata are included in AI requests. All requests go to the endpoint specified by `OPENAI_BASE_URL` (or `api.openai.com` by default).
+No user emails, names, or account metadata are included in AI requests. All requests go to the endpoint you set in `OPENAI_BASE_URL` -- Quackback never sends data to an endpoint you didn't configure.
 
 <Warning>
 If your organization has data residency requirements, use `OPENAI_BASE_URL` to route requests through a compliant proxy or provider. Review your AI provider's data retention policies before enabling AI features.
 </Warning>
 
-To disable AI features entirely, remove the `OPENAI_API_KEY` variable from your environment and restart Quackback.
+To disable AI features entirely, remove the `OPENAI_API_KEY` variable from your environment and restart Quackback. To disable a single feature, set its model override to `off` (for example, `AI_SUMMARY_MODEL=off`).
 
 ## Next steps
 
