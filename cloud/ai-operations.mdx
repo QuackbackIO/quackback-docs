@@ -1,21 +1,18 @@
 ---
 title: AI features
-description: What AI features Quackback Cloud includes, and how usage works.
+description: What AI features Quackback Cloud includes.
 ---
 
-Quackback splits AI into two groups: **Basic AI** ships on every tier
-with no usage caps, **Advanced AI** is included on Pro and Scale.
+Every AI feature ships on every Quackback Cloud plan. The one exception
+is auto-capturing feedback from connected tools, which is on Scale.
 
-## Basic AI (every tier)
+## Included on every plan
 
 - **Semantic search across feedback** — find related posts even when the
   wording differs, powered by vector embeddings on every post.
 - **Similar-post suggestions when filing** — when admins triage incoming
   feedback, Quackback surfaces existing posts that look related so
   duplicates get merged early.
-
-## Advanced AI (Pro and Scale)
-
 - **AI post summaries** — multi-paragraph summaries that capture the core
   user need, key quotes, and suggested next steps for each post.
 - **AI duplicate / merge suggestions** — embeddings prefilter + LLM
@@ -23,27 +20,10 @@ with no usage caps, **Advanced AI** is included on Pro and Scale.
   of waiting for you to search.
 - **AI sentiment analysis** — every signal gets a positive / neutral /
   negative classification, exposed in trend charts and breakdowns.
-- **AI feedback extraction** — pull individual feature requests and bug
-  reports out of long-form sources (Slack threads, Intercom conversations,
-  Zendesk tickets).
 
-## Usage limits
+## Auto-capture from connected tools (Scale)
 
-Pro and Scale include reasonable monthly usage limits on Advanced AI to
-keep things fair. We size the limits so most teams never hit them; if you
-approach the cap, we'll surface a warning in the dashboard and you can
-upgrade for more headroom. Basic AI is unlimited on every tier.
-
-## What doesn't count toward AI usage
-
-- **Embeddings** used for semantic search, merge prefilter, and Help Center
-  search. Cheap, pervasive, and always unlimited.
-- **Vector similarity search** and **full-text search**.
-- **Failed retries** — only the final successful attempt is billed.
-- **Pure SQL operations** like analytics aggregations.
-
-## What happens at the cap
-
-Advanced AI features pause until the start of the next billing month, or
-you can upgrade for more headroom. Existing AI-generated artifacts
-(summaries, sentiment scores) remain visible — only new AI work is paused.
+**AI feedback extraction** pulls individual feature requests and bug
+reports out of long-form sources — Slack threads, Intercom conversations,
+Zendesk tickets, and other connected tools — and turns them into
+structured feedback, with the original conversation linked for context.
