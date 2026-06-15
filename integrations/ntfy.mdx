@@ -1,0 +1,122 @@
+---
+title: "ntfy"
+description: "Send push notifications to any device when feedback arrives, statuses change, or comments are posted — using ntfy.sh or your own server."
+icon: "ntfy"
+---
+
+# ntfy
+
+Push notifications without the platform lock-in. ntfy delivers real-time alerts to your phone, desktop, or any device by publishing to a topic you control — using ntfy.sh or a self-hosted server, no account required.
+
+## Overview
+
+The ntfy integration enables:
+
+- **Real-time alerts** -- get notified the moment feedback is submitted, a status changes, or a comment is posted
+- **Any device** -- receive notifications on iOS, Android, or desktop via the ntfy app or the ntfy.sh web interface
+- **Your infrastructure** -- use the free ntfy.sh service or a self-hosted ntfy server you control
+
+## Prerequisites
+
+- Admin access to your Quackback workspace
+- The [ntfy app](https://ntfy.sh) installed on your device, or ntfy.sh open in a browser
+
+## Setup
+
+### 1. Create or choose a topic
+
+Topics are the delivery channel for ntfy notifications. A topic is identified by a URL:
+
+```
+https://ntfy.sh/<your-topic-name>
+```
+
+1. Choose a topic name — for example, `quackback-alerts`
+2. Open the ntfy app and subscribe to the topic, or visit `https://ntfy.sh/<your-topic-name>` in a browser
+3. You don't need to register — subscribing is instant
+
+<Tip>
+ntfy.sh topics are public by default: anyone who knows the topic name can publish or subscribe to it. Use a long, hard-to-guess topic name (for example, `quackback-mfx9k2p7`) or set up an access token to restrict access.
+</Tip>
+
+### 2. Connect in Quackback
+
+1. Go to **Admin → Settings → Integrations → ntfy**
+2. Paste the full topic URL (for example, `https://ntfy.sh/quackback-mfx9k2p7`)
+3. If your topic requires authentication, paste an access token in the **Access token** field (see [Access token](#access-token) below)
+4. Click **Save**
+
+A test notification is sent to the topic immediately so you can confirm delivery before enabling events.
+
+<Note>
+Only publicly reachable HTTPS ntfy servers are supported. A self-hosted server that is only accessible on a private network cannot be reached by Quackback's notification service.
+</Note>
+
+### 3. Configure events
+
+Choose which events trigger a notification:
+
+| Event | Description |
+|-------|-------------|
+| New post | Someone submits new feedback |
+| Status change | Post status is updated |
+| New comment | Comment added to a post |
+
+## Access token
+
+If your ntfy topic is protected or your server requires authentication, create a token with **publish** permission and paste it into Quackback.
+
+**For ntfy.sh:**
+
+1. Sign in at [ntfy.sh](https://ntfy.sh)
+2. Go to **Account → Access tokens**
+3. Click **Add token** and set a description
+4. Grant **Publish** permission for the topic
+5. Copy the token and paste it into Quackback
+
+**For a self-hosted server**, follow your server's token management docs.
+
+Leave the **Access token** field blank if your topic is open and unrestricted.
+
+## Manage the integration
+
+### Pause
+
+Temporarily stop sending notifications:
+
+1. Go to **Admin → Settings → Integrations → ntfy**
+2. Toggle **Enabled** off
+3. Notifications pause, but the topic URL and token are preserved
+
+### Disconnect
+
+To fully remove the integration:
+
+1. Go to **Admin → Settings → Integrations → ntfy**
+2. Click **Disconnect**
+3. Confirm the action
+
+<Note>
+Disconnecting removes the topic URL and token from Quackback. Your ntfy topic and any subscriptions you have to it are not affected.
+</Note>
+
+## Troubleshooting
+
+### Test notification not received
+
+1. **Check the topic URL** -- ensure it is the full URL including `https://` and matches what you subscribed to in the ntfy app
+2. **Verify your subscription** -- open the ntfy app or ntfy.sh in a browser and confirm you are subscribed to the exact topic
+3. **Check the access token** -- if your topic requires authentication, ensure the token has publish permission and has not expired
+4. **Private server** -- if using a self-hosted server, confirm the server is publicly reachable over HTTPS
+
+### Notifications stopped arriving
+
+1. Go to **Admin → Settings → Integrations → ntfy** and check for error messages
+2. If an access token is in use, verify it has not expired or been revoked
+3. Re-save the integration to send another test notification
+
+## Next Steps
+
+- [Slack](/integrations/slack) - Slack notification integration
+- [Discord](/integrations/discord) - Discord notification integration
+- [Webhooks](/integrations/webhooks) - Build custom integrations
