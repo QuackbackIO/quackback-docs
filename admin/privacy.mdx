@@ -16,7 +16,7 @@ You own all data in your Quackback instance. Nothing is sent to external servers
 Self-hosting means you are both the data controller and data processor. This simplifies compliance because no third party touches your data.
 </Tip>
 
-The only exception is AI features. When enabled, specific data is sent to OpenAI for processing. See [AI data handling](#ai-data-handling) below.
+The only exception is AI features. When enabled, specific data is sent to your configured AI provider for processing. See [AI data handling](#ai-data-handling) below.
 
 ## What Quackback stores
 
@@ -33,10 +33,10 @@ The only exception is AI features. When enabled, specific data is sent to OpenAI
 
 ### Tokens and secrets
 
-Integration OAuth tokens (Slack, Discord, GitHub, Linear) are encrypted with **AES-256-GCM** using your `ENCRYPTION_KEY` environment variable.
+Integration OAuth tokens (Slack, Discord, GitHub, Linear) are encrypted with **AES-256-GCM**, using a key derived from your `SECRET_KEY` environment variable.
 
 <Warning>
-Set a strong, unique `ENCRYPTION_KEY` before connecting any integrations. Changing this key later invalidates all stored tokens.
+Set a strong, unique `SECRET_KEY` (at least 32 characters) before connecting any integrations. Changing this key later invalidates all stored tokens and sessions.
 </Warning>
 
 ### Passwords
@@ -49,32 +49,36 @@ Session tokens are cryptographically random. Sessions expire after 7 days of ina
 
 ## AI data handling
 
-When you enable AI features, Quackback sends data to OpenAI for processing.
+When you enable AI features, Quackback sends data to the AI provider you configure via `OPENAI_BASE_URL`: OpenAI, OpenRouter, a gateway, or a local server. See [Use AI-powered features](/admin/ai-features) for configuration.
 
 ### What is sent
 
-| Feature | Data sent to OpenAI |
+| Feature | Data sent to your AI provider |
 |---------|---------------------|
 | Post summaries | Post title and content |
 | Comment summaries | Comment text for the target post |
 | Semantic search | Post content for embedding generation |
-| Auto-tagging | Post title and content |
+| Duplicate detection | Candidate post pairs, for LLM verification |
 
 ### What is not sent
 
-User emails, passwords, session data, and integration tokens are **never** sent to OpenAI.
+User emails, passwords, session data, and integration tokens are **never** sent to your AI provider.
 
 ### Disable AI features
 
-Set the following environment variable to disable all AI functionality:
+AI features stay off unless you configure them. Remove the `OPENAI_API_KEY` environment variable and restart Quackback to disable AI entirely. To disable a single feature while keeping the rest, set its model override to `off`:
 
 ```bash
-DISABLE_AI=true
+AI_SUMMARY_MODEL="off"
 ```
 
 <Note>
-Disabling AI removes summary generation, semantic search, and auto-tagging. Existing embeddings remain in your database but are no longer used.
+Disabling AI removes summary generation, semantic search, and duplicate detection. Existing embeddings remain in your database but are no longer used.
 </Note>
+
+### AI assistant data
+
+Quinn, the AI assistant that answers customers and helps teammates, only sees the knowledge sources an admin explicitly enables for it: help center articles, public posts, past conversations, internal notes, tickets, and changelog entries. A source that isn't enabled for an agent doesn't exist to that agent, it's never queried, let alone sent to your AI provider.
 
 ## Telemetry
 
@@ -85,6 +89,14 @@ Disable telemetry with:
 ```bash
 DISABLE_TELEMETRY=true
 ```
+
+## Visitor analytics
+
+<Note>
+Visitor analytics is off by default. Turn it on in **Admin → Settings → Labs**.
+</Note>
+
+When enabled, the portal tracker honors **Do Not Track** and **Global Privacy Control** browser signals, it stops collecting for any visitor who has either one set. See [Visitor analytics](/admin/visitors) for what's tracked and how to configure it.
 
 ## User data deletion
 
@@ -134,7 +146,7 @@ For GDPR subject access requests, export board data as CSV and filter by the use
 Protect your instance and your users' data:
 
 - **Use TLS** — Run Quackback behind a reverse proxy (Nginx, Caddy) with HTTPS enabled
-- **Rotate secrets** — Change your `ENCRYPTION_KEY` and `SESSION_SECRET` periodically
+- **Rotate secrets** — Change your `SECRET_KEY` periodically
 - **Back up regularly** — Schedule automated database backups
 - **Restrict access** — Limit dashboard access to trusted team members
 - **Keep updated** — Pull the latest Docker image for security patches

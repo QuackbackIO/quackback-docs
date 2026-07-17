@@ -38,7 +38,7 @@ The Complete column is important. It shows momentum. Users who visit your roadma
 
 **Remove items from Complete after a few weeks.** The roadmap should feel current, not historical. Old shipped items belong in your changelog.
 
-See [Build a public roadmap](/admin/roadmap) for setup instructions.
+A roadmap is a derived view: you define a base filter and a set of status columns once, and posts appear automatically as their status changes. There's no separate step to add or remove a post from the roadmap. See [Build a public roadmap](/admin/roadmap) for setup instructions.
 
 ## How many items
 
@@ -48,17 +48,17 @@ See [Build a public roadmap](/admin/roadmap) for setup instructions.
 
 **Complete: 3-5 recent items.** Enough to show momentum. Rotate them off as new items ship.
 
-## Start with a private roadmap
+## Start with a team-only roadmap
 
-If you're not sure what to commit to publicly, use a private roadmap first. Stage items internally, discuss with your team, and only make items public when you're confident they'll ship.
+If you're not sure what to commit to publicly, use a team-only roadmap first. Stage items internally, discuss with your team, and only widen visibility to public when you're confident they'll ship.
 
-This avoids the awkward situation of adding an item to a public roadmap and then removing it. Users notice. It erodes trust faster than not having a roadmap at all.
+This avoids the awkward situation of a post showing up on a public roadmap and then disappearing. Users notice. It erodes trust faster than not having a roadmap at all.
 
 **The workflow:**
 1. During your weekly review, identify posts that should become roadmap items.
-2. Add them to your private roadmap with the "Planned" status.
+2. Move each one to "Planned." It appears on your team-only roadmap automatically, since that's what the base filter matches.
 3. Discuss with your team in the next planning session.
-4. When committed, move items to your public roadmap.
+4. When committed, switch the roadmap's visibility to public, or create a separate public roadmap with a base filter for "ready to announce" statuses or tags.
 
 ## Keeping it honest
 
@@ -74,26 +74,26 @@ A stale roadmap is worse than no roadmap. Users check roadmaps. When they see it
 
 ## Avoid dates
 
-Use status columns, not timelines. "Planned" means "we're going to build this." It does not mean "next quarter."
+Default to status columns, not timelines. "Planned" means "we're going to build this." It does not mean "next quarter."
 
 Dates on a roadmap create expectations you can't control. Software estimation is unreliable, priorities shift, and unexpected work appears. When you miss a date on a public roadmap, every user who saw it notices.
 
 If stakeholders push for dates, give ranges internally and keep the public roadmap date-free. "Q2" internally is fine. "Q2" publicly becomes a promise.
 
 <Note>
-The one exception: if you have a hard launch date for a specific feature (like a platform requirement or a contract commitment), it's okay to mention it. But this should be rare.
+The one exception: if your team commits to ship dates and wants to publish them, use a [date-periods roadmap](/admin/roadmap#choose-a-layout) instead of adding dates to a status roadmap. It buckets posts by their eta into monthly, quarterly, or semiannual periods, so a missed estimate moves the post to the next period instead of leaving a broken promise sitting on the page.
 </Note>
 
 ## Linking feedback to roadmap items
 
-Every roadmap item should link to at least one feedback post. This connection is the whole point - it shows users that the roadmap is driven by their input.
+Every roadmap item is a feedback post. This connection is the whole point - it shows users that the roadmap is driven by their input.
 
-When you add an item to the roadmap:
-1. Update the status of the linked feedback post to "Planned."
+When a post is ready for the roadmap:
+1. Update its status to "Planned." It shows up on the roadmap the moment the status matches your base filter.
 2. Leave a comment on the post: "This is now on our roadmap."
 3. Subscribers get notified automatically.
 
-When an item moves to "In Progress," update the linked posts too. This keeps users informed without you writing individual updates to every voter.
+When an item moves to "In Progress," update the status on the linked post too. This keeps users informed without you writing individual updates to every voter, and the roadmap column updates itself.
 
 ## What's next
 

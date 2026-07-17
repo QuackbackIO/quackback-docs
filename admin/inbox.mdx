@@ -1,12 +1,16 @@
 ---
-title: "Triage feedback in the inbox"
-description: "Filter, triage, and respond to feedback from a single inbox."
-icon: "inbox"
+title: "Triage feedback"
+description: "Filter, triage, and respond to feedback from the Feedback area."
+icon: "chat-bubble-left"
 ---
 
-# Triage feedback in the inbox
+# Triage feedback
 
-Stop context-switching between tools. The feedback view is your command center. See everything users are asking for, triage quickly, and respond without leaving the page.
+Stop context-switching between tools. The Feedback area is your command center. See everything users are asking for, triage quickly, and respond without leaving the page.
+
+<Note>
+This page covers feedback (posts, votes, comments). Conversations and support tickets live in a separate support inbox, see [Support inbox](/support/inbox).
+</Note>
 
 ## Overview
 
@@ -15,7 +19,7 @@ Access the feedback view from **Admin → Feedback** in the sidebar. You can:
 - See all feedback across boards in one place
 - Filter by status, board, or tags to focus your work
 - Update statuses and respond to users inline
-- Add promising ideas to your public roadmap
+- Move promising ideas to a status that puts them on your public [roadmap](/admin/roadmap)
 
 ## Feedback Interface
 
@@ -41,7 +45,7 @@ When you click a post, you're taken to the detail page which shows:
 - Complete content with formatting
 - Comment thread (including private internal notes visible only to team members)
 - Activity timeline showing all post events
-- Properties panel (Status, Board, Tags, Roadmaps)
+- Properties panel (Status, Board, Tags, Owner, ETA)
 - Author information
 - Similar posts (when AI finds related feedback)
 - Feedback source details (for posts created from integrations)
@@ -119,13 +123,13 @@ Private comments don't trigger notifications to portal users - only team members
 
 To remove a tag, click the X on the tag badge.
 
-### Add to Roadmap
+### Set a target date (ETA)
 
 1. Open a post in the detail page
-2. In the Properties panel, find the Roadmaps section
-3. Click "Add" and select a roadmap
+2. In the Properties panel, click **Set ETA** and choose a month
+3. Clear it the same way if plans change
 
-Posts on roadmaps appear in the public roadmap view.
+Roadmaps are derived from post fields like status, board, tags, and eta, so a post shows up on a [roadmap](/admin/roadmap) automatically once it matches that roadmap's filter. There's no separate step to add a post to a roadmap.
 
 ### Assign an Owner
 
@@ -135,7 +139,7 @@ Assign a team member to take responsibility for a post:
 2. Use the owner dropdown in the properties panel
 3. Select a team member, or clear the assignment
 
-Filter the inbox by owner to see your assigned posts or find unassigned work.
+Filter the feedback list by owner to see your assigned posts or find unassigned work.
 
 ### View and Add Voters
 
@@ -234,8 +238,6 @@ Every post has an activity timeline that records key events in its lifecycle. Th
 | Owner unassigned | The assigned owner was removed |
 | Tags added | Tags were applied to the post |
 | Tags removed | Tags were removed from the post |
-| Roadmap added | Post was added to a roadmap |
-| Roadmap removed | Post was removed from a roadmap |
 | Comments locked | Comments were locked on the post |
 | Comments unlocked | Comments were unlocked |
 | Comment pinned | A comment was pinned to the top |
