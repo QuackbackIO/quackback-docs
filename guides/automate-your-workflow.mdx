@@ -8,6 +8,16 @@ icon: "zap"
 
 At some point, the manual process you've built starts to strain. You're copying post links into Slack, manually updating statuses when issues ship, and checking for new feedback throughout the day. This lesson covers which parts to automate and which to keep human.
 
+## Pick the right tool
+
+Quackback gives you three ways to automate, and they solve different problems:
+
+- **[Workflows](/automation/workflows)** for in-product support automation: routing conversations, applying SLAs, closing idle tickets. If the trigger and the action both happen inside Quackback, start here.
+- **Webhooks and integrations** for syncing external systems: pushing events to Slack, Zapier, or your own server. If the action needs to happen somewhere else, this is the layer for it.
+- **[MCP](/mcp)** for AI-assisted triage: an agent that reads feedback and suggests or takes action with your approval. Use it when the judgment call is fuzzy enough that you want an AI in the loop rather than fixed rules.
+
+Most teams end up using all three. A workflow closes an abandoned conversation, a webhook tells Slack about it, and MCP helps you triage the backlog once a week.
+
 ## Start with notifications
 
 The first automation most teams need: getting feedback into the channel where your team already works.
@@ -48,9 +58,9 @@ This eliminates the biggest manual bottleneck: remembering to go back and update
 
 See the integration docs: [Linear](/integrations/linear), [GitHub](/integrations/github), [Jira](/integrations/jira).
 
-## Webhooks for custom workflows
+## Webhooks for custom automation
 
-When built-in integrations don't cover your use case, webhooks let you send feedback events to any HTTP endpoint.
+When built-in integrations don't cover your use case, webhooks let you send feedback events to any HTTP endpoint. This is the layer for syncing to external systems. For automation that stays inside Quackback, like conversation and ticket routing, use [workflows](/automation/workflows) instead.
 
 **Common webhook use cases:**
 - Send new feedback to a Zapier/Make/n8n workflow that enriches it with CRM data
@@ -118,7 +128,7 @@ Don't set up every integration at once. Build up gradually:
 | **Week 1** | Slack or Discord notifications |
 | **Month 1** | Issue tracker (Linear, Jira, or GitHub) |
 | **Month 2** | CRM enrichment (if you have distinct customer segments) |
-| **As needed** | Webhooks for custom workflows, MCP for AI triage |
+| **As needed** | Webhooks for custom automation, [workflows](/automation/workflows) for support routing and SLAs, MCP for AI triage |
 
 Each integration should solve a specific pain point you're already feeling. "It would be cool to have" is not a good reason. "I keep forgetting to update feedback when issues ship" is.
 

@@ -1,0 +1,52 @@
+---
+title: "Knowledge sources"
+description: "What each agent can draw on when it answers, and where that content comes from."
+icon: "book-open"
+---
+
+# Knowledge sources
+
+Quinn only knows what you let it read. Each source below can be turned on independently per agent from the **Knowledge** tab on [Agent](/automation/quinn-agent) or [Copilot](/automation/quinn-copilot).
+
+## Source catalogue
+
+| Source | Agent | Copilot | Contributes |
+|--------|:-----:|:-------:|--------------|
+| Help center | Yes | Yes | Published [help center](/help-center) articles |
+| Feedback posts | Yes -- public boards only | Yes -- all boards | Feedback posts and their discussion |
+| Changelog | Yes | Yes | Published [changelog](/admin/changelog) entries |
+| Status | Yes | Yes | Live status components, incidents, and maintenance windows |
+| Past conversations | No | Yes | Earlier conversations, for context on repeat issues |
+| Internal notes | No | Yes, Copilot-only | Private teammate notes on the conversation |
+| Tickets | No | Yes | Resolution summaries from closed tickets |
+
+<Note>
+Internal notes are never used to draft anything that could reach a customer, even from Copilot. That source exists purely to help a teammate answer a private question.
+</Note>
+
+<Note>
+The Agent's feedback-posts source is scoped to public boards. It never cites a post from a private or internal-only board in a customer-facing reply.
+</Note>
+
+## Freshness
+
+Every source above is retrieval-indexed except one: **status**. Status is a live lookup at answer time, not something Quinn re-indexes on a schedule. That means a status change is reflected immediately, with no propagation delay.
+
+<Tip>
+If a source feels stale, check whether new content has finished indexing rather than assuming Quinn's configuration is wrong. Status never has this problem, since it's always looked up live.
+</Tip>
+
+## Defaults
+
+New agents start with a minimal knowledge set so you can build up deliberately:
+
+- **Agent** starts with only the help center turned on.
+- **Copilot** starts with help center, feedback posts, past conversations, internal notes, and status turned on. Tickets and changelog start off.
+
+Turn on additional sources as your content and comfort with Quinn's answers grow.
+
+## Next steps
+
+- [Configure the Quinn Agent](/automation/quinn-agent) -- Deploy Quinn and set its knowledge
+- [Use Quinn Copilot](/automation/quinn-copilot) -- Turn on the teammate-facing agent
+- [Give Quinn actions](/automation/actions) -- Let Quinn act on what it knows

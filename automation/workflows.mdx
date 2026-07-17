@@ -1,0 +1,86 @@
+---
+title: "Build a workflow"
+description: "Automate routing, SLAs, and housekeeping for conversations and tickets."
+icon: "workflow"
+---
+
+# Build a workflow
+
+Not every support action needs a person to trigger it. Workflows watch for events on conversations and tickets, then run a sequence of conditions and actions automatically, no teammate required.
+
+Find them at **Admin → AI & Automation → Workflows**.
+
+## How a workflow is built
+
+A workflow starts with a **trigger**, then flows through **condition**, **branch**, **wait**, and **action** nodes on a graph. Conditions gate whether the flow continues. Branches split it into named paths. Wait nodes pause it, for up to 90 days, before continuing.
+
+<Tip>
+Start from a [template](/automation/templates) rather than a blank canvas. Most routing and SLA needs are already covered by one.
+</Tip>
+
+## Triggers
+
+| Trigger | Fires when |
+|---------|-----------|
+| `conversation.created` | A new conversation starts |
+| `conversation.status_changed` | A conversation's status changes |
+| `conversation.assigned` | A conversation is assigned or unassigned, including auto-routing |
+| `conversation.priority_changed` | A conversation's priority changes |
+| `conversation.attribute_changed` | A conversation attribute is set or changed |
+| `conversation.csat_submitted` | A customer submits a satisfaction rating |
+| `message.created` | A visitor or teammate sends a message |
+| `message.note_created` | A teammate adds an internal note |
+| `assistant.handed_off` | Quinn hands a conversation to a human |
+| Customer unresponsive | The customer hasn't replied within a set time |
+| Teammate unresponsive | Your team hasn't replied within a set time |
+| `sla.approaching_breach` | An [SLA](/support/sla) deadline is close |
+| `sla.breached` | An SLA deadline has passed |
+| `ticket.created` | A new ticket is created |
+| `ticket.status_changed` | A ticket's status category changes |
+
+<Note>
+`ticket.created` and `ticket.status_changed` only dispatch when the ticket has a linked customer conversation. A ticket created without a linked conversation never fires these triggers.
+</Note>
+
+## Actions
+
+| Action | Does |
+|--------|------|
+| Assign agent | Assigns the conversation or ticket to a specific teammate |
+| Assign team | Assigns to a team |
+| Add tag | Adds a tag |
+| Remove tag | Removes a tag |
+| Set priority | Changes priority |
+| Snooze | Delays the conversation for a set duration |
+| Close | Closes the conversation |
+| Reopen | Reopens the conversation |
+| Apply SLA | Applies an [SLA policy](/support/sla) |
+| Set attribute | Sets a structured conversation attribute |
+| Send webhook | Sends the event to any HTTPS endpoint |
+| Add note | Adds an internal note |
+| Set ticket status | Changes a ticket's status |
+| Convert to ticket | Converts the conversation into a ticket |
+
+<Note>
+Webhook actions only accept HTTPS URLs. See [Webhooks](/integrations/webhooks) for the payload format and signature verification.
+</Note>
+
+## Versioning and preview
+
+Every save creates a new version, up to 50 per workflow. Restore any earlier version if a change didn't work out the way you expected.
+
+Before you publish, run **Preview** against a real conversation. It's read-only: conditions and branches evaluate for real against that conversation's data, but nothing is written. No message is sent, no action runs, no run is recorded.
+
+## Manual runs
+
+Sometimes you want a workflow to run once, right now, against the conversation you're looking at, without waiting for its trigger to fire naturally. A manual run does exactly that from the conversation composer.
+
+<Note>
+A manual run skips the trigger-time targeting checks (audience, channel, send window, and per-person frequency caps) but not the workflow's own logic. Every condition and branch inside the graph still evaluates normally.
+</Note>
+
+## Next steps
+
+- [Start from a workflow template](/automation/templates) -- Skip the blank canvas
+- [Workflow blocks](/automation/workflow-blocks) -- Build interactive Messenger conversations inside a workflow
+- [Webhooks](/integrations/webhooks) -- Send workflow events to external systems
