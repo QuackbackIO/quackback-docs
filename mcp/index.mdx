@@ -16,10 +16,11 @@ Quackback includes an MCP server that gives AI agents direct access to your feed
 - **Review AI suggestions**: list, accept, dismiss, and restore AI-generated feedback suggestions
 - **Create, update, and delete** posts and changelog entries
 - **Comment, vote, and react** on feedback
-- **Merge duplicates** and manage roadmap assignments
-- **Work the support inbox**: list and read conversations, reply to visitors, and open or close conversations (when the support inbox is enabled)
+- **Merge and unmerge** duplicate posts
+- **Work the support inbox**: list and read conversations, reply to visitors, and open, snooze, or close conversations (when the support inbox is enabled)
+- **Work support tickets**: list and read tickets, open new ones, reply, add internal notes, and link tickets to trackers (when support tickets is enabled)
 - **View activity logs**: see status changes, merges, and other events on a post
-- **Read resources**: boards, statuses, tags, roadmaps, and team members
+- **Read resources**: boards, statuses, tags, roadmaps, team members, and help center categories
 - **Manage help center**: create, update, publish, and delete articles and categories (when help center is enabled)
 
 See the [MCP Reference](/mcp/reference) for the full tool and resource documentation.
@@ -162,7 +163,7 @@ Replace `qb_YOUR_API_KEY` with your actual API key. Requires Node.js.
 
 Two authentication methods are supported:
 
-- **API keys** (`qb_` prefix): Full access to all scopes. Available to team members (admin or member role). Create them in **Admin → Settings → Developers**.
+- **API keys** (`qb_` prefix): By default, full access to every scope. Available to team members (admin or member role). Create them in **Admin → Settings → Developers**.
 - **OAuth 2.1**: Scoped access. Supports MCP OAuth discovery so clients like Claude Code can authenticate automatically without manual key setup.
 
 ## Scopes
@@ -172,12 +173,16 @@ Two authentication methods are supported:
 | `read:feedback` | Search posts and changelogs, get details, read resources |
 | `write:feedback` | Create posts, vote, comment, triage |
 | `write:changelog` | Create changelog entries |
-| `read:help-center` | Search and read help center articles and categories |
-| `write:help-center` | Create, update, publish, and delete articles and categories |
-| `read:chat` | List and read support-inbox conversations and messages |
-| `write:chat` | Reply to conversations and change their status |
+| `read:article` | Search and read help center articles and categories |
+| `write:article` | Create, update, publish, and delete articles and categories |
+| `read:chat` | List and read support-inbox conversations, messages, tickets, and ticket threads |
+| `write:chat` | Reply to conversations, change their status, and open, reply to, or note on tickets |
 
-API keys get all seven scopes. OAuth tokens get only the scopes the user approved.
+<Note>
+Tickets don't have their own scope. They ride the `read:chat` / `write:chat` scopes alongside conversations.
+</Note>
+
+There are seven scopes total. An API key created without an explicit scope selection gets all of them (full owner authority); you can restrict a key to specific scopes when creating it. OAuth tokens get only the scopes the user approved.
 
 ## Service principals
 
@@ -186,5 +191,5 @@ Every API key gets its own identity. When an agent triages a post, the audit tra
 ## Next steps
 
 - [MCP Reference](/mcp/reference): Full tool and resource documentation
-- [API Overview](/api/introduction): REST API for programmatic integrations
+- [API Overview](/api/overview): REST API for programmatic integrations
 - [Webhooks](/integrations/webhooks): Receive real-time event notifications
