@@ -71,7 +71,7 @@ The Quackback Docker image uses a multi-stage build:
 - **Production stage** runs as a non-root `quackback` user for security
 - **Entrypoint** (`docker-entrypoint.sh`) runs database migrations automatically on every startup, then starts the server
 - **Optional seeding** with `SEED_DATABASE=true` to populate demo data
-- **Health endpoint** at `/api/health`
+- **Health endpoints** at [`/api/health/live`](/api/health) (process up) and [`/api/health/ready`](/api/health) (database, Redis, migrations, and worker checks)
 
 <Tip>
 Because migrations run on every startup, upgrading is as simple as pulling the latest image and restarting. No manual migration step needed. (Set `SKIP_MIGRATIONS=true` if you run migrations out-of-band, e.g. a Kubernetes pre-upgrade hook.)
@@ -200,9 +200,18 @@ docker compose -f docker-compose.prod.yml up -d
 ## Health Checks
 
 ```bash
-# Application health
-curl http://localhost:3000/api/health
+# Liveness: is the process up?
+curl http://localhost:3000/api/health/live
+
+# Readiness: are the database, Redis, migrations, and workers all okay?
+curl http://localhost:3000/api/health/ready
 ```
+
+`docker-compose.prod.yml`'s built-in healthcheck polls `/api/health/ready`. See [`/api/health`](/api/health) for the full response shape.
+
+## Run a separate worker
+
+The single-container default (`QUACKBACK_ROLE=all`) serves HTTP and runs background workers in one process. To scale HTTP and background processing independently, run the same image with `QUACKBACK_ROLE=web` for front-end replicas and `QUACKBACK_ROLE=worker` for a dedicated background-processing replica. See [Scale with multiple replicas](/self-hosting/scaling) for the full guide.
 
 ## Troubleshooting
 
@@ -253,6 +262,7 @@ Follow these practices for production deployments.
 
 ## Next Steps
 
+- [Scale with multiple replicas](/self-hosting/scaling) - Split web and worker roles
 - [Configuration Reference](/reference/environment-variables) - All environment variables
 - [Reverse Proxy Setup](/self-hosting/reverse-proxy) - SSL/TLS and proxy configurations
 - [Troubleshooting](/self-hosting/troubleshooting) - Common issues and solutions

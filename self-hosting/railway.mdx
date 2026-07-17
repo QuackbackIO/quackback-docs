@@ -148,7 +148,7 @@ View real-time logs in the Railway dashboard:
 Railway can restart the service if it becomes unhealthy:
 
 1. Go to **Settings** → **Deploy**
-2. Set the health check path to `/api/health`
+2. Set the health check path to [`/api/health/ready`](/api/health) (checks database, Redis, migrations, and worker boot status). Use [`/api/health/live`](/api/health) instead if you only want to confirm the process is up.
 
 ## Cost
 
