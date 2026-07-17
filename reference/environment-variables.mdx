@@ -17,9 +17,37 @@ These variables must be set for Quackback to run.
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `DATABASE_URL` | PostgreSQL connection string | `postgresql://postgres:password@localhost:5432/quackback` |
-| `SECRET_KEY` | Secret key for authentication and encryption (32+ chars). Used for session signing and deriving encryption keys. | `openssl rand -base64 32` |
 | `BASE_URL` | Public URL for your instance (used for auth, emails, and OAuth callbacks) | `https://feedback.example.com` |
+| `PORT` | Port the application server listens on | `3000` |
+| `SECRET_KEY` | Secret key for authentication and encryption (32+ chars). Used for session signing and deriving encryption keys. | `openssl rand -base64 32` |
 | `REDIS_URL` | Redis/Dragonfly connection for background job queue (BullMQ). Dragonfly is included in docker-compose. | `redis://localhost:6379` |
+
+### Database connection tuning
+
+<Note>
+These are optional. The defaults work for most deployments. Tune them only if you've measured a connection-pool bottleneck.
+</Note>
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `DB_POOL_MAX` | `10` (web/all), `20` (worker) | Max Postgres connections this process opens. The default is role-aware: [worker replicas](/self-hosting/scaling) get a larger pool since they run more concurrent jobs. |
+| `DB_IDLE_TIMEOUT` | `20` | Seconds an idle pooled connection stays open before closing (1-3600). |
+
+### Reverse proxy
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `TRUSTED_PROXY_HOPS` | `0` | Number of trusted reverse-proxy hops allowed to supply client-IP headers (`X-Forwarded-For`). Set to `1` behind a single proxy (Nginx, Caddy, Railway). `0` means no proxy headers are trusted. |
+
+## Server Roles
+
+<Tip>
+Single-container self-hosters can skip this. The default already does what you want. Read [Scale with multiple replicas](/self-hosting/scaling) before splitting roles.
+</Tip>
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `QUACKBACK_ROLE` | `all` | Controls whether this process runs background workers. `all` serves HTTP and runs queue workers/sweepers (single-container default). `web` serves HTTP only and enqueues jobs without consuming them. `worker` runs queue workers/sweepers and still serves HTTP (for health probes), but shouldn't receive user traffic. |
 
 ## Email Configuration
 
@@ -48,6 +76,37 @@ Priority order: SMTP (if configured) > Resend (if configured) > Console logging.
 |----------|-------------|---------|
 | `EMAIL_RESEND_API_KEY` | Resend API key | `re_xxxxxxxxxxxx` |
 | `EMAIL_FROM` | Sender email address | `Quackback <feedback@example.com>` |
+
+## Inbound Email
+
+Lets a visitor's email reply thread back into their conversation. Two independent ways to receive inbound mail: configure the one that fits your deployment, or both.
+
+### Provider webhook
+
+| Variable | Description |
+|----------|-------------|
+| `EMAIL_INBOUND_DOMAIN` | Receiving domain (e.g. a Resend inbound domain). Agent replies use `reply+<conversationId>@<domain>`. |
+| `EMAIL_INBOUND_SIGNING_SECRET` | The provider's webhook signing secret (Svix `whsec_...`). |
+
+Both must be set together. Point the provider's inbound webhook at `<BASE_URL>/api/chat/email/inbound`.
+
+### IMAP polling
+
+Self-hosted alternative that needs no public webhook endpoint. See [Receive email over IMAP](/self-hosting/email-imap) for the full guide.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `EMAIL_INBOUND_PROVIDER` | unset | Set to `imap` to enable the poller. Leave unset to disable it entirely. |
+| `IMAP_HOST` | required | IMAP server hostname |
+| `IMAP_PORT` | `993` (TLS) or `143` (plaintext) | IMAP server port |
+| `IMAP_USER` | required | Mailbox username |
+| `IMAP_PASSWORD` | required | Mailbox password |
+| `IMAP_TLS` | `true` | Set to `false` for a plaintext connection |
+| `IMAP_MAILBOX` | `INBOX` | Mailbox to poll |
+
+<Note>
+`EMAIL_INBOUND_PROVIDER`, `IMAP_HOST`, `IMAP_USER`, and `IMAP_PASSWORD` are required together. The poller never connects unless all four are set.
+</Note>
 
 ## OAuth Providers
 
@@ -79,6 +138,12 @@ Callback URL: `https://your-domain.com/api/auth/callback/google`
 Integration credentials (Slack, Microsoft Teams, Linear, etc.) are configured through the admin UI and stored securely in the database, not as environment variables.
 </Note>
 
+## Realtime Chat Transport
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `CHAT_TRANSPORT_MODE` | `live` | `live` streams chat over SSE (`/api/chat/stream`). Set to `poll` to force the widget and portal onto the polling fallback if you're behind a reverse proxy that buffers or drops long-lived event streams. |
+
 ## AI
 
 Enable AI features: post summaries, duplicate detection, feedback extraction, and help center semantic search. AI is off unless you set the key, the endpoint, and a model for each role -- Quackback works with any OpenAI-compatible endpoint but never assumes one.
@@ -95,6 +160,11 @@ Enable AI features: post summaries, duplicate detection, feedback extraction, an
 | `AI_QUALITY_GATE_MODEL` | Per-feature override for the suggestion quality gate | `gpt-4o-mini` |
 | `AI_INTERPRETATION_MODEL` | Per-feature override for feedback interpretation | `gpt-4o-mini` |
 | `AI_MERGE_MODEL` | Per-feature override for merge verification | `gpt-4o` |
+| `AI_HELP_CENTER_MODEL` | Per-feature override for help center Ask AI | `gpt-4o-mini` |
+| `AI_HELP_CENTER_TRANSLATE_MODEL` | Per-feature override for help center article auto-translation | `gpt-4o-mini` |
+| `AI_ASSISTANT_MODEL` | Per-feature override for the Quinn AI assistant | `gpt-4o` |
+| `AI_INBOX_TRANSLATION_MODEL` | Per-feature override for inbox message translation | `gpt-4o-mini` |
+| `AI_CLASSIFICATION_MODEL` | Per-feature override for ticket/message classification | `gpt-4o-mini` |
 
 Per-feature overrides fall back to `AI_CHAT_MODEL` when unset. Set an override to `off` to disable just that feature. Use model ids your endpoint accepts -- gateways typically want provider-prefixed ids like `google/gemini-3.1-flash-lite-preview`.
 
@@ -127,6 +197,44 @@ Anonymous usage statistics help improve Quackback. Telemetry is enabled by defau
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `DISABLE_TELEMETRY` | Set to `"true"` to disable anonymous usage statistics | `true` |
+
+## Logging
+
+The server emits structured JSON logs to stdout, one object per line, ready for any log shipper (Grafana Alloy, Promtail, Fluent Bit, Vector).
+
+| Variable | Default | Description | Example |
+|----------|---------|-------------|---------|
+| `LOG_LEVEL` | `info` in production, `debug` otherwise | Verbosity: `trace` \| `debug` \| `info` \| `warn` \| `error` \| `fatal` \| `silent` | `info` |
+
+## Docker Startup
+
+<Note>
+Both variables below are read by the container's entrypoint script, not the Zod-validated app config. They apply to any Docker deployment (Compose or `docker run`).
+</Note>
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `SKIP_MIGRATIONS` | `false` | Set to `true` to skip the automatic startup migration, e.g. when a Kubernetes pre-upgrade hook runs migrations out-of-band. |
+| `SEED_DATABASE` | `false` | Set to `true` to populate demo data on startup. Don't enable this in production. |
+
+## Docker Compose Variables
+
+<Note>
+These variables configure the **compose stack** (`docker-compose.prod.yml`) itself, not the application. The app never reads them directly. Compose uses them to name containers and to fill in values like `POSTGRES_PASSWORD` that the stack then wires into `DATABASE_URL` for you. See [Deploy with Docker](/self-hosting/docker).
+</Note>
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `QUACKBACK_TAG` | `latest` | Image tag to run. Pin to a specific release in production. |
+| `APP_PORT` | `3000` | Host port the app is published on. The container always listens on 3000 internally. |
+| `COMPOSE_PROJECT_NAME` | `quackback` | Name Compose uses for the project's containers, network, and volumes. |
+| `POSTGRES_USER` | `quackback` | Bundled PostgreSQL username. |
+| `POSTGRES_PASSWORD` | required | Bundled PostgreSQL password. |
+| `POSTGRES_DB` | `quackback` | Bundled PostgreSQL database name. |
+| `MINIO_ROOT_USER` | `quackback` | Bundled MinIO root user. Doubles as the app's `S3_ACCESS_KEY_ID`. |
+| `MINIO_ROOT_PASSWORD` | required | Bundled MinIO root password. Doubles as the app's `S3_SECRET_ACCESS_KEY`. |
+| `MINIO_IMAGE_TAG` | `RELEASE.2025-04-22T22-12-26Z` | Pinned MinIO image tag. |
+| `MC_IMAGE_TAG` | `RELEASE.2025-04-16T18-13-26Z` | Pinned MinIO client (`mc`) image tag, used by the bucket-init step. |
 
 ## Complete Example
 

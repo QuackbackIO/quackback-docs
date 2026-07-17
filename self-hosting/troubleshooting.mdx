@@ -238,6 +238,62 @@ In development mode without email configuration, OTP codes are printed to the se
 3. **Restart periodically**
    - Set up health checks and auto-restart
 
+## Background Processing Issues
+
+### Background jobs are not processing
+
+**Symptoms**: Webhooks, notifications, workflows, AI jobs, or scheduled analytics refreshes never fire, even though the app is up and requests succeed.
+
+**Solutions**:
+
+1. **Check `QUACKBACK_ROLE` on every replica**
+   - `web`-role replicas serve HTTP and enqueue jobs but never consume them
+   - At least one replica needs `QUACKBACK_ROLE=worker` or the default `all`
+   ```bash
+   docker compose -f docker-compose.prod.yml exec app env | grep QUACKBACK_ROLE
+   ```
+
+2. **Check the readiness probe's worker status**
+   ```bash
+   curl http://localhost:3000/api/health/ready
+   ```
+   Look at `checks.workers` in the response. A nonzero `failed` count means a worker's boot init threw; check the app logs for the failing worker's name.
+
+3. **See [Scale with multiple replicas](/self-hosting/scaling)** for how web and worker roles split.
+
+<Note>
+On a `web`-role replica, `checks.workers` in the readiness response always reads zero counts. That's expected: workers boot on `worker`/`all` replicas only, not a sign of failure.
+</Note>
+
+### IMAP inbound email is not creating conversations
+
+**Symptoms**: Emails sent to your support mailbox never appear as conversations.
+
+**Solutions**:
+
+1. **Verify all four required variables are set**
+   ```bash
+   EMAIL_INBOUND_PROVIDER=imap
+   IMAP_HOST
+   IMAP_USER
+   IMAP_PASSWORD
+   ```
+   The poller silently stays off if any one is missing. See [Receive email over IMAP](/self-hosting/email-imap).
+
+2. **Confirm a worker replica is running**
+   - The IMAP poller only runs where `QUACKBACK_ROLE` is `worker` or `all`, same as any other background job
+
+3. **Check `IMAP_MAILBOX` and `IMAP_TLS`**
+   - `IMAP_MAILBOX` defaults to `INBOX`; point it at the mailbox you're actually receiving mail in
+   - `IMAP_TLS` defaults to `true` (port 993); set it to `false` only for a plaintext connection on port 143
+
+4. **Check the logs for connection errors**
+   ```bash
+   docker compose -f docker-compose.prod.yml logs app --tail 100 | grep imap
+   ```
+
+5. **Confirm the conversations channel is enabled** in **Admin > Settings > Channels**
+
 ## Integration Issues
 
 ### Slack notifications not sending

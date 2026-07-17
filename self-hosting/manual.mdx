@@ -255,6 +255,10 @@ sudo systemctl status quackback
 journalctl -u quackback -f
 ```
 
+<Tip>
+One instance handles everything by default (`QUACKBACK_ROLE=all`, the default when the variable is unset). To scale HTTP and background processing separately, add a second systemd unit with `Environment=QUACKBACK_ROLE=worker` (and set the first unit's `QUACKBACK_ROLE=web`). See [Scale with multiple replicas](/self-hosting/scaling).
+</Tip>
+
 ### PM2 (Alternative)
 
 ```bash
@@ -491,6 +495,7 @@ GRANT ALL ON SCHEMA public TO quackback;
 
 ## Next Steps
 
+- [Scale with multiple replicas](/self-hosting/scaling) - Split web and worker roles
 - [Reverse Proxy Configuration](/self-hosting/reverse-proxy) - Set up Nginx, Caddy, or Traefik
 - [Environment Variables](/reference/environment-variables) - Configure email, OAuth, and integrations
 - [Troubleshooting](/self-hosting/troubleshooting) - Common issues and solutions

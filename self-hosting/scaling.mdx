@@ -1,0 +1,63 @@
+---
+title: "Scale with multiple replicas"
+description: "Split HTTP traffic and background processing across replicas as load grows."
+icon: "cpu-chip"
+---
+
+# Scale with multiple replicas
+
+One container handles everything at first. As traffic grows, split HTTP serving from background processing so a slow AI job never competes with a page load.
+
+## How Quackback processes work
+
+Every Quackback process reads `QUACKBACK_ROLE` to decide what it does. The default, `all`, serves HTTP and runs background workers in the same process. That's what the [Docker](/self-hosting/docker) and [Railway](/self-hosting/railway) guides deploy, and it's the right choice until you have a specific reason to split.
+
+| Role | HTTP | Queue workers | Use for |
+|------|------|----------------|---------|
+| `all` (default) | Yes | Yes | Single-container deployments |
+| `web` | Yes | No (enqueues only) | Front-end replicas behind a load balancer |
+| `worker` | Yes (health probes only) | Yes | Dedicated background processing |
+
+<Note>
+`web` replicas still serve HTTP but never construct a queue consumer. They enqueue jobs and leave them for a worker to pick up. A deployment that only runs `web` replicas queues work that nothing ever processes.
+</Note>
+
+## Split web and worker replicas
+
+Run the same image with different `QUACKBACK_ROLE` values:
+
+```bash
+# Web replicas: scale these behind your load balancer
+docker run -d -e QUACKBACK_ROLE=web -e DATABASE_URL=... -e REDIS_URL=... ghcr.io/quackbackio/quackback:latest
+
+# Worker replicas: one is enough for most workloads
+docker run -d -e QUACKBACK_ROLE=worker -e DATABASE_URL=... -e REDIS_URL=... ghcr.io/quackbackio/quackback:latest
+```
+
+<Tip>
+Route load-balancer traffic to `web` replicas only. `worker` replicas serve HTTP so their health probes work, but they don't need, and shouldn't receive, user traffic.
+</Tip>
+
+Background workers handle event delivery (webhooks, notifications, workflows), email sending and inbound polling, AI jobs (summaries, duplicate detection, extraction), analytics refreshes, workflow timers, and imports. They're leader-elected through Postgres, so running more than one `worker` replica is safe: only one replica executes each scheduled sweep at a time.
+
+<Warning>
+Scale `web` replicas without a `worker` (or `all`) replica running somewhere, and webhooks, notifications, and workflows stop firing. Jobs queue up but nothing consumes them.
+</Warning>
+
+## Requirements
+
+Every replica, regardless of role, needs:
+
+- The same `DATABASE_URL` (shared PostgreSQL)
+- The same `REDIS_URL` (shared Redis or Dragonfly, for the BullMQ queues)
+- The same `SECRET_KEY` (sessions are database-backed, so any replica can serve any request)
+
+## Health checks per role
+
+Point your orchestrator's liveness probe at [`/api/health/live`](/api/health) (process is up, no I/O) and readiness probe at [`/api/health/ready`](/api/health) (database, Redis, migrations, and worker boot status). On a `web` replica the readiness check's worker counts are always zero. That's expected, not a failure.
+
+## Next steps
+
+- [Docker Deployment](/self-hosting/docker) - Base compose setup before you split roles
+- [Environment Variables](/reference/environment-variables) - Full `QUACKBACK_ROLE` and pool-sizing reference
+- [Troubleshooting](/self-hosting/troubleshooting) - Diagnose background jobs that aren't processing

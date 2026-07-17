@@ -1,0 +1,77 @@
+---
+title: "Receive email over IMAP"
+description: "Turn inbound email into conversations without exposing a public webhook."
+icon: "envelope"
+---
+
+# Receive email over IMAP
+
+Not every self-hosted deployment can expose a public webhook endpoint for inbound email. IMAP polling gets you the same result (visitor replies land as conversation messages) by having Quackback poll a mailbox instead of a provider pushing to you.
+
+<Note>
+This page covers the self-hosted IMAP transport. For the concepts behind the email channel (threading, agent replies, routing) see [Email channel](/support/channels).
+</Note>
+
+## IMAP vs. the provider webhook
+
+Quackback supports two ways to receive inbound email:
+
+| | Provider webhook | IMAP polling |
+|---|---|---|
+| Setup | Configure a provider (e.g. Resend inbound) and point its webhook at your instance | Point Quackback at any mailbox you already control |
+| Requires | A public HTTPS endpoint reachable from the provider | Outbound access to your IMAP host only |
+| Latency | Near-instant | Up to ~60 seconds (poll interval) |
+
+If your instance isn't publicly reachable, or you already have a support mailbox and don't want to route it through a third-party inbound-email provider, use IMAP.
+
+## Configure the poller
+
+Set these variables and restart:
+
+```bash
+EMAIL_INBOUND_PROVIDER=imap
+IMAP_HOST=imap.example.com
+IMAP_PORT=993
+IMAP_USER=support@example.com
+IMAP_PASSWORD=your-mailbox-password
+IMAP_TLS=true
+IMAP_MAILBOX=INBOX
+```
+
+| Variable | Default | Notes |
+|----------|---------|-------|
+| `EMAIL_INBOUND_PROVIDER` | unset | Must be `imap` to enable the poller |
+| `IMAP_HOST` | required | No default |
+| `IMAP_PORT` | `993` (TLS) or `143` (plaintext) | |
+| `IMAP_USER` | required | No default |
+| `IMAP_PASSWORD` | required | No default |
+| `IMAP_TLS` | `true` | Set to `false` for a plaintext connection |
+| `IMAP_MAILBOX` | `INBOX` | Mailbox to poll |
+
+<Warning>
+`EMAIL_INBOUND_PROVIDER`, `IMAP_HOST`, `IMAP_USER`, and `IMAP_PASSWORD` are all required together. Leave any one unset and the poller never connects. There's no error, it just stays off.
+</Warning>
+
+## How it works
+
+A background worker polls the mailbox for unseen messages roughly every 60 seconds, parses each one, and creates or threads it into a conversation. Messages that ingest successfully, or are deliberately dropped as spam or unroutable, are marked seen. A message that fails to ingest (a transient error) is left unseen so the next poll retries it.
+
+<Tip>
+The poller only runs on a replica where `QUACKBACK_ROLE` is `worker` or `all`. If you've [split web and worker replicas](/self-hosting/scaling), make sure a worker replica is running or inbound mail never gets picked up.
+</Tip>
+
+Replies from your team route back to the visitor by matching the `In-Reply-To`/`References` threading chain. If you also configure `EMAIL_INBOUND_DOMAIN` and `EMAIL_INBOUND_SIGNING_SECRET` for the webhook path, replies additionally route by plus-address. The two inbound methods aren't mutually exclusive.
+
+## Verify it works
+
+Send a test email to the configured mailbox, then check that it appears as a new conversation within about a minute. If it doesn't:
+
+1. Confirm `QUACKBACK_ROLE` isn't `web` on every replica
+2. Check the logs for `imap inbound not configured` (means a required variable is missing) or a connection error
+3. Confirm the conversations channel is enabled in **Admin > Settings > Channels**
+
+## Next steps
+
+- [Environment Variables](/reference/environment-variables) - Full IMAP and email variable reference
+- [Scale with multiple replicas](/self-hosting/scaling) - Make sure a worker replica is running
+- [Troubleshooting](/self-hosting/troubleshooting) - Fix IMAP mail that isn't creating conversations
