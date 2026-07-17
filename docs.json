@@ -6,6 +6,8 @@
     { "id": "self-hosting", "label": "Self Hosting", "icon": "server", "sections": ["self-hosting"], "defaultSlug": "self-hosting/overview" },
     { "id": "users", "label": "Users", "icon": "users", "sections": ["users"], "defaultSlug": "users/submitting-feedback" },
     { "id": "admin", "label": "Admin", "icon": "settings", "sections": ["admin"], "defaultSlug": "admin/inbox" },
+    { "id": "support", "label": "Support", "icon": "life-buoy", "sections": ["support"], "defaultSlug": "support/overview" },
+    { "id": "automation", "label": "AI & Automation", "icon": "sparkles", "sections": ["automation"], "defaultSlug": "automation/overview" },
     { "id": "auth", "label": "Auth", "icon": "shield", "sections": ["auth"], "defaultSlug": "auth/overview" },
     { "id": "integrations", "label": "Integrations", "icon": "plug", "sections": ["integrations"], "defaultSlug": "integrations/overview" },
     { "id": "widget", "label": "Widget", "icon": "chat-bubble-left-right", "sections": ["widget"], "defaultSlug": "widget" },
