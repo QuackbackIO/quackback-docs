@@ -1,0 +1,77 @@
+---
+title: "Configure the Quinn Agent"
+description: "Deploy Quinn to Messenger and control what it knows and says."
+icon: "message-circle"
+---
+
+# Configure the Quinn Agent
+
+Not every customer message needs a human. Quinn's Agent answers questions and resolves issues right inside [Messenger](/widget), your customer-facing chat widget, and hands off to your team the moment it's out of its depth.
+
+Find it at **Admin → AI & Automation → Agent**.
+
+## Turn it on
+
+The Agent tab opens with a deployment card that controls whether Quinn responds automatically in Messenger. Click **Enable automatic replies** to go live, or **Pause automatic replies** to take Quinn offline without losing your configuration.
+
+<Note>
+The Agent works out of the box wherever [support](/support/overview) is enabled. There's no separate Labs flag to find, unlike Copilot and Quinn's actions.
+</Note>
+
+## Five tabs, one agent
+
+Everything about the Agent's behavior is organized into five tabs, shared with Copilot's layout so the two stay easy to compare.
+
+| Tab | What you configure |
+|-----|---------------------|
+| **Basics** | Quinn's name and avatar, tone, response length, and any additional instructions |
+| **Knowledge** | Which content Quinn can draw on when it answers |
+| **Guidance** | Rules that steer Quinn's behavior in specific situations |
+| **Actions** | What Quinn is allowed to do, not just say |
+| **History** | A change log of every edit to Quinn's configuration |
+
+### Basics
+
+Set Quinn's tone (for example, friendly or formal) and how long its replies should run. **Additional instructions** is free text for anything the structured fields don't cover, like "Never quote a price" or "Always ask for the order number first."
+
+### Knowledge
+
+The Agent can only draw on customer-safe sources: [help center](/help-center) articles, public feedback posts, the changelog, and live status. It never sees internal notes, past conversations, or ticket history, since those aren't meant for customers.
+
+<Note>
+The **posts** source only includes feedback from public boards. Anything on a private or internal board stays out of Quinn's replies.
+</Note>
+
+Only the help center is on by default. Turn on the others as you build out that content. See the full breakdown in [Knowledge sources](/automation/knowledge-sources).
+
+### Guidance
+
+Guidance rules are structured, not a prompt you edit blind. Each rule has a name, an instruction, and either **Always on** or a condition describing when it applies (for example, "the customer mentions a refund"). Priority controls which rule wins when two rules could both apply.
+
+<Tip>
+Keep guidance specific. "Offer a 10% discount if the customer threatens to cancel" works. "Be nice" doesn't give Quinn anything actionable.
+</Tip>
+
+Rules share a combined character budget per agent, so a handful of focused rules works better than many long ones.
+
+### Actions
+
+Actions let Quinn do things, not just say things. See [Give Quinn actions](/automation/actions) for the full list of what's available and how approvals work.
+
+### History
+
+Every change to Quinn's configuration, by any teammate, shows up here with who made it and when. It's shared between the Agent and Copilot tabs, so you can see the full picture of how Quinn's setup evolved.
+
+## Handing off to a human
+
+Quinn doesn't try to bluff through questions it can't answer. When it hands a conversation to your team, that hand-off is an event your workspace can react to: it can trigger a [workflow](/automation/workflows), fire a [webhook](/integrations/webhooks), and notify the right teammate.
+
+<Tip>
+Build a workflow on the "Quinn handed off" trigger to route escalations to a specific team, or to page whoever's on call. See [Build a workflow](/automation/workflows).
+</Tip>
+
+## Next steps
+
+- [Knowledge sources](/automation/knowledge-sources) -- The full source catalogue and what each one contributes
+- [Give Quinn actions](/automation/actions) -- Let the Agent close conversations or create tickets
+- [Test and monitor Quinn](/automation/test-and-monitor) -- Try the Agent in the sandbox before it talks to real customers

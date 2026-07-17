@@ -1,0 +1,46 @@
+---
+title: "Workflow blocks"
+description: "The interactive building blocks for guided Messenger conversations."
+icon: "puzzle-piece"
+---
+
+# Workflow blocks
+
+A workflow doesn't just react to events behind the scenes. It can also run a guided conversation right inside Messenger: ask a question, show buttons, collect a rating. These eight blocks are what that conversation is built from.
+
+## Block reference
+
+| Block | What it does in Messenger |
+|-------|---------------------------|
+| Message | Posts a message and continues immediately |
+| Show expected reply time | Shows the customer how long a reply typically takes, then continues |
+| Let Quinn answer | Hands the turn to [Quinn](/automation/quinn-agent), then waits for Quinn to reply or hand off |
+| Disable replies | Turns off the message box so the customer can't type, paired with another block |
+| Reply buttons | Shows button options and waits for the customer to pick one |
+| Collect data | Asks for a structured value (text, number, a choice, or a date) and stores it as a conversation attribute |
+| Collect customer reply | Asks for a free-text reply and stores it as a conversation attribute |
+| Ask for a rating | Requests a CSAT rating and waits for the customer's response |
+
+Most blocks pause the workflow until the customer responds. Message and the reply-time block are the exception: they post and move straight to the next node.
+
+## CSAT over email
+
+The rating block doesn't have to run live in Messenger. It can also send a satisfaction request by email, with emoji rating links the customer clicks straight from their inbox.
+
+<Note>
+Emailed rating links are signed and valid for 30 days. After that, the link no longer records a rating.
+</Note>
+
+## Abandoned conversations
+
+If a customer starts a guided flow, like answering a data-collection prompt or picking a reply button, and never responds, the wait doesn't have to sit open forever. Workflows can auto-close a conversation after it's been abandoned for a configured amount of time.
+
+<Note>
+Auto-close only applies to conversations the customer never actually engaged with. If they sent even one message, or left contact details you've chosen to capture, the conversation is left open for a teammate to review instead of being closed automatically.
+</Note>
+
+## Next steps
+
+- [Build a workflow](/automation/workflows) -- See the full trigger and action reference
+- [Start from a workflow template](/automation/templates) -- Customer-facing templates already use these blocks
+- [Configure the Quinn Agent](/automation/quinn-agent) -- Set up what "Let Quinn answer" hands off to

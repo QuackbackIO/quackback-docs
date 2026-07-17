@@ -8,6 +8,10 @@ icon: "sparkles"
 
 Let AI handle the repetitive work. Quackback uses large language models and vector embeddings to summarize feedback, detect duplicates, and triage incoming posts so your team can focus on decisions.
 
+<Note>
+This page covers AI for the feedback pipeline: summaries, duplicate detection, and suggestions. For Quinn, the AI support agents, and the workflows engine, see [AI & Automation](/automation/overview).
+</Note>
+
 ## Overview
 
 Quackback includes four AI capabilities:
@@ -56,7 +60,7 @@ AI_SUMMARY_MODEL="off"     # disable post summaries only
 AI_MERGE_MODEL="gpt-4o"    # use a stronger model for merge verification
 ```
 
-Available overrides: `AI_SUMMARY_MODEL`, `AI_SENTIMENT_MODEL`, `AI_EXTRACTION_MODEL`, `AI_QUALITY_GATE_MODEL`, `AI_INTERPRETATION_MODEL`, and `AI_MERGE_MODEL`. Each falls back to `AI_CHAT_MODEL` when unset. A value of `off` disables just that feature.
+Available overrides: `AI_SUMMARY_MODEL`, `AI_SENTIMENT_MODEL`, `AI_EXTRACTION_MODEL`, `AI_QUALITY_GATE_MODEL`, `AI_INTERPRETATION_MODEL`, and `AI_MERGE_MODEL`. Each falls back to `AI_CHAT_MODEL` when unset. A value of `off` disables just that feature. The full list of per-surface model overrides, including the ones Quinn uses, lives in [Environment Variables](/reference/environment-variables).
 
 ## Post summaries
 

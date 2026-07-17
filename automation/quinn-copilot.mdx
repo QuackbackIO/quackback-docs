@@ -1,0 +1,58 @@
+---
+title: "Use Quinn Copilot"
+description: "Get AI help drafting replies and answering questions in the inbox."
+icon: "users"
+---
+
+# Use Quinn Copilot
+
+Your team spends time hunting for context: what did this customer already try, what does the help center say, has this come up before. Copilot answers those questions inline, without ever speaking to the customer itself.
+
+<Note>
+Inbox AI is off by default. Turn it on in **Admin → Settings → Labs**.
+</Note>
+
+Once it's on, find Copilot's settings at **Admin → AI & Automation → Copilot**.
+
+## What Copilot does
+
+Copilot is teammate-facing only. It never sends a message a customer sees directly.
+
+- **Ask questions in the Q&A tab.** Open any conversation or ticket and ask Copilot about it in a private panel next to the thread. It answers from the same [knowledge sources](/automation/knowledge-sources) you've enabled, plus internal notes.
+- **Draft replies.** Ask Copilot to write a reply and it drops a draft into the composer for you to edit and send. Copilot never sends on its own.
+- **Translate messages.** Incoming messages can be shown in your language, and outgoing replies can be sent in the customer's.
+- **Classify conversation attributes.** For any attribute you've opted into AI detection, Copilot fills it in automatically based on the conversation.
+
+<Warning>
+Internal notes are Copilot-only knowledge. They're never used when drafting anything that could reach a customer, even indirectly.
+</Warning>
+
+## Proactive suggested replies
+
+By default, Copilot only responds when a teammate asks. Turn on **Proactive suggested replies** and Copilot drops a draft above the composer on its own, whenever a teammate opens a conversation or ticket where the customer is waiting on a reply.
+
+<Note>
+Proactive suggested replies is off by default. Turn it on in **Admin → Settings → Labs**.
+</Note>
+
+This is a sub-setting under Inbox AI. It only takes effect once Inbox AI itself is on.
+
+## Configure Copilot
+
+Copilot shares the same tab layout as the Agent, with one difference: Copilot has no voice settings, since it never writes to customers directly.
+
+| Tab | What you configure |
+|-----|---------------------|
+| **Basics** | Turn Q&A and suggested replies on or off |
+| **Knowledge** | Which sources Copilot can draw on, including internal-only ones |
+| **Guidance** | Rules that steer how Copilot answers |
+| **Actions** | What Copilot can do when a teammate asks it to |
+| **History** | A shared change log with the Agent |
+
+Drafted replies use the Agent's configured voice, even though you triggered the draft from Copilot. That keeps tone consistent regardless of which agent produced the text a customer eventually reads.
+
+## Next steps
+
+- [Knowledge sources](/automation/knowledge-sources) -- See what internal-only sources like tickets and past conversations contribute
+- [Give Quinn actions](/automation/actions) -- Let Copilot take actions when a teammate asks
+- [Test and monitor Quinn](/automation/test-and-monitor) -- See how much your team is actually using Copilot

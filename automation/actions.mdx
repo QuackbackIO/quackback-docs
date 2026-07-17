@@ -1,0 +1,66 @@
+---
+title: "Give Quinn actions"
+description: "Let Quinn close conversations, create tickets, and call your own APIs."
+icon: "bolt"
+---
+
+# Give Quinn actions
+
+An answer isn't always enough. Sometimes the right response is closing the conversation, opening a ticket, or calling an internal API. Quinn's actions let it do that, with an audit trail for every one.
+
+## Built-in actions
+
+Quinn ships with eight built-in actions. They're read-only in the sense that you can't reconfigure or disable them individually: every action is always available to an agent when its knowledge or permission prerequisites are met, and every call is logged.
+
+| Action | Description |
+|--------|-------------|
+| Search knowledge | Search the published help center for articles the current viewer can see |
+| Get status | Look up live service status, incidents, and scheduled maintenance from the status page |
+| Handoff to human | Route the current customer conversation to a human teammate |
+| Report inability | Record that the current request can't be completed with this turn's tools |
+| Set attribute | Record a structured fact on the conversation, learned from what the customer said |
+| End conversation | Close the conversation once the customer has confirmed their issue is resolved |
+| Create ticket | Open a support ticket to track work that needs a teammate beyond this conversation |
+| Share feedback post | Share an existing feedback post into the conversation as a card the customer can vote on |
+| Capture feedback | Create a public feedback post from the conversation, attributed to the customer |
+
+<Note>
+Assistant actions is off by default. Turn it on in **Admin → Settings → Labs**.
+</Note>
+
+The Agent and Copilot use these differently:
+
+- **Agent** runs them autonomously as part of a reply. If a customer confirms their issue is resolved, the Agent can close the conversation itself.
+- **Copilot** only calls a write action when a teammate explicitly asks for it in the Q&A tab, and shows the result as a proposal a teammate approves before anything changes.
+
+See the full list, with which agent has each action available, on the **Actions** tab of [Agent](/automation/quinn-agent) or [Copilot](/automation/quinn-copilot).
+
+## Custom actions
+
+Built-in actions cover the common cases. For anything specific to your product, build a custom action: an HTTP request Quinn can call, defined once and assigned to whichever agent should use it.
+
+<Note>
+Custom actions is off by default. Turn it on in **Admin → Settings → Labs**.
+</Note>
+
+Each custom action defines:
+
+- **Method and URL** -- GET or POST, to any endpoint you specify
+- **Headers** -- including secret headers, which are encrypted at rest and never shown again in plain text after you save them
+- **Response allowlist** -- the specific fields Quinn is allowed to see from the response; anything not on the list stays hidden from the model
+- **Character limits** -- caps on the request body and how much of the response Quinn reads, so one action can't blow your context budget
+- **Agent assignment** -- assign an action to the Agent, Copilot, or both
+
+<Tip>
+Use **Test run** before assigning an action to an agent. It sends the same request Quinn would send and shows you the real response, so you catch a bad URL or an empty allowlist before a customer ever sees it.
+</Tip>
+
+<Warning>
+A custom action sends data from the conversation to an external endpoint you control. Review what each action's request body includes before you assign it to an agent, especially one with access to customer conversations.
+</Warning>
+
+## Next steps
+
+- [Configure the Quinn Agent](/automation/quinn-agent) -- Assign actions to the customer-facing agent
+- [Use Quinn Copilot](/automation/quinn-copilot) -- Assign actions to the teammate-facing agent
+- [Test and monitor Quinn](/automation/test-and-monitor) -- See how often each action runs and how often it succeeds
