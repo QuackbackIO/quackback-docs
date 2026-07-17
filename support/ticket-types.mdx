@@ -1,0 +1,50 @@
+---
+title: "Configure ticket types"
+description: "Define intake fields for customer, back-office, and tracker tickets."
+icon: "clipboard-document-list"
+---
+
+# Configure ticket types
+
+Not every ticket looks the same. A customer request needs different fields than an internal task. Ticket types let you shape the intake form for each kind of work your team tracks.
+
+Configure them at **Admin → Settings → Ticket types**.
+
+## Three types
+
+- **Customer**: a customer-visible support request. Only one customer ticket can be linked to a given conversation at a time.
+- **Back-office**: an internal task with no customer visibility, for work your team tracks but a customer never sees.
+- **Tracker**: an umbrella ticket that fans work out across several linked tickets, for requests too big to track as one item.
+
+<Note>
+Back-office and tracker tickets are internal by definition. Customers never see them in the portal, regardless of field configuration.
+</Note>
+
+## Configure fields
+
+Every type starts with two fixed fields: a **Subject** and a long-text **Details** field. Add custom fields on top of those:
+
+| Field type | Use for |
+|------------|---------|
+| Text | Short values like an order number |
+| Long text | Free-form detail |
+| Number | Quantities, amounts |
+| Select | A fixed set of options (one per line) |
+| Date | Deadlines, incident dates |
+| Checkbox | Yes/no flags |
+
+Mark a field **Required** to enforce it, and for customer-visible types, toggle **Visible to customer** to control whether the requester sees that field or only your team does.
+
+<Tip>
+Keep customer-facing forms short. Every required field is one more thing standing between a visitor and filing the request.
+</Tip>
+
+## How this shows up today
+
+Your team can pick a ticket type and fill in its fields when creating a ticket from the admin inbox. The portal's own **New ticket** form currently collects a subject and description and always creates a customer ticket, without a type picker or the custom fields you've configured here. Use ticket types now to standardize how your team captures structured detail on the tickets it creates directly.
+
+## Next steps
+
+- [Manage support tickets](/support/tickets): the status and stage model tickets move through
+- [Work the support inbox](/support/inbox): filter by ticket type in the Tickets group
+- [Set up the email channel](/support/channels): tickets created from inbound support email

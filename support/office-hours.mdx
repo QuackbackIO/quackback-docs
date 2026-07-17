@@ -1,0 +1,32 @@
+---
+title: "Configure office hours"
+description: "Set your team's schedule so SLA timers and customer messaging know when you're online."
+icon: "clock"
+---
+
+# Configure office hours
+
+Your team isn't online 24/7, and your SLA targets shouldn't pretend otherwise. Office hours define when your team is working, so timers pause outside them and customers know what to expect.
+
+Configure your schedule at **Admin → Settings → Office Hours**.
+
+## Set your schedule
+
+Turn office hours on, pick your timezone, and set open intervals for each day of the week. Leave office hours off and your workspace is treated as open 24/7.
+
+<Note>
+Office hours only apply once a human is involved. Quinn's Agent still handles conversations around the clock; office hours affect timers and messaging for your team, not Quinn's availability.
+</Note>
+
+## What office hours affect
+
+- **[SLA](/support/sla) deadlines**: response and resolution targets are calculated only across open hours, so a target set overnight doesn't burn down while your team is asleep. A policy can pin its own schedule instead of your workspace default.
+- **Workflow conditions**: a workflow can branch on whether a conversation came in during or outside office hours, and can restrict when it's allowed to send a message.
+- **"We're online" / "we're away" messaging**: a workflow can post automatic reply-time messaging to the customer based on your schedule, so they know when to expect a response.
+- **Availability shown to customers**: the online/away signal customers see combines live teammate presence with your office-hours schedule.
+
+## Next steps
+
+- [Set SLA policies](/support/sla): targets that read your office-hours schedule
+- [Build a workflow](/automation/workflows): branch or gate a message on office hours
+- [Handle conversations](/support/conversations): where SLA countdowns and availability appear
