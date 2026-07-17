@@ -25,10 +25,12 @@ Quackback gives you a single source of truth. Users submit feedback through a cl
 - Get notified when their requests ship
 
 **For your team:**
-- Triage feedback in a unified inbox
+- Triage feedback in a dedicated Feedback area
+- Answer customers in a shared support inbox with Messenger chat, email, and tickets
 - Organize with boards, tags, and statuses
-- Plan releases with drag-and-drop roadmaps
-- Automate workflows with webhooks and the REST API
+- Publish roadmaps that update themselves from your statuses
+- Let Quinn, the built-in AI agent, answer support questions and draft replies
+- Automate conversations and tickets with workflows, webhooks, and the REST API
 - Connect to Slack and other tools
 
 ## Key Features
@@ -51,7 +53,19 @@ Your workflow isn't one-size-fits-all. Create statuses like "In Design", "In Bet
 
 ### Public Roadmap
 
-Show users what's coming. They can see what's planned, in progress, and shipped, and follow updates on features they voted for.
+Show users what's coming. Roadmaps are live views over your feedback: pick a filter and columns, and posts appear as their status changes. Users follow updates on features they voted for.
+
+### Support Inbox & Messenger
+
+Talk to customers where they are. The [support inbox](/support/overview) unifies real-time Messenger chats, inbound email, and trackable support tickets in one queue, with SLA policies, macros, saved views, and team routing.
+
+### Quinn AI & Workflows
+
+[Quinn](/automation/overview), the built-in AI assistant, answers customers in Messenger and helps teammates draft replies in the inbox. The [workflows engine](/automation/workflows) automates routing, SLAs, follow-ups, and CSAT without leaving the product.
+
+### Status Pages
+
+Publish a [status page](/support/status-pages) on your portal domain: services with uptime history, incident updates, scheduled maintenance, and email subscribers.
 
 ### Changelog
 
@@ -59,7 +73,7 @@ Announce what you've shipped. Link changelog entries to the posts that inspired 
 
 ### REST API & API Keys
 
-Automate your feedback workflow with a full [REST API](/api/introduction). Create API keys to authenticate external integrations, then build custom workflows, sync data to your issue tracker, or power internal dashboards.
+Automate your feedback workflow with a full [REST API](/api/overview). Create API keys to authenticate external integrations, then build custom workflows, sync data to your issue tracker, or power internal dashboards.
 
 ### Webhooks
 
@@ -67,15 +81,15 @@ Get real-time HTTP notifications when things happen - new posts, status changes,
 
 ### AI Agent Support (MCP)
 
-Quackback includes a [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server, so AI coding agents like Claude Code can search feedback, triage posts, update statuses, and create changelog entries directly.
+Quackback includes a [Model Context Protocol](https://modelcontextprotocol.io) (MCP) server, so AI coding agents like Claude Code can search feedback, triage posts, work support tickets, update statuses, and create changelog entries directly.
 
 ### Help Center
 
-Build a searchable knowledge base on its own subdomain or custom domain. Organize articles by category, publish when ready, and let users find answers with AI-powered semantic search. Available as an [experimental feature](/help-center/setup).
+Build a searchable [knowledge base](/help-center/setup) on its own subdomain or custom domain. Organize articles by category, publish when ready, and let users find answers with AI-powered semantic search.
 
 ### Embeddable Widget
 
-Collect feedback without users leaving your app. Drop a script tag into your site and a feedback button appears — users can browse, search, vote, and submit posts from an in-app panel.
+Collect feedback and chat with customers without them leaving your app. Drop a script tag into your site and a launcher appears: users can browse, vote, submit posts, and message your team from an in-app panel.
 
 ### Integrations
 
@@ -101,7 +115,7 @@ Quackback uses modern, open-source technologies:
 |-------|------------|
 | Framework | TanStack Start + TanStack Router |
 | Database | PostgreSQL + Drizzle ORM |
-| Auth | Better Auth with email OTP + OAuth |
+| Auth | Better Auth with passwords, magic links, OAuth, and SSO |
 | Runtime | Bun |
 | Styling | Tailwind CSS + shadcn/ui |
 | IDs | TypeIDs (branded, sortable UUIDs) |
