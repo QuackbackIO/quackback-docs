@@ -206,11 +206,7 @@ Suitable for:
 
 ### Scale horizontally
 
-For higher loads:
-- Multiple application instances
-- Load balancer
-- Shared PostgreSQL
-- Session storage (database-backed)
+For higher loads, split HTTP serving from background processing across replicas. See [Scale with multiple replicas](/self-hosting/scaling).
 
 ### Scale the database
 
@@ -244,4 +240,5 @@ Options:
 
 - [Docker Deployment](/self-hosting/docker) - Quick start with Docker
 - [Manual Installation](/self-hosting/manual) - Install with Bun
+- [Scale with multiple replicas](/self-hosting/scaling) - Split web and worker roles
 - [Configuration](/reference/environment-variables) - Environment variables

@@ -250,30 +250,18 @@ function getPost(id: PostId): Promise<Post> {
 
 ### Event System
 
-Fire-and-forget event dispatch:
+Domain events write to a durable outbox table, in the same database transaction as the mutation that raised them:
 
 ```typescript
-// lib/server/events/dispatch.ts
-export async function dispatchPostCreated(
-  post: Post,
-  actor: EventActor
-) {
-  await processEvent({
-    type: 'post.created',
-    data: { post },
-    actor,
-  })
-}
-
-// lib/server/events/process.ts
-export async function processEvent(event: AppEvent) {
-  const targets = await getHookTargets(event.type)
-
-  await Promise.allSettled(
-    targets.map(target => target.handler.run(event, target))
-  )
+// lib/server/events/emit.ts
+export async function emit<P>(tx: Transaction, def: EventDefinition<P>, input: EmitInput<P>) {
+  // INSERTs one row into `events` on the caller's transaction, so the event
+  // commits atomically with the mutation. Never enqueues BullMQ directly.
+  await tx.insert(events).values({ /* ... */ })
 }
 ```
+
+A leader-elected relay (see [durable event outbox](#durable-event-outbox) below) drains unpublished rows into BullMQ, which fans out to webhooks, notifications, and workflow triggers. The request that raised the event never waits on hook delivery.
 
 ### Hook Handlers
 
@@ -361,6 +349,14 @@ Quackback runs as a single workspace per deployment:
 - `DATABASE_URL` environment variable
 - Singleton database connection
 - No tenant resolution needed
+
+### Process roles
+
+Background processing doesn't have to share a process with HTTP serving. Every Quackback process reads `QUACKBACK_ROLE` (`all`, `web`, or `worker`) to decide whether it constructs BullMQ workers and runs the periodic sweepers, independent of whether it serves HTTP. The single-container default (`all`) does both in one process; splitting `web` and `worker` replicas lets you scale HTTP capacity without also scaling queue consumption, or vice versa. See [Scale with multiple replicas](/self-hosting/scaling).
+
+### Durable event outbox
+
+Domain events (`post.created`, `conversation.message.created`, and so on) are written to an `events` outbox table in the same transaction as the mutation that raised them, so an event can never exist without the change it describes, and never gets lost to a crash between the two. A leader-elected relay process (worker-role, elected via a Postgres advisory lock so multiple worker replicas stay safe) polls the outbox and fans each row out into BullMQ jobs for webhooks, notifications, and workflow triggers, then marks the row published. This is the sole delivery path for events; nothing enqueues BullMQ directly.
 
 ## Next Steps
 
