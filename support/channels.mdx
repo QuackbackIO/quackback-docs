@@ -1,0 +1,54 @@
+---
+title: "Set up the email channel"
+description: "Route inbound support email into conversations and verify the domains you send from."
+icon: "envelope"
+---
+
+# Set up the email channel
+
+Not every customer wants to chat live. Email into conversations so a support inbox reply and an email reply are the same thread, no matter which side the customer answers from.
+
+Configure email at **Admin → Settings → Emails**.
+
+## Inbound routing
+
+Enter the address you want support email routed through, for example `support@yourcompany.com`. Quackback turns each message sent there into a conversation (or threads it into an existing one) and creates a contact if the sender is new.
+
+<Note>
+For self-hosted deployments that can't expose a public inbound webhook, [IMAP polling](/self-hosting/email-imap) is an alternative way to receive inbound mail from a mailbox you already control.
+</Note>
+
+## Sending addresses
+
+Set a sending address for each module that emails customers: **Support**, **Feedback**, and **Changelog**. Each gets its own verified From identity, so a support reply and a changelog announcement never look like they came from the same place unless you want them to.
+
+## Sending domains
+
+Add and verify the domain you send from so mail lands in inboxes instead of spam. Verification checks two DNS records:
+
+- An **SPF** TXT record authorizing your email provider to send on your domain's behalf
+- A **DKIM** CNAME record so receiving servers can confirm the message wasn't altered in transit
+
+Add both records at your DNS provider, then click **Verify**. Verification runs a live DNS lookup, so the only wait is DNS propagation, not a background job.
+
+<Tip>
+DNS changes can take time to propagate. If verification fails right after adding records, wait a few minutes and try again before assuming something's wrong.
+</Tip>
+
+## How inbound trust works
+
+Anyone can forge the "From" address on an email. Before Quackback attaches an inbound message to a contact, it checks whether the sending domain authenticated the message with DMARC:
+
+- **DMARC pass**: the message is trusted. If the sender's address matches an existing contact, it attaches to that contact automatically. If it's a new address, a new contact is created.
+- **Anything weaker than a pass** (no DMARC record, a policy of quarantine or none, or an unparseable result): a new contact is created, but it's marked **unverified**. Even if the address happens to match an existing contact, Quackback won't silently attach the message to that identity.
+- **A hard DMARC failure under a reject policy**: the message is dropped. No conversation or contact is created.
+
+<Note>
+This check only applies to cold inbound mail, meaning messages from addresses Quackback hasn't already verified through a prior authenticated exchange. Replies inside an existing conversation thread are matched by the conversation's own reply address instead.
+</Note>
+
+## Next steps
+
+- [Handle conversations](/support/conversations): where email replies show up alongside live chat
+- [Manage support tickets](/support/tickets): tickets created from inbound email threads
+- [IMAP polling](/self-hosting/email-imap): the self-hosted alternative to webhook-based inbound

@@ -1,0 +1,67 @@
+---
+title: "Handle conversations"
+description: "Manage the conversation lifecycle, priority, internal notes, CSAT, and handoffs from Quinn."
+icon: "chat-bubble-left-right"
+---
+
+# Handle conversations
+
+A conversation is a real-time thread with a visitor, started from Messenger in your widget or from an inbound support email. It behaves like chat: replies land immediately, and either side can pick it back up later.
+
+## Lifecycle
+
+Every conversation is **open**, **snoozed**, or **closed**. A few rules keep the state honest:
+
+- A visitor reply always reopens the conversation, unless it's a satisfaction rating or an auto-reply landing after close.
+- A teammate reply reopens a closed conversation, but a snoozed one stays snoozed. Use this to send a quick update without waking a thread you deliberately parked.
+- Any teammate other than the assignee editing a snoozed conversation (assigning it, tagging it, and so on) wakes it back to open.
+
+<Tip>
+"Send and stay snoozed" is the default behavior for replying to a snoozed conversation. If you want the customer's next reply to reopen it, snooze again after your message instead of leaving it open.
+</Tip>
+
+## Priority
+
+Set priority to **None**, **Low**, **Medium**, **High**, or **Urgent** from the conversation or from the [inbox bulk action bar](/support/inbox#bulk-actions). Priority feeds sorting, saved view filters, and workflow conditions, so a workflow can route or escalate urgent conversations differently.
+
+## Internal notes and mentions
+
+Notes are internal-only messages in the same thread: the customer never sees them, they don't count toward the public reply, and they never trigger a customer notification. Type `@` in a note to mention a teammate. The mention:
+
+- Shows up in that teammate's **Mentions** view in the inbox
+- Sends them an in-app notification
+
+<Note>
+Mentions are team-only. If a visitor's message happens to contain an `@`, it isn't parsed as a mention.
+</Note>
+
+## Waiting on customer vs. waiting on your team
+
+Every open conversation is either waiting on the customer's reply or waiting on your team's. The **Waiting** triage chip in the [inbox](/support/inbox) surfaces conversations sitting in your team's court. You can build automation on top of this: workflows have "customer stopped responding" and "teammate hasn't responded" triggers that fire after a silence threshold you set, so you can nudge, escalate, or auto-close a thread nobody's touched. See [Build a workflow](/automation/workflows).
+
+<Note>
+This waiting state is separate from an [SLA policy](/support/sla)'s response deadlines. Waiting state is about who's expected to act next; SLA is a timed target you apply deliberately.
+</Note>
+
+## Translation
+
+When translation is turned on, incoming messages are translated for display only. The original stays the stored content, so nothing about the source message changes and different teammates can read it in their own language. Outgoing replies are translated before sending: the translated text becomes the message the customer receives, with the original kept for reference.
+
+<Note>
+A reply that contains an image or another rich embed can't be translated. Send it without translation, or as plain text.
+</Note>
+
+## CSAT
+
+Customer satisfaction ratings (1-5, with an optional comment) aren't collected automatically when a conversation closes. Trigger a request from a [workflow](/automation/workflows) using the CSAT action. For email conversations, the request also goes out as a one-click rating email so the customer can respond without opening the portal.
+
+## Handoff from Quinn
+
+When [Quinn's Agent](/automation/quinn-agent) can't resolve something itself, whether it's an explicit request for a human, repeated confusion, low confidence, or a safety concern, it hands the conversation to your team. The handoff posts as an event in the thread, and it's a trigger your workflows can react to, for example to route the conversation to the right team automatically.
+
+## Next steps
+
+- [Work the support inbox](/support/inbox): scopes, filters, and bulk actions
+- [Manage support tickets](/support/tickets): turn a conversation into a tracked request
+- [Set SLA policies](/support/sla): apply response and resolution targets
+- [Configure the Quinn Agent](/automation/quinn-agent): what Quinn can answer before handing off
