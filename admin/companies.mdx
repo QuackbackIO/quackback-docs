@@ -1,0 +1,51 @@
+---
+title: "Manage companies"
+description: "Group your users by the customer account they belong to and track company-level attributes."
+icon: "building-office"
+---
+
+# Manage companies
+
+See feedback in the context of the account it came from. Companies group your users by the customer they belong to, so you can spot when your biggest accounts are asking for the same thing.
+
+## Overview
+
+Companies are first-class objects in Quackback, not only a tag on a user. Every user can be linked to a company, so you can see feedback, votes, and activity rolled up by account instead of by individual.
+
+Access the companies directory from **Admin → Users**, then switch to **All companies** in the sidebar. Select a company to open its profile.
+
+<Note>
+The companies directory lives inside the [Users](/admin/users) page, alongside the All users and All leads views.
+</Note>
+
+## The companies directory
+
+The directory lists every company with users linked to it. Click a company to open its profile, which shows:
+
+- Company details - plan, size, industry, and website
+- Custom attributes you've configured
+- The users linked to this company
+
+Companies come from two sources: created automatically as user data flows in through the API, or added manually from the dashboard.
+
+## Custom company attributes
+
+Define custom attributes for companies at **Admin → Settings → Companies**. These work like [user attributes](/widget/identify-users#custom-attributes) but describe the account instead of the individual - things like contract value, renewal date, or account owner.
+
+Supported types: text, number, boolean, date, and currency.
+
+<Tip>
+Use company attributes for anything that's true of the whole account, like plan tier or MRR. Use [user attributes](/widget/identify-users#custom-attributes) for anything that varies by person.
+</Tip>
+
+## Target companies with segments
+
+[Segments](/admin/segments) can filter on company data, not only user data. Built-in fields - plan, monthly spend, size, and industry - plus any custom company attributes you've defined are available in the segment rule builder.
+
+Combine company and user conditions in the same segment, for example "Enterprise plan" and "hasn't logged in for 30 days" together, to find accounts at risk of churn.
+
+## Next steps
+
+- [Users](/admin/users) - view the directory of users and leads
+- [Segments](/admin/segments) - target feedback by company or user attributes
+- [Identify users](/widget/identify-users) - pass user data from your app

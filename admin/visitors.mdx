@@ -1,0 +1,43 @@
+---
+title: "Track visitor analytics"
+description: "See pageviews and visitor trends without cookies, third-party trackers, or stored PII."
+icon: "eye"
+---
+
+# Track visitor analytics
+
+Know how many people are looking at your portal and widget, not only who signs up. Visitor analytics tracks pageviews without cookies or personal data, so you get traffic trends without a consent banner.
+
+<Note>Visitor Analytics is off by default. Turn it on in **Admin → Settings → Labs**.</Note>
+
+## Overview
+
+Once enabled, a **Visitors** section appears in [Analytics](/admin/analytics) (Admin → Analytics), alongside Overview, Feedback, Changelog, and Users, showing pageview volume and visitor trends over time.
+
+## How tracking works
+
+The widget's pageview beacon fires on load and on every in-app navigation, including client-side route changes in single-page apps. Repeat views of the same URL in a row are deduplicated.
+
+No cookie or `localStorage` entry is created by default. Visitor identity is computed server-side as a hash of the day's salt, your site's origin, IP address, and user agent. That hash rotates automatically every day and expires from cache after 48 hours. Raw IP addresses and user agents are never stored.
+
+This means a "visitor" in the dashboard represents a rough daily session, not a person you can track across days or devices.
+
+## Durable visitor identity (optional)
+
+If you need to recognize the same visitor across multiple days, turn on Visitor Identity as a sub-setting under Visitor Analytics.
+
+<Note>Visitor Identity is off by default. Turn it on in **Admin → Settings → Labs**.</Note>
+
+With Visitor Identity on, the widget stores a random ID in the visitor's browser (`localStorage`) so repeat visits are recognized as the same person. Without it, Quackback only sees fresh, unlinkable sessions.
+
+## Privacy
+
+Visitor tracking respects both major browser opt-out signals. If a visitor's browser sends **Do Not Track** or **Global Privacy Control**, Quackback skips the beacon entirely rather than tracking a stripped-down version. Tracking is also first-party only - the beacon posts directly to your own Quackback instance, never to a third-party analytics vendor.
+
+See [Manage privacy and data handling](/admin/privacy) for how Quackback handles data across the whole product.
+
+## Next steps
+
+- [Measure feedback with analytics](/admin/analytics) - the full analytics dashboard
+- [Manage privacy and data handling](/admin/privacy) - Quackback's approach to data
+- [Install the widget](/widget/installation) - get the pageview beacon running
