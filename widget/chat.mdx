@@ -1,0 +1,52 @@
+---
+title: "Add Messenger chat to the widget"
+description: "Let visitors start and continue support conversations right inside the widget."
+icon: "chat-bubble-left-right"
+---
+
+# Add Messenger chat to the widget
+
+Feedback and support don't have to live in separate tools. Messenger adds a chat surface to the widget so visitors can start a conversation with your team without leaving the page they're on.
+
+## Overview
+
+Messenger requires [support inbox](/support/conversations) to be turned on for your workspace, and it's on by default. When it's enabled, a Messages tab appears in the widget alongside your existing Feedback, Changelog, and Help tabs - chat doesn't replace them, it sits next to them.
+
+## Launcher unread badge
+
+While the widget is closed, the launcher button shows a badge with the number of unread messages. It counts up to 9, then shows **9+** for anything higher. The badge disappears the moment the visitor opens the widget, since they can see their unread messages directly.
+
+### Listen for unread counts on your page
+
+Subscribe to the `unread` event to mirror the count in your own UI, like a notification dot in your app's header:
+
+```js
+Quackback("on", "unread", (payload) => {
+  console.log("Unread messages:", payload.count);
+  updateHeaderBadge(payload.count);
+});
+```
+
+**Payload:** `{ count: number }`
+
+See [Listen to widget events](/widget/events) for the full event reference.
+
+## Proactive greeting
+
+You can configure a greeting bubble that appears next to the launcher to invite visitors to chat, without them having to open the widget first. Set it in your widget settings.
+
+Dismissing the greeting hides it for the rest of that browser session. It can reappear on a later visit, so it keeps inviting new sessions without nagging on every page load within the same one.
+
+<Tip>
+Keep the greeting short and specific to the page it appears on. "Questions about pricing?" converts better than a generic "Need help?" on every page.
+</Tip>
+
+## Get support inside the widget
+
+For visitors who prefer to browse a knowledge base or submit a ticket instead of chatting live, see [Get support](/users/get-support). Messenger and your other support channels share the same underlying conversations, so nothing is duplicated.
+
+## Next steps
+
+- [Conversations](/support/conversations) - how conversations flow through your team's inbox
+- [Listen to widget events](/widget/events) - the full event reference including `unread`
+- [Customize the widget appearance](/widget/customization) - style the widget to match your brand
