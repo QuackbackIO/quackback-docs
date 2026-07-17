@@ -1,0 +1,66 @@
+---
+title: "Manage support tickets"
+description: "Track requests with admin-defined statuses that map to a fixed customer-facing stage."
+icon: "ticket"
+---
+
+# Manage support tickets
+
+Some requests can't be closed out in one reply. A ticket tracks a request until it's actually done, with a stage the customer can follow and a status your team can customize.
+
+## Two axes, not one
+
+Every ticket has two independent labels:
+
+- **Status**: the name and color your team defines, like "Investigating" or "Waiting on customer." Statuses are yours to create, rename, recolor, and delete.
+- **Stage**: a fixed, customer-facing progress label: **Received**, **In progress**, **Awaiting your reply**, or **Resolved**. You can relabel the stage text, but you can't add a fifth stage or remove one of the four.
+
+Each status maps to one stage (or to none, which hides the stage badge). This is what lets you run as many internal statuses as your process needs while customers see one consistent four-step progress bar.
+
+Every status also rolls up to a **category** (**Open**, **Pending**, or **Closed**), a fixed, reportable bucket that groups statuses for dashboards and workflow conditions, independent of which stage it maps to.
+
+Configure all of this at **Admin → Settings → Ticket statuses & stages**.
+
+<Tip>
+Relabel the four stages to match your voice ("We're on it" instead of "In progress"), but keep them short. They're the only ticket language most customers ever see.
+</Tip>
+
+### Worked example
+
+Quackback ships with these default statuses, which show how category and stage work together:
+
+| Status | Category | Stage shown to customer |
+|--------|----------|--------------------------|
+| New | Open | Received |
+| Investigating | Open | In progress |
+| Escalated | Open | In progress |
+| Waiting on customer | Pending | Awaiting your reply |
+| Waiting on third party | Pending | In progress |
+| Resolved | Closed | Resolved |
+| Won't do | Closed | Hidden |
+| Duplicate | Closed | Hidden |
+
+Notice that two open statuses ("Investigating" and "Escalated") both map to the same "In progress" stage. Internally your team can distinguish them; externally the customer sees progress continuing.
+
+<Note>
+You can't delete the default status or the last remaining status in a category. Every category needs at least one status mapped to it, and every workspace needs a starting default.
+</Note>
+
+## Ticket ↔ conversation linking
+
+A ticket can link to one or more conversations, and a conversation can have at most one linked customer-facing ticket. This keeps the "one open request per conversation" rule intact while still letting a tracker or back-office ticket span several conversations.
+
+### Create a ticket from a conversation
+
+Click **Create ticket** in the conversation header, or press `c` while a conversation is open. The dialog creates a customer ticket, fixes the requester to the conversation's visitor, and links the new ticket back to the conversation automatically. A system message in the thread records that the ticket was created, and the linked ticket shows as a card in the conversation panel from then on.
+
+## What customers see
+
+Customers never see your internal status name or color. The [portal](/users/get-support) shows only the stage: Received, In progress, Awaiting your reply, or Resolved. If a status has no stage mapped, tickets in that status show no stage badge to the requester.
+
+## Next steps
+
+- [Configure ticket types](/support/ticket-types): customer, back-office, and tracker intake forms
+- [Work the support inbox](/support/inbox): filter and triage tickets alongside conversations
+- [Set SLA policies](/support/sla): apply time-to-close targets
+- [Get help from support](/users/get-support): the end-user view of a ticket's progress

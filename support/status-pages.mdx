@@ -1,0 +1,64 @@
+---
+title: "Set up a status page"
+description: "Report incidents, track uptime, and schedule maintenance on a public status page."
+icon: "signal"
+---
+
+# Set up a status page
+
+An outage is worse when customers find out from a support ticket instead of a status update. A public status page lets you report incidents, show uptime, and notify subscribers before they have to ask.
+
+Your status page is on by default, published at `/status` on your portal domain.
+
+## Manage it
+
+Find incidents, maintenance, and configuration at **Admin → Status**:
+
+- **Overview**: the current state at a glance
+- **Open incidents**: anything active right now
+- **Scheduled maintenance**: upcoming windows
+- **All incidents**: full history
+- **Services**: the components your page reports on
+- **Templates**: reusable incident content
+- **Subscribers**: who's signed up for updates
+
+Workspace-level configuration (general settings, visibility, and notifications) lives at **Admin → Settings → Status**.
+
+## Services
+
+Add a service for each part of your product you want to report on independently, for example "API", "Dashboard", or "Email delivery". Group related services together so the public page reads cleanly instead of as a flat list.
+
+Each service shows an uptime bar built from its recent history, so visitors can see today's status alongside whether this is a one-off blip or a pattern.
+
+<Tip>
+Keep services at the granularity customers actually care about. "Database" means nothing to most visitors; "Dashboard" or "API" does.
+</Tip>
+
+## Report an incident
+
+Create an incident, set its impact, and pick which services it affects. Post updates as you learn more, moving the incident through **Investigating → Identified → Monitoring → Resolved**. Each update appears on the incident's own page in order, so subscribers and visitors can follow the story as it develops.
+
+<Note>
+Use a template to start an incident from pre-filled content instead of writing it from scratch every time. Save your own common scenarios (a known upstream outage, a routine restart) as templates from the incident composer.
+</Note>
+
+## Schedule maintenance
+
+Maintenance uses the same incident engine with its own lifecycle: **Scheduled → In progress → Verifying → Completed**. Set a start and end window in advance so it's visible on the status page before it begins, separate from the fast path for reporting something already happening.
+
+## Email subscribers
+
+Visitors can subscribe to updates for the whole page or for specific services only. Subscribing requires signing in to the portal. Admins can also add subscribers directly or import a list, and export the subscriber list for records.
+
+<Note>
+To stop receiving emails, a subscriber signs back into the portal and turns off their subscription from the same panel they used to subscribe.
+</Note>
+
+## RSS and API
+
+Every status page publishes an RSS feed of resolved incidents at `/status/feed`, so customers can follow updates in their own reader instead of email. For programmatic access, see the [Status API](/api/status).
+
+## Next steps
+
+- [Handle conversations](/support/conversations): link an incident to the conversations it's driving
+- [Follow service status](/users/status-updates): the subscriber's view of your status page

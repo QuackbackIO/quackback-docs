@@ -1,0 +1,51 @@
+---
+title: "Set SLA policies"
+description: "Define response and resolution targets, applied to conversations through a workflow action."
+icon: "shield-check"
+---
+
+# Set SLA policies
+
+Response-time promises only matter if you can see when you're about to miss one. SLA policies set targets for how fast your team responds and resolves, and surface a countdown before you breach them.
+
+Configure named policies at **Admin → Settings → SLA policies**.
+
+## Targets
+
+A policy can define up to three targets:
+
+- **First response**: time to the first reply
+- **Next response**: time to reply while the customer is waiting on you again
+- **Time to close**: time to fully resolve the conversation
+
+Leave any target blank to skip tracking it.
+
+## Office-hours aware
+
+Deadlines are calculated against your [office hours](/support/office-hours), so a target doesn't silently burn down overnight or over a weekend. Pin a specific schedule to a policy, or leave it unset to use your workspace's default schedule. A policy with no schedule configured anywhere is treated as always-on, 24/7.
+
+## Pause while snoozed
+
+Turn on **Pause while snoozed** (on by default) so a policy's clocks stop counting down while the conversation is snoozed, and pick back up from where they left off once it wakes.
+
+## Apply through a workflow, never automatically
+
+SLA policies don't match themselves to conversations. Apply one with the **Apply SLA** action inside a [workflow](/automation/workflows), for example based on priority or which board or team a conversation belongs to. A conversation has at most one active SLA at a time. Applying a new one replaces the old, and an agent can remove an applied SLA directly from the conversation if it no longer fits.
+
+<Tip>
+Build a workflow that applies your "Urgent" SLA policy whenever priority is set to Urgent, so your fastest targets kick in the moment a conversation needs them, without anyone remembering to set it by hand.
+</Tip>
+
+## Breaches feed your automation
+
+Approaching and actual breaches both fire events your workflows can act on, whether that's alerting a team, reassigning the conversation, or sending a webhook to an external system. See [Build a workflow](/automation/workflows) for the full trigger list.
+
+## Archive and clone
+
+Archive a policy to stop it from being applied to new conversations without losing history on the conversations that already have it. Clone a policy to start a new one from an existing set of targets instead of building from scratch.
+
+## Next steps
+
+- [Configure office hours](/support/office-hours): the schedule SLA deadlines are calculated against
+- [Handle conversations](/support/conversations): where the SLA countdown appears
+- [Build a workflow](/automation/workflows): apply SLA policies and react to breach events
