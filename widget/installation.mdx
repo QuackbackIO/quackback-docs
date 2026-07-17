@@ -122,12 +122,12 @@ Quackback.init({
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `instanceUrl` | string | — | Your Quackback URL. Required for npm. Baked into script-tag `sdk.js`. |
+| `instanceUrl` | string | - | Your Quackback URL. Required for npm. Baked into script-tag `sdk.js`. |
 | `placement` | `"left"` \| `"right"` | `"right"` | Corner for the launcher and panel until admin config loads |
-| `defaultBoard` | string | — | Board slug to filter the widget. Omit to show all boards |
+| `defaultBoard` | string | - | Board slug to filter the widget. Omit to show all boards |
 | `launcher` | boolean | `true` | Set `false` to hide the default floating button |
 | `locale` | string | Auto-detected | `"en"`, `"fr"`, `"de"`, `"es"`, `"ar"`, `"ru"`, `"pt-BR"`, `"zh-CN"`, or `"zh-TW"` |
-| `identity` | object | — | Bundle identify into init. Production shape is `{ ssoToken }`. Omit for anonymous |
+| `identity` | object | - | Bundle identify into init. Production shape is `{ ssoToken }`. Omit for anonymous |
 
 <Note>
 **Admin → Settings → Widget → Layout** owns launcher position, label, and greeting. The admin position overrides `placement` after the widget loads its config.

@@ -1,16 +1,20 @@
 ---
-title: "Customize your portal"
-description: "Add your logo, colors, and fonts so the portal feels like your product."
+title: "Branding and portal"
+description: "Customize your portal's identity, theme, welcome card, and navigation, with a live preview."
 icon: "palette"
 ---
 
-# Customize your portal
+# Branding and portal
 
-Make your feedback portal feel like part of your product. Add your logo, colors, and fonts so users never feel like they've left your app.
+Make your feedback portal feel like part of your product. Add your logo, colors, and fonts, greet visitors with a welcome card, and control which tabs show up in the portal's top navigation, all from one page with a live preview.
 
 ## Overview
 
-Access branding settings from **Admin → Settings → Branding**. Changes preview in real-time before you save.
+Access branding settings from **Admin → Settings → Branding**. The page has two panes: controls on the left, a live preview of your real portal on the right. Nothing goes live until you click **Save**; a save bar appears at the bottom whenever you have unsaved changes.
+
+<Note>
+Portal settings used to live on a separate **Admin → Settings → Portal** page. That page now redirects here, everything visitors see (identity, theme, welcome card, navigation) lives on this one page.
+</Note>
 
 ## Identity
 
@@ -30,47 +34,30 @@ Access branding settings from **Admin → Settings → Branding**. Changes previ
 
 ### Remove Logo
 
-1. Click the **Remove** link below the logo
-2. The logo is removed and the workspace initial is shown instead
+Click **Remove** below the logo. The logo is removed and the workspace initial is shown instead.
 
 <Note>
-Your logo also appears in all emails Quackback sends — welcome messages, team invitations, and status change notifications. It works across Gmail, Outlook, and Apple Mail without extra configuration.
+Your logo also appears in all emails Quackback sends: welcome messages, team invitations, and status change notifications. It works across Gmail, Outlook, and Apple Mail without extra configuration.
 </Note>
 
 ### Workspace Name
 
-Enter your workspace name in the text field. Changes are saved automatically after a short delay.
+The portal header shows your workspace name next to the logo. Edit the name under **Admin → Settings → General**; it appears here as read-only for reference.
 
-## Theme Mode
+## Theme
+
+### Theme mode
 
 Control how light/dark mode works for portal visitors:
 - **User choice (allow toggle)** - Visitors can switch between light and dark mode
 - **Light only** - Portal always displays in light mode
 - **Dark only** - Portal always displays in dark mode
 
-## Color Scheme
+### Preset
 
-Quackback offers two branding modes, toggled by the **Simple** / **Advanced** switch:
+Pick a preset color palette by clicking its swatch. Each preset sets a coordinated primary color, background, and accent colors in one click.
 
-### Simple Mode
-
-Customize your portal using color pickers and dropdowns:
-
-#### Colors
-
-Set your portal's color palette with the following inputs:
-
-| Color | What it controls |
-|-------|-----------------|
-| Primary | Buttons, links, active states |
-| Secondary | Secondary UI elements |
-| Accent | Accent highlights |
-| Background | Page background |
-| Foreground (Text) | Main text color |
-
-Click the color swatch to open the color picker, or type a hex code directly.
-
-#### Font
+### Font
 
 Choose a font family from the dropdown. Fonts are organized by category:
 - **Sans Serif** - Clean, modern fonts like Inter, Roboto, Open Sans, DM Sans, Geist, and more
@@ -78,28 +65,86 @@ Choose a font family from the dropdown. Fonts are organized by category:
 - **Monospace** - Technical fonts like Fira Code, JetBrains Mono
 - **System** - Uses the visitor's system font (System UI)
 
-#### Corner Roundness
+### Corner Roundness
 
-Adjust the roundness of buttons and cards using the slider:
-- **Sharp** (left) - Square corners
-- **Round** (right) - Fully rounded corners
+Adjust the roundness of buttons and cards using the slider, from sharp square corners to fully rounded. A preview of the corner radius is shown next to the slider.
 
-A preview of the corner radius is shown next to the slider.
+### Advanced CSS
 
-### Advanced Mode
+For full control, expand **Advanced CSS** and write custom CSS with `:root {}` and `.dark {}` blocks using CSS custom properties.
 
-For full control, use theme presets or write custom CSS:
+<Tip>
+Design your theme visually at [tweakcn.com](https://tweakcn.com) and paste the generated CSS into the Advanced CSS editor.
+</Tip>
 
-- **Theme Presets** - Start from curated themes (e.g., Catppuccin, Supabase, Neo Brutalism)
-- **Custom CSS** - Write custom CSS with `:root \{\}` and `.dark \{\}` blocks using CSS custom properties. Design your theme at [tweakcn.com](https://tweakcn.com) and paste it in.
+## Navigation
 
-## Preview
+The **Navigation** card controls the portal's top tabs. It applies everywhere the portal header shows, including the help center and status pages.
 
-The right side of the branding page shows a live preview of your portal with the current settings. Use the **Light/Dark** toggle at the top of the preview to see how your branding looks in both modes.
+- **Drag to reorder** - Grab the handle on the left of a row and drop it in a new position
+- **Toggle visibility** - Use the switch on the right to show or hide a tab
+- **Rename** - Type in the label field to override the default; leave it blank to keep the translated default
+- **Add a custom link** - Click **Add link**, then set a label and a full `https://` URL
+
+Six built-in tabs are available: Feedback, Roadmap, Changelog, Help Center, Support, and Status.
+
+<Note>
+A built-in tab whose product is currently disabled (for example, Help Center when the `helpCenter` flag is off) still shows in the editor, but renders inert with a "Product off" badge. It appears on the portal automatically once you enable the product, keeping the order and label you set.
+</Note>
+
+<Tip>
+Renamed tabs show your custom text in every language. Tabs you leave untouched stay translated for each visitor's locale.
+</Tip>
+
+Click **Reset to defaults** to discard your customizations and return to the standard tab order.
+
+## Welcome card
+
+The welcome card renders above the post list on the public portal home. The rest of the page (filters, board picker, post list) stays unchanged.
+
+1. Go to **Admin → Settings → Branding**
+2. Edit the **Title** and **Message** in the Welcome card section
+3. Use the live preview to see what visitors will see
+4. Toggle **Enable welcome card** on when you're ready
+5. Click **Save**
+
+The card only renders on the portal home when the toggle is on, so you can draft the next announcement and flip the switch when it's ready to go live.
+
+### Message editor
+
+The message body uses the same rich text editor as posts and comments. You can:
+
+- Format with headings, bold, italic, lists, links, and inline code
+- Drop in fenced code blocks for snippets
+- Embed images uploaded through the editor (auto-rehosted to workspace storage)
+- Insert emoji via the picker or shortcode
+
+### Title length
+
+Titles are capped at 120 characters. The editor enforces the limit as you type.
+
+### Common uses
+
+- **Frame what kind of feedback you want.** "We're looking for feature ideas. Please raise bugs through support."
+- **Surface the roadmap.** Link to your [roadmap](/admin/roadmap) so visitors see what's already planned.
+- **Point at help docs.** Link to your help center so visitors can self-serve answers before filing a new request.
+- **Announce a moderation policy.** Set expectations for tone, duplicates, and response time.
+
+<Tip>
+Keep the welcome card short. Visitors are here to file or vote on feedback; the card is an orienting note, not a landing page.
+</Tip>
+
+## Live preview
+
+The right side of the branding page shows the real portal, rendered as visitors see it, updating as you edit. Use the controls above the preview to:
+
+- Toggle **Light** / **Dark** to check both theme modes
+- Toggle **Desktop** / **Mobile** to check both viewports
+- Click **Open portal** to view the live, saved version in a new tab
 
 ## Save changes
 
-After making changes, click **Save Changes** at the bottom of the controls panel to apply them to your portal. Identity changes (logo and workspace name) save automatically.
+Click **Save** in the save bar at the bottom of the page to apply theme, navigation, and welcome card changes together. Identity changes (logo) save immediately on upload.
 
 ## Best Practices
 
@@ -123,7 +168,7 @@ Ensure good color contrast:
 
 ### Mobile Experience
 
-Preview on mobile viewport:
+Preview on the mobile viewport:
 - Ensure the logo scales properly
 - Verify touch targets are large enough
 - Test dark mode on mobile

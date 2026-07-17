@@ -1,6 +1,6 @@
 ---
 title: "Build a public roadmap"
-description: "Show users what's planned, in progress, and complete."
+description: "Show users what's planned, in progress, and complete, updated automatically as post statuses change."
 icon: "map"
 ---
 
@@ -8,17 +8,12 @@ icon: "map"
 
 Show users what you're building. A public roadmap builds trust. Users can see what's planned, in progress, and complete, and follow updates on features they care about.
 
-## How It Works
+## How it works
 
-The roadmap displays posts grouped by status in a kanban-style layout. Each column represents a status you've marked as "Show on Roadmap" in your status settings.
-
-Users can:
-- See what's coming next
-- Vote on planned features
-- Subscribe to get notified when items ship
+A roadmap is a saved view, not a list you curate by hand. You define a **base filter** (which boards, tags, statuses, or [segments](/admin/segments) qualify) and a set of **columns**. Any post that matches the filter shows up in the matching column automatically. There's no "add to roadmap" step.
 
 <Note>
-Only posts you've explicitly added to a roadmap appear here. Not everything needs to be public. You control what's visible.
+Posts appear and disappear from a roadmap only because their status, board, tags, or segment changed, not because someone added or removed them. Deleting a roadmap never touches the underlying posts.
 </Note>
 
 ## Create a roadmap
@@ -29,70 +24,59 @@ You can have multiple roadmaps for different purposes (e.g., "Product Roadmap", 
 2. Click the **+** button in the sidebar
 3. Fill in the details:
    - **Name** - Display name (e.g., "Product Roadmap")
+   - **Layout** - Status columns or date periods (see below)
    - **Description** - Optional description
-   - **Public** - Toggle visibility to users
-4. Click **Create**
+   - **Visibility** - Public, team only, or customer segments
+4. Set the **base filter** - which statuses, boards, tags, or segments a post must match to appear at all
+5. For a status-columns roadmap, choose which statuses become columns
+6. Click **Create**
 
-## Add posts to the roadmap
+## Choose a layout
 
-### From a Post's Detail Page
+Each roadmap uses one of two layouts:
 
-1. Open a post in **Admin → Feedback**
-2. In the Properties panel, find the **Roadmaps** section
-3. Click **"Add"**
-4. Select which roadmap to add the post to
+**Status columns** groups posts by [status](/admin/statuses), kanban-style. Each column maps to one status. When creating a new roadmap, columns are pre-filled from statuses with "Show on Roadmap" enabled, but you can add, remove, rename, recolor, and reorder columns for that roadmap independently.
 
-### Using Drag and Drop
-
-Once posts are on a roadmap, you can drag them between columns to change their status:
-
-1. Click and hold a post card
-2. Drag to the target status column
-3. Release to update
-
-The post's status updates automatically.
+**Date periods** groups posts by their target ship date (`eta`) into monthly, quarterly, or semiannual buckets, plus a "No ETA" bucket for posts without one. Set the eta on a post's detail page, or by dragging its card between buckets.
 
 <Tip>
-This is the fastest way to update multiple posts at once. Great for sprint planning sessions!
+Use status columns for most roadmaps. Date periods work well when your team commits to ship dates and wants users to see a timeline instead of a workflow stage.
 </Tip>
 
-## Remove a post from roadmap
+## Move posts between columns
 
-1. Open the post in the detail page
-2. In the Roadmaps section, click the **X** on the roadmap badge
+Drag and drop still works, but it changes the post's underlying field instead of a roadmap-only placement:
 
-The post stays in Quackback. It's just not shown on the roadmap anymore.
+- On a **status columns** roadmap, dragging a card to another column changes the post's status.
+- On a **date periods** roadmap, dragging a card to another bucket sets (or clears) the post's eta.
 
-## Roadmap Visibility
+Either way, the change is visible everywhere that status or eta appears, including [Feedback](/admin/feedback) and the public roadmap.
 
-Each roadmap can be public or private:
+<Tip>
+This is the fastest way to update multiple posts at once. Great for sprint planning sessions.
+</Tip>
+
+## Roadmap visibility
+
+Each roadmap has one of three visibility settings:
 
 | Setting | Who can see it |
 |---------|----------------|
 | **Public** | Everyone visiting your portal |
-| **Private** | Only team members (indicated by lock icon) |
+| **Team only** | Only team members (indicated by a lock icon in the sidebar) |
+| **Customer segments** | Only visitors in the [segments](/admin/segments) you select |
 
 <Tip>
-Use a private roadmap for internal planning, then move items to your public roadmap when you're ready to announce them.
+Use a team-only roadmap for internal planning, then move items to your public roadmap when you're ready to announce them by adjusting the base filter or visibility.
 </Tip>
 
-## Configure columns
-
-The roadmap columns are determined by which statuses have "Show on Roadmap" enabled.
-
-1. Go to **Admin → Settings → Statuses**
-2. Use the toggle next to each status to enable/disable roadmap visibility
-3. Changes save automatically
-
-Most teams use: **Planned → In Progress → Complete**
-
-## What Users See
+## What users see
 
 On your public roadmap, users can see:
 - Post title
 - Vote count
-- Status badge
-- Brief description preview
+- Board
+- Target date, if the post has an eta
 
 Users do **NOT** see:
 - Internal notes
@@ -105,14 +89,14 @@ Users do **NOT** see:
 
 <Warning>
 An outdated roadmap undermines trust. Regularly:
-- Move completed items to "Complete"
-- Add newly planned items
-- Remove items that won't happen
+- Move completed items to your "Complete" status
+- Refine your base filter so newly planned items qualify automatically
+- Retire statuses or tags that no longer belong on the roadmap
 </Warning>
 
 ### Show Meaningful Items Only
 
-Don't clutter the roadmap with minor tasks. Focus on:
+Scope your base filter so the roadmap doesn't fill with minor tasks. Focus on:
 - Major features
 - Popular requests (high vote count)
 - Significant improvements
@@ -121,9 +105,9 @@ Don't clutter the roadmap with minor tasks. Focus on:
 
 <Tip>
 Unless you're certain, avoid committing to dates. Instead use:
-- "Planned" for committed items
-- Quarterly goals rather than specific dates
-- "Exploring" for ideas still under consideration
+- Status columns for most roadmaps
+- Date periods only when you're confident in the eta
+- A "No ETA" bucket for ideas still under consideration
 </Tip>
 
 ### Celebrate Completed Items
@@ -131,12 +115,12 @@ Unless you're certain, avoid committing to dates. Instead use:
 Keep recently completed items visible temporarily:
 - Users see progress happening
 - Builds confidence in your team
-- Archive old completed items periodically
+- Narrow your base filter to exclude old completed posts once they've been up for a while
 
 ### Communicate Changes
 
 When plans change (and they will):
-- Update the roadmap promptly
+- Update the post's status or eta promptly, since the roadmap reflects it immediately
 - Add comments to affected posts explaining why
 - Notify subscribers of significant shifts
 
@@ -145,7 +129,7 @@ When plans change (and they will):
 1. Hover over a roadmap in the sidebar
 2. Click the **...** menu button
 3. Select **Edit**
-4. Update name, description, or visibility
+4. Update the name, layout, description, base filter, columns, or visibility
 5. Click **Save**
 
 ## Delete a roadmap
@@ -156,7 +140,7 @@ When plans change (and they will):
 4. Confirm deletion
 
 <Note>
-Deleting a roadmap removes posts from that roadmap but does not delete the posts themselves. They're still in your feedback inbox.
+Deleting a roadmap only removes the saved view. The posts it showed are untouched because roadmap placement is derived from their fields, not stored on the roadmap.
 </Note>
 
 ## Link from Your Product
@@ -171,6 +155,6 @@ This turns your roadmap into a living communication channel with users.
 
 ## Next Steps
 
-- [Statuses](/admin/statuses) - Configure which statuses appear on roadmaps
-- [Inbox](/admin/inbox) - Manage feedback and add posts to roadmaps
+- [Statuses](/admin/statuses) - Configure statuses and which ones seed new roadmap columns
+- [Feedback](/admin/feedback) - Triage feedback and set the status or eta that drives roadmap placement
 - [Integrations](/integrations/overview) - Get notified on status changes
