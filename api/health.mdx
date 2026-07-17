@@ -1,0 +1,68 @@
+---
+title: "Health endpoints"
+description: "Wire liveness and readiness probes for self-hosted Quackback deployments."
+icon: "zap"
+order: 4
+---
+
+# Health endpoints
+
+Point your orchestrator's health checks here. Both endpoints are unauthenticated (no API key required) and safe to poll frequently.
+
+## Liveness
+
+```
+GET /api/health/live
+```
+
+Confirms the process is up and serving HTTP. Does no I/O, so it can never report false negatives from a slow database or Redis.
+
+```bash
+curl https://your-domain/api/health/live
+```
+
+```json
+{ "status": "ok" }
+```
+
+Always returns `200` if the process can respond at all. Use this for a container orchestrator's restart-on-failure check.
+
+<Note>
+`GET /api/health` (no suffix) is a legacy alias of `/api/health/live`, kept for existing consumers. Use `/api/health/live` in new configuration.
+</Note>
+
+## Readiness
+
+```
+GET /api/health/ready
+```
+
+Confirms the instance can actually serve traffic: database, Redis, migrations, and (on worker roles) background workers all pass.
+
+```bash
+curl https://your-domain/api/health/ready
+```
+
+```json
+{
+  "status": "ok",
+  "role": "web",
+  "checks": {
+    "db": { "ok": true },
+    "redis": { "ok": true },
+    "migrations": { "ok": true },
+    "workers": { "ok": true, "failed": 0 }
+  }
+}
+```
+
+Returns `200` when every check passes, `503` with the same shape otherwise. Each failed check carries a short `error` code, one of `"failed"`, `"timeout"`, or `"behind"` (migrations not yet caught up), never raw error detail. `role` reports whether the replying process is a `web` or `worker` role (see `QUACKBACK_ROLE`); on web-role replicas the workers check passes trivially since no workers boot there.
+
+<Tip>
+Use `/api/health/ready` for your load balancer's traffic-admission check and Kubernetes' `readinessProbe`. Use `/api/health/live` for `livenessProbe`. Readiness can legitimately flip to `503` during a deploy or migration without meaning the process should be restarted.
+</Tip>
+
+## Next steps
+
+- [Deploy with Docker](/self-hosting/docker): Wire these probes into your compose stack or orchestrator
+- [API Overview](/api/overview): Authentication, pagination, and errors
