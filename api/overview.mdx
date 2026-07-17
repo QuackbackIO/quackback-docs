@@ -1,0 +1,90 @@
+---
+title: "API Overview"
+description: "Authenticate and make your first call to Quackback's REST API."
+icon: "code"
+order: 1
+---
+
+# API Overview
+
+Build integrations and automate workflows against your feedback, tickets, and status page. The REST API covers posts, comments, changelog, boards, tickets, status, and more.
+
+## Authentication
+
+Every request carries a Bearer API key in the `Authorization` header. Create a key in **Admin → Settings → Developers**. Keys start with `qb_` and are only shown once.
+
+```bash
+curl https://your-domain/api/v1/posts \
+  -H "Authorization: Bearer qb_your_api_key"
+```
+
+<Tip>
+An API key's authority is its creator's role (admin or member) intersected with the scopes you select when creating it. Leave scopes unselected for full access. See [MCP Scopes](/mcp#scopes) for the scope vocabulary: it's shared between the REST API and the MCP server.
+</Tip>
+
+## Base URL
+
+```
+https://your-domain/api/v1
+```
+
+Replace `your-domain` with your instance's hostname (self-hosted) or workspace subdomain (cloud).
+
+## Errors
+
+Errors return a JSON body with an HTTP status code:
+
+```json
+{
+  "error": {
+    "code": "VALIDATION_ERROR",
+    "message": "Webhook URL is required",
+    "details": { "field": "url" }
+  }
+}
+```
+
+| Status | Code | Meaning |
+|--------|------|---------|
+| 400 | `BAD_REQUEST` / `VALIDATION_ERROR` | Malformed or invalid request body |
+| 401 | `UNAUTHORIZED` | Missing or invalid API key |
+| 403 | `FORBIDDEN` | Key lacks the required permission or scope |
+| 404 | `NOT_FOUND` (or a resource-specific code) | Resource doesn't exist |
+| 409 | `CONFLICT` | Duplicate slug, key, or name |
+| 429 | `RATE_LIMITED` | Too many requests; see `Retry-After` header |
+| 500 | `INTERNAL_ERROR` | Unexpected server error |
+
+## Pagination
+
+List endpoints return a `meta.pagination` object alongside `data`:
+
+```json
+{
+  "data": [ /* ... */ ],
+  "meta": {
+    "pagination": { "cursor": "eyJvZmZzZXQiOjIwfQ", "hasMore": true }
+  }
+}
+```
+
+Pass the returned `cursor` back as `?cursor=...` to fetch the next page. Cursors are opaque. Don't construct or decode them yourself. Use `?limit=` to control page size (default 20, max 100).
+
+## Rate limits
+
+Requests are limited per IP address in a fixed 1-minute window. Self-hosted instances default to 100 requests/minute; a workspace's tier limits can raise or lower this cap. Exceeding it returns `429` with a `Retry-After` header.
+
+## Full endpoint reference
+
+This page covers the shared conventions. For every endpoint, request/response schema, and a try-it-out console, use the built-in Swagger UI shipped with every instance:
+
+<Info>
+**`https://your-domain/api/v1/docs`**, interactive and always in sync with your running version.
+</Info>
+
+## Next steps
+
+- [Tickets API](/api/tickets): Read support tickets and their threads
+- [Status API](/api/status): Manage components, incidents, and maintenance
+- [Health endpoints](/api/health): Liveness and readiness probes for self-hosting
+- [Webhooks](/integrations/webhooks): Get pushed notifications instead of polling
+- [MCP Server](/mcp): Let AI agents call the same data through tools

@@ -1,0 +1,102 @@
+---
+title: "Status API"
+description: "Manage status page components, incidents, and maintenance windows over the REST API."
+icon: "signal"
+order: 3
+---
+
+# Status API
+
+Drive your [status page](/support/overview) from monitoring tools or scripts: flip a component's live status, open an incident, post updates, or pull the public snapshot.
+
+<Note>
+The current public name for a component is "service": `/status/services` is the primary path. `/status/components` is a byte-identical legacy alias kept for existing consumers.
+</Note>
+
+## Components (services)
+
+| Method | Path | Permission |
+|--------|------|------------|
+| `GET` | `/api/v1/status/services` | Valid API key |
+| `POST` | `/api/v1/status/services` | `status_page.manage` |
+| `GET` | `/api/v1/status/services/:id` | Valid API key |
+| `PATCH` | `/api/v1/status/services/:id` | `status_page.manage` |
+
+`PATCH` accepts metadata fields (`name`, `description`, `groupId`, `showUptime`, `segmentIds`) and/or `status` in the same call. A `{ "status": "..." }`-only body is the primary automation hook for monitoring tools like Datadog or Pingdom.
+
+| Field | Description |
+|-------|-------------|
+| `id`, `groupId` | Component TypeID and its group, or `null` |
+| `name`, `description` | Display fields |
+| `status` | `operational`, `degraded_performance`, `partial_outage`, `major_outage`, or `under_maintenance` |
+| `position` | Sort order |
+| `showUptime` | Whether the uptime bar is shown publicly |
+| `segmentIds` | Audience segments that can see this component |
+
+```bash
+curl -X PATCH https://your-domain/api/v1/status/services/status_component_01h4... \
+  -H "Authorization: Bearer qb_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{ "status": "degraded_performance" }'
+```
+
+## Incidents and maintenance
+
+| Method | Path | Permission |
+|--------|------|------------|
+| `GET` | `/api/v1/status/incidents` | Valid API key |
+| `POST` | `/api/v1/status/incidents` | `status_page.publish` |
+| `GET` | `/api/v1/status/incidents/:id` | Valid API key |
+| `POST` | `/api/v1/status/incidents/:id/updates` | `status_page.publish` |
+
+`kind` is `incident` or `maintenance`. Creating a maintenance window accepts `scheduledStartAt`/`scheduledEndAt` and `autoStart`/`autoComplete` to run it unattended. Posting a terminal update (`resolved`/`completed`) restores affected components to operational, unless `skipRestore` is set.
+
+| Field | Description |
+|-------|-------------|
+| `status` | `investigating`, `identified`, `monitoring`, `resolved` (incidents); `scheduled`, `in_progress`, `verifying`, `completed` (maintenance) |
+| `impact` | `none`, `minor`, `major`, `critical`, or `maintenance` |
+| `affectedComponents` | Array of `{ componentId, componentStatus }` |
+| `updates` | Timeline of `{ id, status, body, createdAt }` |
+
+```bash
+curl -X POST https://your-domain/api/v1/status/incidents \
+  -H "Authorization: Bearer qb_your_api_key" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "kind": "incident",
+    "title": "Elevated API error rates",
+    "status": "investigating",
+    "affectedComponents": [{ "componentId": "status_component_01h4...", "componentStatus": "partial_outage" }],
+    "body": "We are investigating elevated error rates on the API."
+  }'
+```
+
+## Public summary
+
+```
+GET /api/v1/status/summary
+```
+
+Returns the same snapshot the public status page renders: overall status, every visible component, and active incidents. Requires a valid API key but no specific permission.
+
+```bash
+curl https://your-domain/api/v1/status/summary \
+  -H "Authorization: Bearer qb_your_api_key"
+```
+
+```json
+{
+  "data": {
+    "status": "operational",
+    "components": [
+      { "id": "status_component_01h4...", "name": "API", "description": null, "status": "operational", "showUptime": true }
+    ],
+    "activeIncidents": []
+  }
+}
+```
+
+## Next steps
+
+- [API Overview](/api/overview): Authentication, pagination, and errors
+- [Health endpoints](/api/health): Liveness and readiness probes for self-hosting

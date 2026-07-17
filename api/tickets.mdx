@@ -1,0 +1,108 @@
+---
+title: "Tickets API"
+description: "Read support tickets and their message threads over the REST API."
+icon: "inbox"
+order: 2
+---
+
+# Tickets API
+
+Read tickets and their threads for reporting, syncing to a data warehouse, or building a custom view. These endpoints are read-only. Create tickets, reply, and add notes through the app or the [MCP server](/mcp/reference#ticket-tools).
+
+<Note>
+Requires the `ticket.view` permission (a team API key created by an admin or member) and the `read:chat` scope.
+</Note>
+
+## List tickets
+
+```
+GET /api/v1/tickets
+```
+
+| Query param | Type | Description |
+|-------------|------|-------------|
+| `type` | `customer` \| `back_office` \| `tracker` | Filter by ticket type |
+| `statusCategory` | `open` \| `pending` \| `closed` | Filter by internal status category |
+| `stage` | `received` \| `in_progress` \| `awaiting_requester` \| `resolved` | Filter by customer-facing stage |
+| `requesterPrincipalId` | string | Filter to a requester (principal TypeID) |
+| `companyId` | string | Filter to a company (company TypeID) |
+| `sort` | `recent` \| `oldest` \| `created` \| `priority` | Sort order (default `recent`) |
+| `limit` | number | Max results, 1-100 (default 20) |
+
+```bash
+curl "https://your-domain/api/v1/tickets?statusCategory=open&type=customer" \
+  -H "Authorization: Bearer qb_your_api_key"
+```
+
+<Note>
+A service (API key) actor sees every ticket in the workspace: there's no board-style narrowing for tickets.
+</Note>
+
+## Get a ticket
+
+```
+GET /api/v1/tickets/:ticketId
+```
+
+```bash
+curl https://your-domain/api/v1/tickets/ticket_01h455vb4pex5vsknk084sn02q \
+  -H "Authorization: Bearer qb_your_api_key"
+```
+
+### Ticket fields
+
+| Field | Description |
+|-------|-------------|
+| `id`, `number`, `reference` | Ticket TypeID, sequential number, and display reference |
+| `type` | `customer`, `back_office`, or `tracker` |
+| `title` | Short summary |
+| `status.name`, `status.category` | Human status name and its category (`open`/`pending`/`closed`) |
+| `stage` | Customer-facing stage slot |
+| `priority` | `none`, `low`, `medium`, `high`, or `urgent` |
+| `requesterPrincipalId` | Requester principal TypeID, or `null` |
+| `assigneePrincipalId`, `assigneeTeamId` | Assigned agent and/or team |
+| `companyId` | Associated company, or `null` |
+| `firstResponseAt`, `dueAt`, `resolvedAt` | Lifecycle timestamps |
+| `createdAt`, `updatedAt` | Standard timestamps |
+| `reopenedCount` | Number of times the ticket was reopened |
+
+## Get a ticket's messages
+
+```
+GET /api/v1/tickets/:ticketId/messages
+```
+
+The thread is returned oldest-first. Internal notes are excluded unless `includeInternal=true`.
+
+| Query param | Type | Description |
+|-------------|------|-------------|
+| `before` | string | Message ID cursor from a previous response, for scrollback |
+| `includeInternal` | boolean | Include internal teammate notes (default `false`) |
+
+```bash
+curl "https://your-domain/api/v1/tickets/ticket_01h455vb4pex5vsknk084sn02q/messages?includeInternal=true" \
+  -H "Authorization: Bearer qb_your_api_key"
+```
+
+### Message fields
+
+| Field | Description |
+|-------|-------------|
+| `id`, `ticketId` | Message and parent ticket TypeIDs |
+| `senderType` | `agent` or `visitor` |
+| `isInternal` | Whether it's a teammate-only note |
+| `authorPrincipalId`, `authorName` | Author identity, or `null` for system content |
+| `content` | Rendered Markdown |
+| `contentJson` | Rich-text document, or `null` |
+| `attachments` | Array of `{ name, url, contentType, size }`, or `null` |
+| `createdAt` | Timestamp |
+
+<Tip>
+To open a ticket, reply, or add a note, use `create_ticket` / `reply_to_ticket` / `add_ticket_note` on the [MCP server](/mcp/reference#ticket-tools). There's no write path on the REST API yet.
+</Tip>
+
+## Next steps
+
+- [API Overview](/api/overview): Authentication, pagination, and errors
+- [MCP Server](/mcp): Ticket tools for AI agents
+- [Webhooks](/integrations/webhooks): Push notifications for ticket events

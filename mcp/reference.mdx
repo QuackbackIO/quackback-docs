@@ -1,13 +1,13 @@
 ---
 title: "MCP Reference"
-description: "Complete reference for Quackback's MCP tools and resources. Parameters, return values, and examples for all 27 tools and 5 resources."
+description: "Complete reference for Quackback's MCP tools and resources. Parameters, return values, and examples for all 39 tools and 6 resources."
 icon: "book-open"
 order: 2
 ---
 
 # MCP Reference
 
-Quackback's MCP server exposes 27 tools and 5 resources. Tools perform actions (search, create, update, delete). Resources provide lookup data (boards, statuses, tags) that tools reference by ID.
+Quackback's MCP server exposes 39 tools and 6 resources. Tools perform actions (search, create, update, delete). Resources provide lookup data (boards, statuses, tags) that tools reference by ID.
 
 ## Tools
 
@@ -19,9 +19,10 @@ Search feedback posts or changelog entries. Returns paginated results with a cur
 |-----------|------|---------|-------------|
 | `entity` | `"posts"` \| `"changelogs"` \| `"articles"` | `"posts"` | Entity type to search |
 | `query` | string | - | Text search across titles and content |
-| `boardId` | string | - | Filter posts by board TypeID (ignored for changelogs) |
-| `status` | string | - | Filter by status slug. Posts: `"open"`, `"in_progress"`, etc. Changelogs: `"draft"`, `"published"`, `"scheduled"`, `"all"` |
-| `tagIds` | string[] | - | Filter posts by tag TypeIDs (ignored for changelogs) |
+| `boardId` | string | - | Filter posts by board TypeID (ignored for changelogs and articles) |
+| `categoryId` | string | - | Filter articles by category TypeID (ignored for posts and changelogs) |
+| `status` | string | - | Filter by status slug. Posts: `"open"`, `"in_progress"`, etc. Changelogs: `"draft"`, `"published"`, `"scheduled"`, `"all"`. Articles: `"draft"`, `"published"`, `"all"` |
+| `tagIds` | string[] | - | Filter posts by tag TypeIDs (ignored for changelogs and articles) |
 | `sort` | `"newest"` \| `"oldest"` \| `"votes"` | `"newest"` | Sort order. `"votes"` only applies to posts |
 | `showDeleted` | boolean | `false` | Show soft-deleted posts (team only, last 30 days) |
 | `dateFrom` | string | - | ISO 8601 date. Filter posts created on or after this date |
@@ -29,7 +30,7 @@ Search feedback posts or changelog entries. Returns paginated results with a cur
 | `limit` | number (1-100) | `20` | Max results per page |
 | `cursor` | string | - | Pagination cursor from a previous response |
 
-**Scope:** `read:feedback`
+**Scope:** `read:feedback` for posts and changelogs. `read:article` + team role for articles (also requires help center to be enabled).
 
 ```
 search({ query: "dark mode", sort: "votes", limit: 10 })
@@ -50,15 +51,15 @@ Get full details for any entity by TypeID. The entity type is auto-detected from
 |-----------|------|-------------|
 | `id` | string | TypeID of the entity (e.g., `post_01abc...`, `changelog_01xyz...`) |
 
-**Scope:** `read:feedback`
+**Scope:** `read:feedback` for posts and changelogs. `read:article` + team role for `kb_article_*`/`kb_category_*` (also requires help center to be enabled).
 
-Returns all fields including comments (for posts), linked posts (for changelogs), tags, official response, and timestamps. Also supports `helpcenter_article_*` and `helpcenter_category_*` IDs.
+Returns all fields including comments (for posts), linked posts (for changelogs), tags, official response, and timestamps. Also supports `kb_article_*` and `kb_category_*` IDs.
 
 ```
 get_details({ id: "post_01abc..." })
 get_details({ id: "changelog_01xyz..." })
-get_details({ id: "helpcenter_article_01abc..." })
-get_details({ id: "helpcenter_category_01abc..." })
+get_details({ id: "kb_article_01abc..." })
+get_details({ id: "kb_category_01abc..." })
 ```
 
 ---
@@ -116,7 +117,7 @@ Add or remove a vote on behalf of another user. Use this to record votes from ex
 
 **Scope:** `write:feedback` + team role (admin or member)
 
-Adding a vote is idempotent — calling it twice for the same user has no effect. Removing a vote works for any vote type (proxy, integration, or direct).
+Adding a vote is idempotent: calling it twice for the same user has no effect. Removing a vote works for any vote type (proxy, integration, or direct).
 
 ```
 proxy_vote({ postId: "post_01abc...", voterPrincipalId: "principal_01xyz..." })
@@ -313,29 +314,6 @@ unmerge_post({ postId: "post_01abc..." })
 
 ---
 
-### manage_roadmap_post
-
-Add or remove a post from a roadmap.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `action` | `"add"` \| `"remove"` | Whether to add or remove the post |
-| `roadmapId` | string | Roadmap TypeID |
-| `postId` | string | Post TypeID |
-
-**Scope:** `write:feedback` + team role (admin or member)
-
-<Tip>
-Use the `quackback://roadmaps` resource to look up roadmap IDs.
-</Tip>
-
-```
-manage_roadmap_post({ action: "add", roadmapId: "roadmap_01abc...", postId: "post_01xyz..." })
-manage_roadmap_post({ action: "remove", roadmapId: "roadmap_01abc...", postId: "post_01xyz..." })
-```
-
----
-
 ### create_changelog
 
 Create a changelog entry. Saves as a draft by default. Set `publish: true` to publish immediately.
@@ -504,7 +482,7 @@ get_post_activity({ postId: "post_01abc..." })
 ## Help Center Tools
 
 <Note>
-Help center tools are only available when the help center feature flag is enabled. See [Help Center](/admin/help-center) for setup.
+Help center tools are only available when the help center feature flag is enabled. See [Help Center](/help-center/setup) for setup.
 </Note>
 
 ### create_article
@@ -519,7 +497,7 @@ Create a new help center article as a draft.
 | `content` | string | Article body in Markdown |
 | `description` | string | Short description for search results and SEO |
 
-**Scope:** `write:help-center` + team role
+**Scope:** `write:article` + team role
 
 Articles are created as drafts. Use `update_article` with `publish: true` to publish.
 
@@ -539,7 +517,7 @@ Update an existing help center article. Publish or unpublish by setting the `pub
 | `categoryId` | string | Move to a different category |
 | `publish` | boolean | `true` to publish, `false` to unpublish |
 
-**Scope:** `write:help-center` + team role
+**Scope:** `write:article` + team role
 
 All fields except `articleId` are optional. Only provided fields are updated.
 
@@ -553,7 +531,7 @@ Soft-delete a help center article.
 |-----------|------|-------------|
 | `articleId` | string | Article TypeID to delete |
 
-**Scope:** `write:help-center` + team role
+**Scope:** `write:article` + team role
 
 ---
 
@@ -571,7 +549,7 @@ Create, update, or delete a help center category.
 | `icon` | string | Icon identifier |
 | `parentId` | string | Parent category TypeID for nesting |
 
-**Scope:** `write:help-center` + team role
+**Scope:** `write:article` + team role
 
 ---
 
@@ -585,7 +563,7 @@ List support-inbox conversations, newest activity first. Returns a compact, pagi
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `status` | `"open"` \| `"pending"` \| `"closed"` | - | Filter by conversation status |
+| `status` | `"open"` \| `"snoozed"` \| `"closed"` | - | Filter by conversation status |
 | `priority` | `"none"` \| `"low"` \| `"medium"` \| `"high"` \| `"urgent"` | - | Filter by priority |
 | `assignedAgentPrincipalId` | string | - | Filter to a specific assigned agent (principal TypeID) |
 | `limit` | number (1-100) | `20` | Max results per page |
@@ -633,19 +611,19 @@ Send an agent reply in a conversation (visible to the visitor). Auto-assigns the
 **Scope:** `write:chat` + team role (admin or member)
 
 ```
-reply_to_conversation({ conversationId: "conversation_01abc...", content: "Thanks for reaching out — we're on it." })
+reply_to_conversation({ conversationId: "conversation_01abc...", content: "Thanks for reaching out, we're on it." })
 ```
 
 ---
 
 ### set_conversation_status
 
-Change a conversation's status. Closing stamps the resolution time; a later visitor reply reopens it.
+Change a conversation's status (open, snoozed, or closed). Snoozing defers it until the customer next replies; closing stamps the resolution time; a later reply reopens it.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `conversationId` | string | Conversation TypeID |
-| `status` | `"open"` \| `"pending"` \| `"closed"` | New status |
+| `status` | `"open"` \| `"snoozed"` \| `"closed"` | New status |
 
 **Scope:** `write:chat` + team role (admin or member)
 
@@ -655,19 +633,196 @@ set_conversation_status({ conversationId: "conversation_01abc...", status: "clos
 
 ---
 
+### suggest_post
+
+Suggest to the support team (not the visitor) that a resolved conversation be tracked as a feedback post. Appears only in the agent inbox as an internal note; a team member confirms with one click. Rejected unless the conversation is resolved.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `conversationId` | string | Conversation TypeID (must be resolved) |
+| `boardId` | string | Suggested board TypeID |
+| `title` | string | Post title (3-200 characters) |
+| `content` | string | Post body (max 10,000 characters) |
+
+**Scope:** `write:chat` + team role (admin or member)
+
+```
+suggest_post({ conversationId: "conversation_01...", boardId: "board_01...", title: "Add dark mode", content: "Customer asked for a night theme." })
+```
+
+---
+
+### share_post
+
+Embed an existing feedback post as a card in the conversation so the visitor can view and upvote it. Use `search` to find candidates first, to surface related ideas and avoid duplicates.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `conversationId` | string | Conversation TypeID |
+| `postId` | string | Post TypeID |
+
+**Scope:** `write:chat` + team role (admin or member)
+
+```
+share_post({ conversationId: "conversation_01...", postId: "post_01..." })
+```
+
+---
+
+## Ticket Tools
+
+Work the support-ticket surface programmatically: list and read tickets, open new ones, reply, add internal notes, and link tickets to trackers. Tickets share the conversation scopes (`read:chat` / `write:chat`). All ticket tools require a team role (admin or member).
+
+<Note>
+A service (API key) caller sees every ticket; a human caller sees only the tickets their role can view.
+</Note>
+
+### list_tickets
+
+List support tickets, most recently updated first. Filter by type, internal status category, customer-facing stage, requester, or company.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `type` | `"customer"` \| `"back_office"` \| `"tracker"` | - | Filter by ticket type |
+| `statusCategory` | `"open"` \| `"pending"` \| `"closed"` | - | Filter by internal status category |
+| `stage` | `"received"` \| `"in_progress"` \| `"awaiting_requester"` \| `"resolved"` | - | Filter by customer-facing public stage |
+| `requesterPrincipalId` | string | - | Filter to a requester (principal TypeID) |
+| `companyId` | string | - | Filter to a company (company TypeID) |
+| `sort` | `"recent"` \| `"oldest"` \| `"created"` \| `"priority"` | `"recent"` | Sort order |
+| `limit` | number (1-100) | `20` | Max results |
+
+**Scope:** `read:chat` + team role (admin or member)
+
+```
+list_tickets({ type: "customer", statusCategory: "open" })
+list_tickets({ companyId: "company_01abc..." })
+```
+
+---
+
+### get_ticket
+
+Get a ticket and its most recent thread messages, oldest-first.
+
+| Parameter | Type | Default | Description |
+|-----------|------|---------|-------------|
+| `ticketId` | string | - | Ticket TypeID |
+| `includeInternal` | boolean | `false` | Include internal teammate notes |
+| `cursor` | string | - | Message ID cursor from a previous response, to fetch older messages |
+
+**Scope:** `read:chat` + team role (admin or member)
+
+```
+get_ticket({ ticketId: "ticket_01abc...", includeInternal: true })
+```
+
+---
+
+### create_ticket
+
+Open a support ticket. A description opens the thread. Returns the created ticket.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `type` | `"customer"` \| `"back_office"` \| `"tracker"` | Ticket object type: a requester's request, an internal task, or an umbrella others link to |
+| `title` | string | Short summary (max 300 characters) |
+| `description` | string | Opening message body, Markdown (GFM), optional (max 10,000 characters) |
+| `priority` | `"none"` \| `"low"` \| `"medium"` \| `"high"` \| `"urgent"` | Triage priority (default `"none"`) |
+| `requesterPrincipalId` | string | The requester principal TypeID (optional) |
+| `companyId` | string | Associated company TypeID (optional) |
+
+**Scope:** `write:chat` + team role (admin or member)
+
+```
+create_ticket({ type: "customer", title: "Refund not received", description: "Customer reports a missing refund from last week." })
+```
+
+---
+
+### reply_to_ticket
+
+Post a reply on a ticket thread, visible to the requester. Stamps the first-response time on the first reply.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `ticketId` | string | Ticket TypeID |
+| `content` | string | Reply text, Markdown (GFM) (1-10,000 characters) |
+
+**Scope:** `write:chat` + team role (admin or member)
+
+```
+reply_to_ticket({ ticketId: "ticket_01abc...", content: "We've issued your refund; it should arrive in 3-5 days." })
+```
+
+---
+
+### add_ticket_note
+
+Add an internal note to a ticket thread. The requester never sees it; only the support team does.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `ticketId` | string | Ticket TypeID |
+| `content` | string | Internal note text, Markdown (GFM) (1-10,000 characters) |
+
+**Scope:** `write:chat` + team role (admin or member)
+
+```
+add_ticket_note({ ticketId: "ticket_01abc...", content: "Confirmed the refund with billing; awaiting bank processing." })
+```
+
+---
+
+### link_ticket
+
+Link a customer ticket to a tracker so the tracker's stage changes cascade onto it. The tracker must be type `tracker` and the ticket type `customer`; a customer ticket belongs to at most one tracker.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `trackerTicketId` | string | The tracker ticket TypeID |
+| `ticketId` | string | The customer ticket TypeID to track |
+
+**Scope:** `write:chat` + team role (admin or member)
+
+Returns the tracker's linked tickets.
+
+```
+link_ticket({ trackerTicketId: "ticket_01tracker...", ticketId: "ticket_01customer..." })
+```
+
+---
+
+### unlink_ticket
+
+Remove a customer ticket from a tracker.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `trackerTicketId` | string | The tracker ticket TypeID |
+| `ticketId` | string | The linked customer ticket TypeID |
+
+**Scope:** `write:chat` + team role (admin or member)
+
+Returns the tracker's remaining linked tickets.
+
+```
+unlink_ticket({ trackerTicketId: "ticket_01tracker...", ticketId: "ticket_01customer..." })
+```
+
+---
+
 ## Resources
 
-Resources provide lookup data for boards, statuses, tags, roadmaps, and team members. Use them to find IDs before calling tools like `triage_post` or `create_post`.
+Resources provide lookup data for boards, statuses, tags, roadmaps, team members, and help center categories. Use them to find IDs before calling tools like `triage_post` or `create_post`.
 
-All resources require the `read:feedback` scope.
-
-| URI | Returns | Fields |
-|-----|---------|--------|
-| `quackback://boards` | All boards | `id`, `name`, `slug` |
-| `quackback://statuses` | All statuses | `id`, `name`, `slug`, `color` |
-| `quackback://tags` | All tags | `id`, `name`, `color` |
-| `quackback://roadmaps` | All roadmaps | `id`, `name`, `slug` |
-| `quackback://members` | Team members | `id`, `name`, `role` |
+| URI | Returns | Fields | Scope |
+|-----|---------|--------|-------|
+| `quackback://boards` | All boards | `id`, `name`, `slug` | `read:feedback` |
+| `quackback://statuses` | All statuses | `id`, `name`, `slug`, `color` | `read:feedback` |
+| `quackback://tags` | All tags | `id`, `name`, `color` | `read:feedback` |
+| `quackback://roadmaps` | All roadmaps | `id`, `name`, `slug` | `read:feedback` |
+| `quackback://members` | Team members | `id`, `name`, `role` | `read:feedback` |
+| `quackback://help-center/categories` | Help center categories with article counts | `id`, `slug`, `name`, `description`, `icon`, `parentId`, `isPublic`, `position`, `articleCount` | `read:article` (team role; help center must be enabled) |
 
 <Tip>
 A typical workflow: read `quackback://statuses` to find the "planned" status ID, then call `triage_post` with that status ID.

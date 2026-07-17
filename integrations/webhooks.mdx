@@ -10,12 +10,16 @@ Build any integration you need. Webhooks send real-time HTTP notifications to an
 
 ## Overview
 
-Webhooks are managed entirely through the [REST API](/api/introduction). Each webhook specifies:
+Webhooks are managed entirely through the [REST API](/api/overview). Each webhook specifies:
 
 - A **URL** to receive POST requests
 - Which **events** to listen for
 - Optional **board filtering** to scope events to specific boards
 - A **signing secret** for verifying authenticity (HMAC-SHA256)
+
+<Note>
+Each workspace can have up to 25 webhooks.
+</Note>
 
 ## Create a webhook
 
@@ -54,22 +58,94 @@ Store the `secret` immediately. It cannot be retrieved again. If you lose it, us
 
 ## Event Types
 
+Quackback exposes 32 webhook-subscribable events, grouped by resource family.
+
+### Post events
+
 | Event | Description |
 |-------|-------------|
 | `post.created` | New feedback post submitted |
 | `post.status_changed` | Post status updated |
-| `comment.created` | New comment added to a post |
+| `post.updated` | Post title, content, tags, or owner changed |
+| `post.deleted` | Post soft-deleted |
+| `post.restored` | Deleted post restored |
+| `post.merged` | Duplicate post merged into a canonical post |
+| `post.unmerged` | Merged post separated back out |
+
+### Comment events
+
+| Event | Description |
+|-------|-------------|
+| `comment.created` | New comment posted |
+| `comment.updated` | Comment edited |
+| `comment.deleted` | Comment deleted |
+
+<Note>
+Board filtering applies only to post and comment events (see [Board Filtering](#board-filtering)). Private comments never trigger a webhook delivery.
+</Note>
+
+### Changelog
+
+| Event | Description |
+|-------|-------------|
+| `changelog.published` | Changelog entry published |
+
+### Conversation events
+
+| Event | Description |
+|-------|-------------|
 | `conversation.created` | A visitor starts a new conversation |
-| `conversation.status_changed` | A conversation moves between open, pending, and closed |
+| `conversation.status_changed` | A conversation moves between open, snoozed, and closed |
 | `conversation.assigned` | A conversation is assigned to or unassigned from an agent (includes auto-routing) |
 | `conversation.priority_changed` | A conversation's priority changes |
+| `conversation.attribute_changed` | A conversation attribute is set or cleared by AI, a teammate, or a customer |
 | `conversation.csat_submitted` | A visitor submits a satisfaction rating |
+| `conversation.csat_comment_added` | A visitor adds the optional comment to a satisfaction rating |
+| `conversation.note_mentioned` | An internal note @-mentions a teammate (private, opt-in) |
+| `conversation.customer_unresponsive` | The customer has been silent for a workflow-configured time after the last reply |
+| `conversation.teammate_unresponsive` | No teammate has replied for a workflow-configured time after the customer's last message |
+
+### Message events
+
+| Event | Description |
+|-------|-------------|
 | `message.created` | A visitor or agent sends a public message |
-| `message.note_created` | An agent adds an internal note (private — subscribe only if your endpoint should receive it) |
+| `message.note_created` | An agent adds an internal note (private, opt-in) |
 | `message.deleted` | A public message is deleted |
 
 <Note>
-Conversation and message events require the support inbox. Anonymous visitors' emails are never included (synthetic addresses are stripped). System messages (like "chat ended") are represented by `conversation.*` events rather than `message.created`, and internal-note deletions are not emitted.
+Conversation and message events require the support inbox to be enabled. System messages (like "chat ended") are represented by `conversation.*` events rather than `message.created`, and internal-note deletions are never emitted. An internal note never reached the visitor, so its deletion doesn't reach one either.
+</Note>
+
+### Ticket events
+
+| Event | Description |
+|-------|-------------|
+| `ticket.created` | Ticket opened |
+| `ticket.status_changed` | Ticket moves between open, pending, and closed |
+| `ticket.assigned` | Ticket assigned to (or unassigned from) an agent or team |
+| `ticket.replied` | An agent or the requester replies on the ticket thread |
+| `ticket.note_added` | An agent adds an internal note to a ticket (private, opt-in) |
+
+<Note>
+Ticket events require the [support tickets](/support/overview) feature to be enabled.
+</Note>
+
+### Assistant
+
+| Event | Description |
+|-------|-------------|
+| `assistant.handed_off` | The AI assistant hands a conversation to the team |
+
+### SLA
+
+| Event | Description |
+|-------|-------------|
+| `sla.approaching_breach` | An applied SLA clock enters its lead-time warning window |
+| `sla.breached` | An applied SLA clock passes its due date unsettled |
+
+<Note>
+Anonymous visitors' emails are never included in any payload. Synthetic placeholder addresses are stripped before delivery.
 </Note>
 
 ## Request Headers
@@ -79,7 +155,7 @@ Each webhook delivery includes these headers:
 | Header | Description |
 |--------|-------------|
 | `Content-Type` | `application/json` |
-| `User-Agent` | `Quackback-Webhook/1.0` |
+| `User-Agent` | `Quackback-Webhook/1.0 (+https://quackback.io)` |
 | `X-Quackback-Event` | Event type (e.g., `post.created`) |
 | `X-Quackback-Signature` | HMAC-SHA256 signature for verification |
 | `X-Quackback-Timestamp` | Unix timestamp of the request |
@@ -113,6 +189,24 @@ Every webhook delivery sends a JSON body with this structure:
 | `type` | Event type (e.g., `post.created`) |
 | `createdAt` | ISO 8601 timestamp of when the event occurred |
 | `data` | Event-specific payload (varies by event type) |
+
+### Payload shapes by family
+
+`data` nests one or more of these objects, named after the event. Status-change events add `previousStatus`/`newStatus` (or `previousPriority`/`newPriority`); assignment events add `assigned*`/`previous*` id pairs.
+
+| Object | Key fields |
+|--------|------------|
+| `post` (on `post.created`) | `id`, `title`, `content`, `boardId`, `boardSlug`, `authorEmail`, `authorName`, `voteCount` |
+| `post` (other post events) | `id`, `title`, `boardId`, `boardSlug` |
+| `comment` | `id`, `content`, `authorEmail`, `authorName`, `isPrivate` |
+| `changelog` | `id`, `title`, `contentPreview`, `publishedAt`, `linkedPostCount` |
+| `conversation` | `id`, `status`, `channel`, `priority`, `assignedTeamId` |
+| `message` | `id`, `conversationId`, `senderType`, `authorPrincipalId`, `authorName`, `authorEmail`, `content`, `createdAt` |
+| `ticket` | `id`, `number`, `type`, `priority`, `assignedPrincipalId`, `assignedTeamId` |
+
+<Note>
+`ticket.replied` and `ticket.note_added` also carry `messageId`, `content`, `senderType`, and an `attachments` array (`name`, `url`, `contentType`, `size`).
+</Note>
 
 ## Signature Verification
 
@@ -158,7 +252,7 @@ Also check that the timestamp is recent (within 5 minutes) to prevent replay att
 Pass `boardIds` when creating a webhook to only receive events from specific boards. If omitted, the webhook receives events from all boards.
 
 <Note>
-Board filtering applies only to post and comment events. Conversation and message events aren't tied to a board, so a webhook with `boardIds` set still receives every chat event it subscribed to.
+Board filtering applies only to post and comment events. Conversation, message, and ticket events aren't tied to a board, so a webhook with `boardIds` set still receives every event of those types it subscribed to.
 </Note>
 
 ```bash
@@ -277,6 +371,6 @@ Failed webhook deliveries are retried automatically:
 
 ## Next Steps
 
-- [API Overview](/api/introduction) - Full REST API documentation
+- [API Overview](/api/overview) - Full REST API documentation
 - [Integrations Overview](/integrations/overview) - All available integrations
 - [Slack](/integrations/slack) - Built-in Slack notification integration
