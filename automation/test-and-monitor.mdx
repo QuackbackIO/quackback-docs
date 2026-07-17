@@ -1,0 +1,62 @@
+---
+title: "Test and monitor Quinn"
+description: "Try Quinn safely in a sandbox, then track how it performs with real customers."
+icon: "flask"
+---
+
+# Test and monitor Quinn
+
+Don't find out how Quinn handles a tricky question from an angry customer. Try it yourself first, then keep an eye on how it's actually doing once it's live.
+
+## Test agent sandbox
+
+Find it at **Admin → AI & Automation → Test agent**.
+
+The sandbox runs Quinn against your saved configuration: current knowledge sources, guidance, and actions. Nothing you do here reaches your inbox or a real customer.
+
+Switch between testing the **Agent** (the customer-facing role Quinn plays in Messenger) and **Copilot** (the teammate-facing Q&A role) to see how each responds with the same settings.
+
+<Tip>
+Test with the questions your customers actually ask, not idealized ones. Pull a few real transcripts and see how Quinn handles them before you turn on automatic replies.
+</Tip>
+
+## Performance
+
+Find it at **Admin → AI & Automation → Performance**.
+
+### Agent metrics
+
+Always visible, covering the customer-facing Agent:
+
+- **Involvement rate** -- how many conversations Quinn takes part in
+- **Resolution rate** -- split into confirmed resolutions (the customer said so) and assumed ones
+- **Escalation rate** -- how often Quinn hands off to a human, with the handed-off count
+- **Actions completed** -- a rolling count, plus a 30-day trend
+
+### Actions funnel
+
+Also always visible: how often each built-in action is attempted, completed, or fails, broken down per action.
+
+### Copilot usage
+
+<Note>
+Copilot usage metrics only appear once Inbox AI is on. See [Use Quinn Copilot](/automation/quinn-copilot).
+</Note>
+
+Once Inbox AI is on, the Performance page adds:
+
+- Questions asked, transforms run, and summaries generated
+- An insert-rate funnel showing how often a Copilot answer, transform, or summary actually lands in a reply or note
+- Helpful votes, including how many were marked unhelpful with a reason
+- Top teammates and a breakdown of transforms by kind
+
+Two sections appear only when their matching Labs flag is on:
+
+- **Actions funnel** -- approval rate and proposed/approved/rejected/expired counts, once Assistant actions is on
+- **Suggestions** -- acceptance rate and shown/inserted/dismissed counts, once Proactive suggested replies is on
+
+## Next steps
+
+- [Configure the Quinn Agent](/automation/quinn-agent) -- Adjust settings based on what you see in testing
+- [Give Quinn actions](/automation/actions) -- Turn on the actions the funnel is tracking
+- [Build a workflow](/automation/workflows) -- Automate what Quinn's handoffs and escalations should trigger next
