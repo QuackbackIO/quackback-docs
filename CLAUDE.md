@@ -7,9 +7,11 @@ Documentation source for Quackback. Pure MDX content repo — no build tooling. 
 ## Structure
 
 ```
-├── getting-started/       admin/            auth/
-├── self-hosting/          integrations/     api/
-├── users/                 developers/       mcp/
+├── getting-started/       cloud/            guides/
+├── admin/                 support/          automation/
+├── users/                 auth/             integrations/
+├── widget/                help-center/      api/
+├── self-hosting/          developers/       mcp/
 ├── reference/             snippets/
 ├── docs.json              # Tab navigation manifest
 ├── STYLE_GUIDE.md         # Writing guide
@@ -36,4 +38,6 @@ See `STYLE_GUIDE.md`. Short sentences, direct address ("you"), present tense, no
 ## Conventions
 
 - Files: kebab-case. Links: absolute paths without extension (`/admin/boards`).
+- No em dashes; restructure the sentence instead.
+- Features that are off by default get a `<Note>` telling readers to turn them on in **Admin → Settings → Labs**.
 - Never add co-author trailers to commits
