@@ -158,6 +158,22 @@ Quackback("on", "identify", (payload) => {
 | `anonymous` | boolean | `true` if this is an anonymous session |
 | `error` | string \| undefined | Error code on failure |
 
+### unread
+
+Fires when the number of unread [Messenger](/widget/chat) messages changes.
+
+```js
+Quackback("on", "unread", (payload) => {
+  console.log("Unread messages:", payload.count);
+});
+```
+
+**Payload:**
+
+| Field | Type | Description |
+|-------|------|--------------|
+| `count` | number | Current unread message count |
+
 ## SPA usage
 
 In React or other frameworks, subscribe in an effect and clean up on unmount:

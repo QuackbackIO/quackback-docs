@@ -1,0 +1,60 @@
+---
+title: "Import from other tools"
+description: "Move your feedback from UserVoice or Canny into Quackback with a guided wizard."
+icon: "arrow-down-tray"
+---
+
+# Import from other tools
+
+Switching tools shouldn't mean starting from zero. Quackback's import wizard pulls your posts, votes, comments, and statuses from UserVoice or Canny, and shows you exactly what will change before anything touches your data.
+
+## Overview
+
+Access imports from **Admin → Settings → Imports & exports**. From there you can:
+
+- Import from UserVoice or Canny with a guided mapping wizard
+- Preview an import with a dry run before committing
+- Track import runs as they process in the background
+- Export your posts, users, conversations, and audit log
+
+## Import from UserVoice or Canny
+
+1. Choose your source - UserVoice or Canny.
+2. For Canny, enter your Canny API key. For UserVoice, upload your export file.
+3. Map fields - Quackback auto-suggests matches based on column names; adjust anything that's off.
+4. Map values - line up statuses, boards, and other values with their Quackback equivalents. Create new ones inline if you need to.
+5. Run a dry run to preview exactly what will be created or updated, with row-level errors flagged before you commit.
+6. Commit the import.
+
+<Tip>
+Always run the dry run first. It shows you exact create and update counts and flags row-level problems, so nothing surprising lands in your workspace.
+</Tip>
+
+## Track import runs
+
+Imports run in the background, so you can navigate away while a large import processes. Each run moves through Queued, Validating, Importing, and then Completed or Failed. Open **Admin → Settings → Imports & exports** any time to check progress or review a past run's results.
+
+<Note>
+This hub also handles plain CSV imports and exports - pick **CSV** as your source instead of UserVoice or Canny. See [Import and export data](/admin/import-export) for the CSV column format.
+</Note>
+
+## Export your data
+
+The same page exports data straight from your workspace:
+
+| Export | Format |
+|--------|--------|
+| Posts | CSV |
+| Users | CSV |
+| Conversations | JSONL |
+| Audit log | CSV, via a link to [Security](/admin/security#audit-log) |
+
+<Tip>
+Need a full database backup instead of a partial export? Use the `backup` CLI command covered in [self-hosting](/self-hosting/overview).
+</Tip>
+
+## Next steps
+
+- [Import and export data](/admin/import-export) - CSV column format and per-board import
+- [Boards](/admin/boards) - create target boards before you import
+- [Security](/admin/security) - review the audit log

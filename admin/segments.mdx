@@ -76,9 +76,24 @@ The rule builder ships with attributes grouped by source. You can also reference
 | **Vote Count** | number | Votes the user has cast. |
 | **Comment Count** | number | Comments the user has made. |
 
+### Company
+
+| Attribute | Type | Notes |
+|-----------|------|-------|
+| **Company plan** | string | The plan of the [company](/admin/companies) the user belongs to. |
+| **Company monthly spend** | number | The company's MRR. |
+| **Company size** | string | The company's size. |
+| **Company industry** | string | The company's industry. |
+
+<Tip>
+Combine company and user conditions in the same segment, like "Company plan is Enterprise" and "Post Count is at least 1", to find engaged users at your biggest accounts.
+</Tip>
+
 ### Custom attributes
 
 Anything you've defined in **Admin → Settings → People → Attributes** is available too. Pass values via the [widget](/widget/identify-users#custom-attributes) or the [API](/api/overview) and reference them by key in the rule builder.
+
+Custom [company attributes](/admin/companies#custom-company-attributes), defined at **Admin → Settings → Companies**, show up in their own group in the rule builder alongside the built-in company fields above.
 
 ## Operators
 
@@ -120,5 +135,6 @@ Once a segment exists you can reference it from other admin surfaces:
 
 - [Inbox](/admin/inbox) — filter feedback by segment
 - [Users](/admin/users) — view and manage portal users
+- [Manage companies](/admin/companies) - set up company attributes to target in segments
 - [Boards](/admin/boards#access-tab) — scope a board to specific segments
 - [Portal access](/admin/portal-auth#allowed-segments) — let segment members into a private portal

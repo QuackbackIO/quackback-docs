@@ -10,45 +10,31 @@ Don't manage feedback alone. Invite teammates to help triage requests, respond t
 
 ## Overview
 
-Access team settings from **Admin → Settings → Team Members**.
+Access team settings from **Admin → Settings → Members & Teams** (`/admin/settings/members`). The page has three tabs: **Members**, **Teams**, and **Roles**.
+
+<Note>
+The old Team Members page now redirects here. Any bookmarked links to the previous URL land on the Members tab automatically.
+</Note>
 
 ## Roles
 
-Quackback has two team member roles:
+Every teammate has a role that determines what they can configure. Quackback ships four role presets, from broadest to narrowest access: **Owner**, **Admin**, **Manager**, and **Contributor**.
 
-| Role | Capabilities |
-|------|--------------|
-| **Admin** | Full access to all settings, team management, integrations |
-| **Member** | Manage feedback, respond to posts, update statuses |
-
-### Role Comparison
-
-| Capability | Member | Admin |
-|------------|:------:|:-----:|
-| View admin dashboard | ✓ | ✓ |
-| Manage posts & comments | ✓ | ✓ |
-| Change post statuses | ✓ | ✓ |
-| Manage boards | ✓ | ✓ |
-| Manage statuses & tags | ✓ | ✓ |
-| Pin official responses | ✓ | ✓ |
-| Branding & customization | | ✓ |
-| Portal authentication | | ✓ |
-| Team management | | ✓ |
-| Import/export data | | ✓ |
+For the full breakdown of what each role can do, see [Understand roles and permissions](/admin/roles-permissions). The **Roles** tab in Members & Teams shows the same permission catalogue read-only, so you can check exactly what a role grants before assigning it.
 
 ## Invite team members
 
-1. Go to **Admin → Settings → Team Members**
+1. Go to **Admin → Settings → Members & Teams**
 2. Click **"Invite member"**
 3. Enter their email address
-4. Select a role (Admin or Member)
+4. Select a role
 5. Click **Send invite**
 
 The invitee receives an email with a link to join your workspace.
 
 ### Pending Invitations
 
-Pending invitations are shown at the top of the Team Members page. From there you can:
+Pending invitations are shown at the top of the Members tab. From there you can:
 - View who has been invited
 - Resend invitations
 - Cancel pending invitations
@@ -59,7 +45,7 @@ Pending invitations are shown at the top of the Team Members page. From there yo
 
 The team page shows:
 - Member name and email
-- Role badge (Admin/Member)
+- Role badge
 
 The member count is displayed at the top of the list.
 
@@ -67,7 +53,7 @@ The member count is displayed at the top of the list.
 
 1. Find the member in the list
 2. Click the **...** menu button on the right
-3. Select **Make admin** or **Make member**
+3. Select a new role
 4. Confirm the change
 
 Changes take effect immediately.
@@ -86,8 +72,18 @@ Removed members:
 - Their comments and activity history remain
 
 <Warning>
-You cannot remove yourself or the last admin.
+You cannot remove yourself, and every workspace needs at least one Owner.
 </Warning>
+
+## Teams
+
+Group members into teams to mirror how your organization is actually structured, like "Support" or "Product". Create and manage teams from the **Teams** tab in Members & Teams.
+
+Teams do more than group people. You can assign conversations and tickets directly to a team, and use a team as the target for routing rules so incoming work lands with the right group automatically. Each team can distribute assigned work to its members manually, round-robin, or load-balanced across whoever's online.
+
+<Tip>
+Set up teams before you turn on routing rules. Routing an inbox to a team that doesn't exist yet means someone has to reassign everything by hand.
+</Tip>
 
 ## Authentication
 
@@ -100,7 +96,7 @@ See [Configure team security](/admin/security) for the full set of options.
 ### Start Small
 
 <Tip>
-Begin with a small team of admins. Add members as your feedback volume grows.
+Begin with a small number of Owners and Admins. Add Managers and Contributors as your feedback volume grows.
 </Tip>
 
 ### Clear Ownership
@@ -114,14 +110,14 @@ Periodically review team access:
 - Audit admin permissions
 - Check for unused invitations
 
-### Use Member Role Appropriately
+### Grant the Right Role
 
 <Note>
-Only grant Admin access to those who need it. Members can handle most day-to-day feedback management.
+Reserve Owner and Admin for people who need full workspace control. Manager and Contributor cover most day-to-day feedback and support work - see [Understand roles and permissions](/admin/roles-permissions) for the full breakdown.
 </Note>
 
 ## Next Steps
 
+- [Understand roles and permissions](/admin/roles-permissions) - See what each role can do
 - [Branding](/admin/branding) - Customize your workspace appearance
 - [Security](/admin/security) - Configure authentication options
-- [Integrations](/integrations/overview) - Connect external tools
