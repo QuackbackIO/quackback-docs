@@ -54,6 +54,26 @@ A ticket can link to one or more conversations, and a conversation can have at m
 
 Click **Create ticket** in the conversation header, or press `c` while a conversation is open. The dialog creates a customer ticket, fixes the requester to the conversation's visitor, and links the new ticket back to the conversation automatically. A system message in the thread records that the ticket was created, and the linked ticket shows as a card in the conversation panel from then on.
 
+## Link tickets to issue trackers
+
+When a bug report becomes engineering work, link the ticket to the issue that tracks it. The linked issue keeps the support thread and the engineering tracker pointing at the same work, and status changes flow back automatically.
+
+In the ticket detail panel, each connected tracker shows its own section:
+
+- **Link existing issue**: paste an issue URL (or a shorthand like `owner/repo#123` for GitHub or `PROJ-42` for Jira). Available for GitHub, Jira, and Azure DevOps.
+- **Create new issue**: create the issue on the tracker directly from the ticket. The issue gets the ticket's title, the first customer message as its body, and a link back to the ticket. Available for GitHub, Jira, Linear, and Azure DevOps.
+
+Internal notes never reach the external tracker. Only the first customer-visible message is used for the issue body.
+
+### When the linked issue changes status
+
+Two things happen when the tracker reports a status change on a linked issue:
+
+1. A team-only note lands on the ticket thread ("GitHub issue acme/app#412 was closed"), and agents watching the ticket get a **Linked issue updates** notification. This fires even when no status mapping applies, so an issue closing never goes unnoticed.
+2. If the integration's **ticket status mappings** map the new external status to one of your ticket statuses, the ticket moves there too, firing the same stage updates and notifications as an agent-driven change.
+
+Configure ticket status mappings in each integration's settings page (GitHub, Jira, Linear, Azure DevOps, ClickUp, Asana, and Shortcut).
+
 ## What customers see
 
 Customers never see your internal status name or color. The [portal](/users/get-support) shows only the stage: Received, In progress, Awaiting your reply, or Resolved. If a status has no stage mapped, tickets in that status show no stage badge to the requester.
@@ -61,6 +81,7 @@ Customers never see your internal status name or color. The [portal](/users/get-
 ## Next steps
 
 - [Configure ticket types](/support/ticket-types): customer, back-office, and tracker intake forms
+- [GitHub integration](/integrations/github): issue linking, creation, and status sync in detail
 - [Work the support inbox](/support/inbox): filter and triage tickets alongside conversations
 - [Set SLA policies](/support/sla): apply time-to-close targets
 - [Get help from support](/users/get-support): the end-user view of a ticket's progress
