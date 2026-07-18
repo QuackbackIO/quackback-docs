@@ -86,6 +86,14 @@ When a new feedback post triggers issue creation, the Linear issue includes:
 - **Title**: The feedback post title
 - **Description**: The post content, followed by metadata including the author, board, vote count, and a link back to the post in Quackback
 
+## Ticket Linking
+
+Support tickets can create Linear issues from the ticket detail panel in the inbox: **Create new issue** creates the issue in the connected team with the ticket's title and the first customer message as the description. Internal notes are never included.
+
+<Note>
+Linking an existing Linear issue by URL is not offered: Linear identifies issues internally by an id a pasted URL doesn't contain, so a hand-entered link couldn't receive status sync. Issues created from Quackback are linked correctly and sync as normal.
+</Note>
+
 ## Status Sync
 
 When status sync is configured, Quackback registers a webhook with Linear to receive issue updates. When a linked Linear issue's workflow state changes:
@@ -95,6 +103,8 @@ When status sync is configured, Quackback registers a webhook with Linear to rec
 3. If a mapping exists, the linked feedback post's status is updated
 
 The webhook signature is verified using HMAC-SHA256 via the `Linear-Signature` header.
+
+Tickets have their own mapping table in the integration settings. Linked tickets also get a team-only thread note and a **Linked issue updates** notification for watching agents on every state change, whether or not a mapping applies.
 
 ## On post delete
 

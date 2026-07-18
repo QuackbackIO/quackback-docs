@@ -98,6 +98,13 @@ When a new feedback post triggers issue creation, the Jira issue includes:
 
 The description is formatted using Jira's native rich text format, so it renders correctly in the Jira UI.
 
+## Ticket Linking
+
+Support tickets link to Jira issues from the ticket detail panel in the inbox:
+
+- **Link existing issue**: paste a browse URL or the bare `PROJ-42` issue key. When the integration knows your site URL, issues from other Jira sites are rejected.
+- **Create new issue**: creates the issue in the connected project with the ticket's title and the first customer message as the description. Internal notes are never included.
+
 ## Status Sync
 
 When status sync is configured, Quackback registers a webhook with Jira to receive issue update events. When a linked Jira issue's workflow state changes:
@@ -106,6 +113,8 @@ When status sync is configured, Quackback registers a webhook with Jira to recei
 2. Quackback verifies the signature using HMAC-SHA256 via the `X-Hub-Signature` header
 3. Quackback checks the changelog for a status field change
 4. If a status mapping exists for the new state, the linked feedback post's status is updated
+
+Tickets have their own mapping table in the integration settings. Linked tickets also get a team-only thread note and a **Linked issue updates** notification for watching agents on every state change, whether or not a mapping applies.
 
 ## On post delete
 

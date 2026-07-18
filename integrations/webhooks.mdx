@@ -126,6 +126,7 @@ Conversation and message events require the support inbox to be enabled. System 
 | `ticket.assigned` | Ticket assigned to (or unassigned from) an agent or team |
 | `ticket.replied` | An agent or the requester replies on the ticket thread |
 | `ticket.note_added` | An agent adds an internal note to a ticket (private, opt-in) |
+| `ticket.external_status_changed` | A tracker issue linked to the ticket changes status on the external platform |
 
 <Note>
 Ticket events require the [support tickets](/support/overview) feature to be enabled.
@@ -205,7 +206,7 @@ Every webhook delivery sends a JSON body with this structure:
 | `ticket` | `id`, `number`, `type`, `priority`, `assignedPrincipalId`, `assignedTeamId` |
 
 <Note>
-`ticket.replied` and `ticket.note_added` also carry `messageId`, `content`, `senderType`, and an `attachments` array (`name`, `url`, `contentType`, `size`).
+`ticket.replied` and `ticket.note_added` also carry `messageId`, `content`, `senderType`, and an `attachments` array (`name`, `url`, `contentType`, `size`). `ticket.external_status_changed` carries `title`, `integrationType`, `externalDisplayId`, `externalUrl`, `externalStatus`, and `transition` (`closed`, `reopened`, or `null` when the provider reports only a status name).
 </Note>
 
 ## Signature Verification
