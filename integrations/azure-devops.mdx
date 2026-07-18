@@ -109,6 +109,13 @@ When a new feedback post triggers work item creation, the work item includes:
 
 The description uses HTML formatting, which Azure DevOps renders natively in the work item detail view.
 
+## Ticket Linking
+
+Support tickets link to Azure DevOps work items from the ticket detail panel in the inbox:
+
+- **Link existing work item**: paste a work item URL (`dev.azure.com/org/project/_workitems/edit/123` or the legacy `org.visualstudio.com` form). Work items from other organizations are rejected when the connected organization is known.
+- **Create new work item**: creates the work item in the connected project with the ticket's title and the first customer message as the description. Internal notes are never included.
+
 ## Status Sync
 
 When status sync is configured, Quackback receives inbound webhooks from Azure DevOps when work items are updated. When a linked work item's state changes:
@@ -117,6 +124,8 @@ When status sync is configured, Quackback receives inbound webhooks from Azure D
 2. Quackback verifies the request using Basic Authentication -- the password must match the signing secret from your integration settings
 3. Quackback checks for a `System.State` field change in the payload
 4. If a status mapping exists for the new state, the linked feedback post's status is updated
+
+Tickets have their own mapping table in the integration settings. Linked tickets also get a team-only thread note and a **Linked issue updates** notification for watching agents on every state change, whether or not a mapping applies.
 
 ## On post delete
 
