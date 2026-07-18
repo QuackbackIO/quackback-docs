@@ -38,11 +38,36 @@ Every workspace needs at least one Owner. You cannot remove or demote the last o
 
 ### See exactly what each role can do
 
-The **Roles** tab in [Members & Teams](/admin/team) shows a read-only permission catalogue: roughly 90 individual permissions grouped by area, including workspace settings, people, companies, feedback, conversations, changelog, help center, and integrations. Expand a role there to see precisely which permissions it grants.
+The **Roles** tab in [Members & Teams](/admin/team) shows the permission catalogue behind every role: roughly 90 individual permissions grouped by area, including workspace settings, people, companies, feedback, conversations, changelog, help center, and integrations. Expand a role there to see precisely which permissions it grants.
 
-<Tip>
-Custom roles aren't available yet - the four presets are fixed. If none of them is quite right, pick the closest one and let us know what's missing.
-</Tip>
+## Custom roles
+
+When none of the presets is quite right, create your own role from the **Roles** tab. Custom roles grant any mix of catalogue permissions and are assignable everywhere a preset is: the member list, invites, and the REST API.
+
+**Create one:**
+
+1. Go to **Admin -> Settings -> Members & Teams -> Roles**
+2. Click **New role**, or **Duplicate** on any existing role to start from its permissions
+3. Name it and pick permissions in the editor - the 15 catalogue categories each have a select-all, and you can filter by key
+
+**The rules that keep custom roles safe:**
+
+- **Built-in roles are read-only.** Duplicate one to customize it; the presets themselves never change.
+- **You can only grant permissions you hold.** Duplicating a richer role leaves the extra permissions off (the editor tells you how many), and the same ceiling applies when assigning a role to someone or choosing where members land when a role is deleted.
+- **You can't edit or delete a role you currently hold**, so nobody can lock themselves out or quietly upgrade their own access.
+- **Deleting an in-use role requires a destination.** You choose the role its members move to; nobody silently loses workspace access.
+
+<Note>
+When a Quackback update ships new permissions, the built-in roles pick them up automatically but custom roles do not - new permissions are off until you opt in. The role editor badges anything added since the role's last edit, so a quick review after upgrading is all it takes.
+</Note>
+
+Custom roles hold the **Member** tier for seat and access purposes; the Owner tier stays exclusive to the built-in promotion path.
+
+### Assign a custom role
+
+- **Existing member**: Members & Teams -> the **...** menu on their row -> **Change role** -> pick the role under Custom
+- **New teammate**: choose the role in the invite dialog; they hold it from the moment they accept
+- **API**: `PATCH /api/v1/principals/:id` with a `roleId`
 
 ## Portal Users
 
