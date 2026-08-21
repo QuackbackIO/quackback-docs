@@ -404,7 +404,7 @@ When returning dates from server functions, serialize them to ISO strings. This 
 ```typescript
 function toIsoString(value: Date | string): string {
   if (typeof value === 'string') {
-    return value // Already an ISO string (Neon HTTP driver)
+    return value // Already an ISO string
   }
   return value.toISOString()
 }
