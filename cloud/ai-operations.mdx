@@ -1,29 +1,67 @@
 ---
-title: AI features
-description: What AI features Quackback Cloud includes.
+title: "AI features"
+description: "Use Cloud AI features against a monthly dollar allowance, then top up if you need more."
+icon: "sparkles"
 ---
 
-Every AI feature ships on every Quackback Cloud plan. The one exception
-is auto-capturing feedback from connected tools, which is on Scale.
+# AI features
 
-## Included on every plan
+Every paid Cloud plan includes the same AI features. You pay for a monthly dollar allowance, not per outcome, and not as a Copilot add-on.
 
-- **Semantic search across feedback** — find related posts even when the
-  wording differs, powered by vector embeddings on every post.
-- **Similar-post suggestions when filing** — when admins triage incoming
-  feedback, Quackback surfaces existing posts that look related so
-  duplicates get merged early.
-- **AI post summaries** — multi-paragraph summaries that capture the core
-  user need, key quotes, and suggested next steps for each post.
-- **AI duplicate / merge suggestions** — embeddings prefilter + LLM
-  verification proactively flag true duplicates as they arrive, instead
-  of waiting for you to search.
-- **AI sentiment analysis** — every signal gets a positive / neutral /
-  negative classification, exposed in trend charts and breakdowns.
+Free includes $0 of AI usage.
 
-## Auto-capture from connected tools (Scale)
+## What is included
 
-**AI feedback extraction** pulls individual feature requests and bug
-reports out of long-form sources — Slack threads, Intercom conversations,
-Zendesk tickets, and other connected tools — and turns them into
-structured feedback, with the original conversation linked for context.
+On Growth, Pro, and Scale you can use:
+
+- **Assistant** - ask questions across your feedback
+- **Drafts** - suggested replies and post copy
+- **Insights** - summaries, sentiment, and trends
+- **Copilot conversations** - in-product help for your team
+- **Semantic search** - find related posts even when the wording differs
+- **Similar-post and duplicate suggestions** - catch merges early when you triage
+- **Post summaries** - the core user need, key quotes, and suggested next steps
+
+Plans differ by how much usage is included, not by which of these features you get.
+
+See [Use AI-powered features](/admin/ai-features) for how summaries, duplicates, and suggestions work in the product.
+
+<Note>
+Cloud turns these on for you. Self-hosted installs configure their own AI endpoint. See the [AI guide](/admin/ai-features#configure-ai).
+</Note>
+
+## Allowances
+
+Included AI usage per workspace per month:
+
+| Plan | Included |
+|------|----------|
+| Free | $0 |
+| Growth | $10 |
+| Pro | $30 |
+| Scale | $100 |
+
+The meter on **Admin → Settings → Plans & billing** shows dollars used of dollars included, plus any extra credit beside it.
+
+## Top up
+
+When the included allowance runs out, **Top up** buys a $10 pack.
+
+- Extra credit carries over month to month until you use it.
+- Included usage is always consumed first. Extra credit is drawn only after.
+
+Emails work the same way. **Top up** buys $10 per 10,000 emails. Included email usage is consumed first, and extra credit carries over until you use it.
+
+<Tip>
+Buy a pack before you hit the limit if a busy week is coming. Credit does not expire at month end.
+</Tip>
+
+## What you are not billed for
+
+Cloud does not charge per resolved conversation. There is no Copilot add-on SKU. AI is the included allowance plus optional top-up packs.
+
+## Next steps
+
+- [Managed Cloud](/cloud) - plans, seats, and billing
+- [Change plans and seats](/cloud/upgrade-downgrade) - upgrades, trials, and limits
+- [Use AI-powered features](/admin/ai-features) - summaries, duplicates, and suggestions
