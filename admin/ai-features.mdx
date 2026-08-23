@@ -23,9 +23,17 @@ Quackback includes four AI capabilities:
 | **AI suggestions** | Turns integration feedback (Slack, API) into actionable suggestions: merge, vote, or create |
 | **Embeddings** | Vector representations of post content, used for similarity search |
 
-All features are off until you configure an endpoint and models. Without configuration, AI features stay inactive and the UI elements don't appear.
+<Note>
+On Cloud, these features are already on. Skip to [Post summaries](#post-summaries). Self-hosted installs [configure an endpoint](#configure-ai) first.
+</Note>
 
 ## Configure AI
+
+<Note>
+Self-hosted only. Cloud workspaces skip this section.
+</Note>
+
+All features are off until you configure an endpoint and models. Without configuration, AI features stay inactive and the UI elements don't appear.
 
 To enable AI, set four [environment variables](/reference/environment-variables): an API key, an endpoint, and a model for each of the two roles.
 
@@ -110,6 +118,10 @@ See [Triage AI suggestions](/admin/suggestions) for the full guide on reviewing,
 
 ## Backfill embeddings
 
+<Note>
+Self-hosted only. Cloud workspaces skip this section.
+</Note>
+
 Existing posts created before AI was enabled don't have embeddings. Run the backfill command to generate them:
 
 ```bash
@@ -123,6 +135,12 @@ Backfilling makes API calls for every post without an embedding. For large works
 </Note>
 
 ## Privacy considerations
+
+On [Quackback Cloud](/cloud/ai-operations), requests go to Quackback's AI provider. No user emails, names, or account metadata are included.
+
+<Note>
+The rest of this section is for self-hosted installs.
+</Note>
 
 When AI features are enabled, Quackback sends the following data to your configured AI provider:
 
