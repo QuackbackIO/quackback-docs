@@ -1,12 +1,12 @@
 ---
 title: "Upgrades and downgrades"
-description: "Change plans, buy or return seats, and see what happens when you hit a limit."
+description: "Change plans and see what happens when you hit a seat or usage limit."
 icon: "arrows-up-down"
 ---
 
 # Upgrades and downgrades
 
-Change plan or seat count from **Admin → Settings → Plans & billing**. Upgrades and seat increases apply now. Downgrades and seat decreases wait until the end of the billing period.
+Change plan from **Admin → Settings → Plans & billing**. Upgrades apply now. Downgrades wait until the end of the billing period.
 
 ## Hitting a limit
 
@@ -16,11 +16,11 @@ Free includes 2 boards and 50 posts. Paid plans include unlimited boards and pos
 
 ### Boards and posts
 
-On Free, creating a board or post above those caps is blocked until you [upgrade](#change-plan), delete a board, or archive a post. Growth, Pro, and Scale have no board or post cap.
+On Free, creating a board or post above those caps is blocked until you [upgrade](#change-plan), delete a board, or archive a post. Pro, Business, and Enterprise have no board or post cap.
 
 ### Team seats
 
-An invite needs an open seat. Free includes 1 seat, so the second team invite is blocked until you [upgrade](#change-plan). On a paid plan, the invite dialog says every seat is in use and offers **Add a seat**.
+An invite needs an open seat. Free includes 1 seat, so the second team invite is blocked until you [upgrade](#change-plan). Pro includes 5 seats, Business 20, and Enterprise is unlimited. When every seat is in use, the invite dialog tells you to upgrade.
 
 Pending team invites count toward seats in use. [Portal invites](/admin/users) do not.
 
@@ -33,60 +33,55 @@ See [AI features](/cloud/ai-operations) for included allowances and how credit i
 ## Change plan
 
 1. Go to **Admin → Settings → Plans & billing**.
-2. Pick monthly or annual billing. Annual is two months free.
-3. Choose Free, Growth, Pro, or Scale.
+2. Pick monthly or annual billing. Annual saves versus monthly: $96/yr on Pro, $192/yr on Business, $360/yr on Enterprise.
+3. Choose Free, Pro, Business, or Enterprise.
 
 Upgrades take effect immediately. New limits land on your workspace within a few seconds. Quackback prorates the upgrade against your current billing cycle.
 
-A checkout from Free, or converting a trial, defaults the seat quantity to how many seats you already use.
+Converting a trial or checking out from Free is refused if members plus pending invites exceed the plan's included seats. Remove members or choose a plan that covers them.
 
 <Note>
-Custom domains start at Growth. [SSO](/auth/sso) and the [audit log](/admin/security#audit-log) are on Scale.
+Custom domains start at Pro. [Integrations](/integrations/overview) start at Business. [SSO](/auth/sso) and the [audit log](/admin/security#audit-log) are on Enterprise.
 </Note>
 
-## Add or remove seats
+## Included seats
 
-**Add seats** buys more right away. You are billed a prorated amount for the rest of the period, and the new seats are usable immediately.
+Each plan includes a seat cap: Free 1, Pro 5, Business 20, Enterprise unlimited. Upgrading raises the cap immediately. You cannot buy extra seats on the same plan.
 
-**Remove seats** schedules a decrease at the end of the billing period. You cannot drop below seats in use (members plus pending team invites).
-
-Removing a member frees a seat in the meter. It does not change what you pay until you click **Remove seats**.
+Removing a member frees a seat in the meter. It does not change what you pay.
 
 <Warning>
-The roster never changes your bill on its own. Buy the seats you need, then invite into them.
+Inviting or removing members does not change your bill. To raise the cap, [upgrade](#change-plan).
 </Warning>
 
 ## Downgrade
 
 A plan downgrade is scheduled. You keep the current plan until the billing period ends, then the new limits apply.
 
-**Existing data stays accessible.** Boards, posts, members, and integrations keep working.
+**Existing data stays accessible.** Boards, posts, and members keep working.
 
-Members above the new seat cap keep access, but you cannot invite above that cap. Boards and posts above Free's 2-board and 50-post caps stay too. You cannot create more until you are at or below the cap, or you upgrade. Usage meters and Scale-only features follow the new plan after the period ends.
+Members above the new seat cap keep access, but you cannot invite above that cap. Boards and posts above Free's 2-board and 50-post caps stay too. You cannot create more until you are at or below the cap, or you upgrade. Usage meters, [integrations](/integrations/overview), and Enterprise-only features follow the new plan after the period ends. Connected integrations keep working until then.
 
 Quackback never deletes your data on downgrade.
 
 ### Examples
 
-- **You have 6 team members on Pro and schedule a downgrade to Free (1 seat).** Everyone keeps access. After the period ends you cannot invite anyone else until you upgrade.
+- **You have 6 team members on Business and schedule a downgrade to Pro (5 seats).** Everyone keeps access. After the period ends you cannot invite anyone else until you are at or below 5, or you upgrade.
 - **You have 8 boards on Pro and schedule a downgrade to Free (2 boards).** All 8 stay accessible. After the period ends you cannot create another board until you are at or below 2, or you upgrade.
 - **You have 200 posts on Pro and schedule a downgrade to Free (50 posts).** Every post stays. After the period ends you cannot create another post until you are at or below 50, or you upgrade.
-- **You have used $28 of Pro's $30 AI allowance this month and move to Growth ($10 included).** Existing AI output stays. New AI calls draw from Growth's allowance plus any extra credit you already bought.
-- **You use [SSO](/auth/sso) on Scale and downgrade to Pro.** Scale-only features (SSO and the audit log) stop being available after the period ends.
+- **You have used $28 of Business's $30 AI allowance this month and move to Pro ($10 included).** Existing AI output stays. New AI calls draw from Pro's allowance plus any extra credit you already bought.
+- **You use [Slack](/integrations/slack) on Business and downgrade to Pro.** Connected integrations keep working until the period ends, then Business-only features stop.
+- **You use [SSO](/auth/sso) on Enterprise and downgrade to Business.** Enterprise-only features (SSO and the audit log) stop being available after the period ends.
 
 ## Trials
 
-Each paid plan includes a 7-day trial, once per plan. Start it from Plans & billing.
+Each paid plan includes a 14-day trial, once per plan. Start it from Plans & billing, or pick a plan when you create the workspace. Using a Free workspace starts a 14-day Pro trial (5 seats).
 
-Seats are uncapped during a trial or a complimentary grant. At the end of the trial, your workspace returns to Free unless you subscribe. Checkout defaults the seat quantity to current usage.
+Seats during a trial or a complimentary grant follow the included cap of the plan you are trialing or that the grant is for. At the end of the trial, your workspace returns to Free unless you subscribe.
 
 <Note>
-You get one trial per paid plan (Growth, Pro, and Scale). A Growth trial does not spend your Pro or Scale trial.
+You get one trial per paid plan (Pro, Business, and Enterprise). A Pro trial does not spend your Business or Enterprise trial.
 </Note>
-
-## Existing paid workspaces
-
-Workspaces on the old flat per-workspace price keep that price and uncapped seats until they change plan. Changing plan moves them onto per-seat billing with quantity set to current usage.
 
 ## Next steps
 

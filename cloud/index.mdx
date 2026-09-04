@@ -1,56 +1,56 @@
 ---
 title: "Managed Cloud"
-description: "Run Quackback on managed hosting with per-seat plans and included AI usage."
+description: "Run Quackback on managed hosting with workspace plans, included seats, and AI usage."
 icon: "cloud"
 ---
 
 # Managed Cloud
 
-Skip the servers. Quackback Cloud is the hosted edition of the same product, with plans, seats, and usage meters built in.
+Skip the servers. Quackback Cloud is the hosted edition of the same product, with workspace plans and usage meters built in.
 
 Quackback comes in two editions:
 
 - **Quackback OSS** - fully open-source under AGPL. Run it yourself on any Docker-capable infrastructure. Every feature is included with no limits.
-- **Quackback Cloud** - managed hosting on our infrastructure with four plans: Free, Growth, Pro, and Scale.
+- **Quackback Cloud** - managed hosting on our infrastructure with four plans: Free, Pro, Business, and Enterprise.
 
 The product code is the same. Cloud adds:
 
 - Managed provisioning, billing, and upgrades
 - Per-tenant isolation on shared Postgres clusters
 - Per-tenant Let's Encrypt certificates and a default subdomain
-- Custom-domain support on Growth and above
+- Custom-domain support on Pro and above
 
 See [quackback.io/pricing](https://quackback.io/pricing) for current prices and the full feature matrix.
 
 ## Plans
 
-| Plan | Per seat (annual) | Per seat (monthly) | AI usage included |
-|------|-------------------|--------------------|-------------------|
-| **Free** | $0 (1 seat included) | $0 | $0 |
-| **Growth** | $12/mo ($144/seat/yr) | $15 | $10/mo |
-| **Pro** | $24/mo ($288/seat/yr) | $30 | $30/mo |
-| **Scale** | $49/mo ($588/seat/yr) | $59 | $100/mo |
+| Plan | Seats | Monthly | Annual | AI usage included |
+|------|-------|---------|--------|-------------------|
+| **Free** | 1 | $0/mo | $0 | $0 |
+| **Pro** | 5 | $37/mo | $29/mo ($348/yr) | $10/mo |
+| **Business** | 20 | $75/mo | $59/mo ($708/yr) | $30/mo |
+| **Enterprise** | Unlimited | $129/mo | $99/mo ($1,188/yr) | $100/mo |
 
-Annual billing is two months free versus monthly.
+Pro is the recommended plan. Annual billing saves versus monthly: $96/yr on Pro, $192/yr on Business, $360/yr on Enterprise.
 
-Free includes 1 seat, 2 boards, and 50 posts. Paid plans include unlimited boards and posts. Custom domains start at Growth. [SSO](/auth/sso) and the [audit log](/admin/security#audit-log) are on Scale.
+Free includes 1 seat, 2 boards, and 50 posts. Paid plans include unlimited boards and posts. Custom domains start at Pro. [Integrations](/integrations/overview) start at Business. [SSO](/auth/sso) and the [audit log](/admin/security#audit-log) are on Enterprise.
 
 ## Seats
 
-Cloud bills per seat. You buy seats, then invite people into them.
+Cloud bills a flat workspace price. Each plan includes seats. You invite teammates into those seats.
 
-- Every admin-side teammate (Admin or Member) uses one purchased seat. Admins and members cost the same.
+- Every admin-side teammate (Admin or Member) uses one included seat.
 - [Portal invites](/admin/users) for end users are free and unlimited.
-- Free includes 1 seat. The second team invite is blocked until you upgrade.
+- Free includes 1 seat. Pro includes 5. Business includes 20. Enterprise is unlimited.
 - A pending team invite holds a seat until it is accepted, cancelled, or expires.
 
-Seats change only when you buy more or schedule a decrease. Removing a member frees a seat in the meter. Your paid quantity stays until you click **Remove seats**.
+When every included seat is in use, [upgrade the plan](/cloud/upgrade-downgrade) to invite more. You cannot buy extra seats on the same plan. Removing a member frees a seat in the meter. It does not change what you pay.
 
 <Tip>
-An invite needs an open seat. If every seat is in use, click **Add a seat** on the invite dialog, or upgrade from Free.
+An invite needs an open seat. If every seat is in use, upgrade from **Admin → Settings → Plans & billing**.
 </Tip>
 
-Trials and complimentary grants have uncapped seats. After a trial, checkout defaults the quantity to how many seats you already use.
+Trials use the included seats of the plan you are trialing. Using a Free workspace starts a 14-day Pro trial (5 seats).
 
 ## AI usage
 
@@ -66,21 +66,17 @@ See [AI features](/cloud/ai-operations) for the allowance table and how top-ups 
 
 Open **Admin → Settings → Plans & billing** to:
 
-- See your current plan, renewal date, and per-seat price
+- See your current plan, renewal date, and workspace price
 - Read the seats meter (members, pending invites, available seats)
 - Read usage meters for AI (in dollars), emails, and API requests
-- Compare Free, Growth, Pro, and Scale
-- Buy seats immediately, or schedule a seat decrease at period end
+- Compare Free, Pro, Business, and Enterprise
+- Upgrade now, or schedule a downgrade at period end
 - Top up AI ($10 pack) or email ($10 per 10,000 emails)
 
 A **Remove Quackback branding** add-on ($59/mo, or $590/yr) appears on the page. It is display-only until you can buy it.
 
-## Existing paid workspaces
-
-If you already pay a flat per-workspace price, you keep that price and uncapped seats until you change plan. Changing plan moves you onto per-seat billing with quantity set to the seats you currently use.
-
 ## Next steps
 
-- [Change plans and seats](/cloud/upgrade-downgrade) - upgrades, downgrades, trials, and limits
+- [Upgrades and downgrades](/cloud/upgrade-downgrade) - upgrades, downgrades, trials, and limits
 - [AI features](/cloud/ai-operations) - allowances, top-ups, and what is included
 - [Manage your team](/admin/team) - invite admins and members
