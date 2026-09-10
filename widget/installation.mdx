@@ -56,22 +56,11 @@ Quackback.init({ instanceUrl: "https://feedback.example.com" });
 ### React
 
 ```tsx
-import { useEffect, useState } from "react";
 import { useQuackbackInit, useQuackback, useQuackbackEvent } from "@quackback/widget/react";
 
 function App() {
-  const [ssoToken, setSsoToken] = useState<string | undefined>();
-
-  useEffect(() => {
-    fetch("/widget-token")
-      .then((r) => r.json())
-      .then(({ token }) => setSsoToken(token))
-      .catch(() => {});
-  }, []);
-
   useQuackbackInit({
     instanceUrl: "https://feedback.example.com",
-    identity: ssoToken ? { ssoToken } : undefined,
   });
 
   useQuackbackEvent("post:created", (post) => {
@@ -92,7 +81,7 @@ function FeedbackButton() {
 No provider is required. The hooks wrap the singleton SDK.
 
 <Tip>
-Fetch `ssoToken` from your backend. Do not pass raw `id` or `email` from the browser. See [Identify users](/widget/identify-users).
+Identify is optional and is not required for the launcher. If you later want signed-in attribution, fetch a backend-signed `ssoToken` — never raw id or email. See [Identify users](/widget/identify-users).
 </Tip>
 
 ## Configure with init options
@@ -213,7 +202,7 @@ Call `logout` from your logout handler. Call `destroy` in SPAs when you unmount 
 
 ## Single-page apps
 
-Initialize once in a layout. Identify after auth resolves. Clean up on unmount.
+Initialize once in a layout. Clean up on unmount. Skip the second effect unless you copied the signing secret from **Admin → Settings → Widget → Install**.
 
 ```tsx
 import { useEffect } from "react";

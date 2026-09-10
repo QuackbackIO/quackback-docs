@@ -62,6 +62,8 @@ Team and admin accounts cannot be identified through the widget. A token whose `
 
 ## Sign a token on your server
 
+These names live in **your** app. Paste the value from **Admin → Settings → Widget → Install**. Quackback Cloud and self-host do not define this variable.
+
 <Tabs>
 <Tab title="Next.js">
 ```ts
@@ -174,7 +176,7 @@ class WidgetTokenController extends Controller
             'exp'   => time() + 300, // 5 minutes
         ];
 
-        $token = JWT::encode($payload, config('services.quackback.widget_secret'), 'HS256');
+        $token = JWT::encode($payload, env('WIDGET_SIGNING_SECRET'), 'HS256');
 
         return response()->json(['token' => $token]);
     }
