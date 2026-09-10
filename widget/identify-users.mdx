@@ -1,125 +1,68 @@
 ---
-title: Identify users
-description: Connect widget activity to real users so feedback is always attributed correctly.
+title: "Identify users"
+description: "Attribute widget activity to signed-in users with a backend-signed ssoToken."
 icon: "finger-print"
 ---
 
-Linking widget activity to real users gives you accurate attribution in the dashboard, and lets users see their own votes, comments, and submissions when they open the widget.
+# Identify users
 
-The widget loads anonymously as soon as `Quackback("init")` runs — no identify call is required to make it appear. You call `identify` when you know *who* the user is, so their activity is attributed to their account instead of to an anonymous session.
+The widget loads for every visitor after `init`. Identify a signed-in user so votes, posts, and conversations attach to their account instead of an anonymous session.
 
-Two ways to identify a known user:
-
-- **With their details** — the simplest option. Pass `id`, `email`, and `name` directly from the client.
-- **With a signed token** — sign a short-lived JWT on your server and pass it as `ssoToken`. Use this in production so nobody can impersonate another account.
-
-If you never call identify, the widget stays anonymous and prompts for an email inline the first time the user posts.
-
----
-
-## Identify logged-in users
-
-Call `identify` after login and any time the user's session changes.
+Identification is **verified-only**. Your server signs a short-lived JWT and the browser sends that token as `ssoToken`. Quackback rejects unsigned `{ id, email, name }` from the client.
 
 ```js
-Quackback("identify", {
-  id: "user_123",
-  email: "ada@example.com",
-  name: "Ada Lovelace",
-});
+const { ssoToken } = await fetch("/widget-token").then((r) => r.json());
+Quackback.identify({ ssoToken });
+// Script tag: Quackback("identify", { ssoToken })
 ```
 
-| Field   | Type   | Required | Notes                                  |
-|---------|--------|----------|----------------------------------------|
-| `id`    | string | Yes      | Stable, unique ID from your system     |
-| `email` | string | Yes      | Used for notifications and dedup       |
-| `name`  | string | No       | Display name shown in the dashboard    |
-
 <Note>
-Unverified calls trust the client, so a determined user could spoof someone else's identity. For production, turn on **Verified identity only** and use `ssoToken` — see below.
+Anonymous visitors keep using the widget after `init`. A session mints on their first write (uploads or reactions). Identification always uses a backend-signed `ssoToken`.
 </Note>
 
 ---
 
-## Anonymous sessions
+## Identify signed-in users
 
-Do nothing. The widget loads anonymously after `init`. If the visitor submits feedback or votes, a session is created on the fly and the widget prompts for an email inline at submission time.
+Call `identify` after login, on page load if the session already exists, and whenever the signed-in user changes. Once per session — not on every navigation.
 
-```js
-Quackback("init", { placement: "right" });
-// That's it — no identify call needed for anonymous visitors.
-```
-
-Anonymous is the default state; there's no `{ anonymous: true }` flag to pass. If they later log in and you call `identify`, everything they did anonymously moves across to their account automatically.
-
----
-
-## Bundle identity into init
-
-If you already know the user when the widget loads, pass identity directly to `init` and skip the separate `identify` call:
-
-```js
-Quackback("init", {
-  placement: "right",
-  identity: { id: "user_123", email: "ada@example.com", name: "Ada" },
-});
-```
-
-The `identity` key accepts the same shapes as the standalone call — `{ id, email, name }` or `{ ssoToken }`. Omit it entirely for anonymous, or if you'll call `Quackback("identify", ...)` later (for example, once async auth resolves).
-
----
-
-## Switch users mid-session
-
-Call `identify` again with a different user any time the signed-in user changes — account switching, post-login transitions, or profile updates. The widget picks up the new identity and subsequent activity is attributed correctly.
-
-```js
-// User A signs out, User B signs in:
-Quackback("identify", { id: "user_B", email: "bob@example.com", name: "Bob" });
-```
-
-No need to call `logout` in between — the new identify call replaces the previous session.
-
----
-
-## Clear identity on logout
-
-Call `logout` to clear the current identity. The widget stays visible — just in an anonymous state, same as it started. Put this in your logout handler.
-
-```js
-Quackback("logout");
-```
-
-If the widget panel is open, it closes automatically.
-
----
-
-## Verified identity with JWT
-
-Unverified calls and inline email capture both trust the client, so a determined user could post feedback as a different account. A signed token removes that possibility — Quackback only accepts identities your backend has vouched for.
-
-Turn on **Verified identity only** in **Admin → Settings → Widget** and copy the **Widget Secret**. Once it's on, unverified `identify` calls and the inline email prompt are both rejected — only a valid token from your server will identify a user.
+1. Copy the **signing secret** from **Admin → Settings → Widget → Install**
+2. Store it in your product's server-side secret store (example: `WIDGET_SIGNING_SECRET`). This is not a Quackback Cloud or self-host setting — Cloud and self-host use the same admin copy path.
+3. Sign a JWT (HS256, ~5 minutes) with `sub` and `email`
+4. Send `{ ssoToken }` to the page the same way you already expose session data
+5. Call `Quackback.identify({ ssoToken })`
 
 <Warning>
-Never expose the widget secret in client-side code. Sign tokens on your server only.
+Never put the signing secret in client-side code, commits, or logs. Sign tokens on your server only.
 </Warning>
 
-### How it works
+---
 
-Your server signs a JWT with HS256 using the widget secret. The widget sends `ssoToken` to Quackback, which verifies the signature before accepting the identity claims.
+## JWT claims
 
-### JWT claims
+| Claim | Required | Notes |
+|-------|----------|-------|
+| `sub` | Yes | Stable unique ID from your system. `id` is accepted as an alias. Do not use email as `sub`. |
+| `email` | Yes | Used for notifications and matching existing accounts |
+| `name` | No | Display name in the dashboard |
+| `avatarUrl` / `avatarURL` | No | Avatar image URL |
+| `segments` | No | Array of [segment](/admin/segments) slugs. Unknown slugs are skipped. Dropping a slug removes that widget-sourced membership. |
+| `exp` | Recommended | Unix timestamp. Use about 5 minutes from now. |
+| custom | No | Extra keys become [user attributes](#custom-attributes) if you configured them |
 
-| Claim       | Required    | Notes                                       |
-|-------------|-------------|---------------------------------------------|
-| `sub`       | Yes         | User's stable ID                            |
-| `email`     | Yes         | User's email address                        |
-| `name`      | No          | Display name                                |
-| `avatarUrl` | No          | URL of the user's avatar image              |
-| `exp`       | Recommended | Unix timestamp; use ~5 minutes from now     |
-| custom      | No          | Any additional key-value pairs (see below)  |
+`sub` is the durable cross-device key. If the host app changes the user's email, the same `sub` still resolves to the same Quackback account.
 
-### Server-side signing examples
+Reserved JWT fields are not stored as attributes: `sub`, `id`, `email`, `name`, `avatarURL`, `avatarUrl`, `segments`, `iat`, `exp`, `nbf`, `iss`, `aud`, `jti`.
+
+<Note>
+Team and admin accounts cannot be identified through the widget. A token whose `sub` or `email` matches a staff user returns `IDENTITY_NOT_ALLOWED`.
+</Note>
+
+---
+
+## Sign a token on your server
+
+These names live in **your** app. Paste the value from **Admin → Settings → Widget → Install**. Quackback Cloud and self-host do not define this variable.
 
 <Tabs>
 <Tab title="Next.js">
@@ -128,7 +71,7 @@ Your server signs a JWT with HS256 using the widget secret. The widget sends `ss
 import { SignJWT } from "jose";
 import { getServerSession } from "next-auth";
 
-const secret = new TextEncoder().encode(process.env.QUACKBACK_WIDGET_SECRET);
+const secret = new TextEncoder().encode(process.env.WIDGET_SIGNING_SECRET);
 
 export async function GET() {
   const session = await getServerSession();
@@ -137,15 +80,15 @@ export async function GET() {
   }
 
   const token = await new SignJWT({
-    sub: session.user.id,
     email: session.user.email,
     name: session.user.name,
   })
     .setProtectedHeader({ alg: "HS256" })
+    .setSubject(session.user.id)
     .setExpirationTime("5m")
     .sign(secret);
 
-  return Response.json({ token });
+  return Response.json({ ssoToken: token });
 }
 ```
 </Tab>
@@ -161,11 +104,11 @@ router.get("/widget-token", requireAuth, (req, res) => {
       email: req.user.email,
       name: req.user.name,
     },
-    process.env.QUACKBACK_WIDGET_SECRET,
+    process.env.WIDGET_SIGNING_SECRET,
     { algorithm: "HS256", expiresIn: "5m" }
   );
 
-  res.json({ token });
+  res.json({ ssoToken: token });
 });
 ```
 </Tab>
@@ -188,10 +131,10 @@ def widget_token(request):
     }
     token = jwt.encode(
         payload,
-        settings.QUACKBACK_WIDGET_SECRET,
+        settings.WIDGET_SIGNING_SECRET,
         algorithm="HS256",
     )
-    return JsonResponse({"token": token})
+    return JsonResponse({"ssoToken": token})
 ```
 </Tab>
 <Tab title="Rails">
@@ -209,14 +152,17 @@ class WidgetTokensController < ApplicationController
       name: current_user.name,
       exp: 5.minutes.from_now.to_i,
     }
-    token = JWT.encode(payload, ENV["QUACKBACK_WIDGET_SECRET"], "HS256")
-    render json: { token: }
+    token = JWT.encode(payload, ENV["WIDGET_SIGNING_SECRET"], "HS256")
+    render json: { ssoToken: token }
   end
 end
 ```
 </Tab>
 <Tab title="Laravel">
 ```php
+// config/services.php
+// 'widget' => ['signing_secret' => env('WIDGET_SIGNING_SECRET')],
+
 // app/Http/Controllers/WidgetTokenController.php
 use Firebase\JWT\JWT;
 
@@ -233,9 +179,9 @@ class WidgetTokenController extends Controller
             'exp'   => time() + 300, // 5 minutes
         ];
 
-        $token = JWT::encode($payload, config('services.quackback.widget_secret'), 'HS256');
+        $token = JWT::encode($payload, config('services.widget.signing_secret'), 'HS256');
 
-        return response()->json(['token' => $token]);
+        return response()->json(['ssoToken' => $token]);
     }
 }
 ```
@@ -244,41 +190,68 @@ class WidgetTokenController extends Controller
 
 ### Pass the token to the widget
 
-Fetch the token from your endpoint and pass it as `ssoToken`.
-
 ```js
-const { token } = await fetch("/widget-token").then((r) => r.json());
-
-Quackback("identify", { ssoToken: token });
+const { ssoToken } = await fetch("/widget-token").then((r) => r.json());
+Quackback.identify({ ssoToken });
 ```
 
 <Tip>
-Fetch a fresh token on each login or page load. Tokens expire quickly by design — this limits the blast radius if one is intercepted.
+Mint a fresh token on each login or page load. Short expiry limits the blast radius if one is intercepted.
 </Tip>
+
+---
+
+## Bundle identity into init
+
+If you already have a token when the widget loads, pass it on `init` and skip a separate `identify` call:
+
+```js
+Quackback.init({
+  instanceUrl: "https://feedback.example.com",
+  identity: { ssoToken },
+});
+```
+
+Omit `identity` for anonymous visitors, or if you will call `identify` after async auth resolves.
+
+---
+
+## Anonymous visitors
+
+Do nothing. After `init`, the launcher is visible and the visitor is anonymous.
+
+```js
+Quackback.init({ instanceUrl: "https://feedback.example.com" });
+```
+
+A session is not created up front. It mints on the first write (uploads, reactions, and similar). There is no `{ anonymous: true }` flag to pass.
+
+If they later sign in and you call `identify` with `ssoToken`, anonymous activity merges onto their account.
+
+---
+
+## Switch users and log out
+
+Call `identify` again with a new token when the signed-in user changes. You do not need `logout` in between.
+
+```js
+Quackback.identify({ ssoToken: userBToken });
+```
+
+On logout, clear identity. The widget stays visible in anonymous mode. If the panel is open, it closes.
+
+```js
+Quackback.logout();
+```
 
 ---
 
 ## Custom attributes
 
-You can pass extra fields like `plan`, `company`, or `mrr` alongside the standard ones and they'll show up on the user's profile. This works for both unverified calls and signed tokens.
-
-With an unverified `identify` call:
+Pass extra claims such as `plan`, `company`, or `mrr` in the signed JWT. Matching attributes show on the user's profile.
 
 ```js
-Quackback("identify", {
-  id: "user_123",
-  email: "ada@example.com",
-  name: "Ada Lovelace",
-  plan: "pro",
-  company: "Acme Corp",
-  mrr: 299,
-});
-```
-
-Or as extra claims inside a signed JWT:
-
-```js
-// Server-side
+// Server-side payload
 const payload = {
   sub: user.id,
   email: user.email,
@@ -289,48 +262,33 @@ const payload = {
 };
 ```
 
-Attributes are validated against the ones you've configured. Anything that doesn't match a configured attribute is ignored, not rejected — so you can pass extra data without worrying about breaking the call.
-
-<Note>
-Set up your attributes in **Admin → Settings → User Attributes** first so nothing gets silently dropped.
-</Note>
-
----
-
-## Rotate the secret
-
-If your secret is ever exposed, rotate it immediately:
-
-1. Go to **Admin → Settings → Widget** and click **Regenerate Secret**.
-2. Deploy updated server-side token signing with the new secret.
-3. The old secret is invalidated instantly — users will see an auth error until your server is updated.
-
-<Warning>
-Rotate and deploy atomically. Any lag between invalidating the old secret and deploying the new signing code will cause identify calls to fail for active users.
-</Warning>
-
----
+Configure attributes in **Admin → Settings → People → Attributes** first. Unknown keys are ignored, not rejected.
 
 ---
 
 ## Sign portal users in from the widget
 
-If you run a private portal, you can use the widget identity as a sign-in for the portal too — visitors who are already known to the widget don't need to sign in again to open the full portal.
+If you run a private portal, a verified widget session can sign the visitor into the portal so they do not authenticate twice.
 
-Two things have to be true:
+1. Identify widget users with `ssoToken` (this page)
+2. Turn on **Widget sign-in** under **Admin → Settings → Security → Authentication → Portal access**
 
-1. **Verified identity only** is on (Admin → Settings → Widget). The widget is signing JWTs, not just capturing emails.
-2. **Widget sign-in** is on for the portal (Admin → Settings → Security → Authentication → Portal access).
+Visitors who open the full portal from the widget are signed in with a one-time token. See [Control portal access](/admin/portal-auth#widget-sign-in).
 
-When both are on, visitors who follow a "View full portal" link from the widget are signed in automatically via a one-time token. Email-capture mode (unverified) does **not** grant portal access — there's no cryptographic guarantee of identity in that flow.
+---
 
-See [Control portal access](/admin/portal-auth#widget-sign-in) for the admin-side toggle and the full grant rules.
+## Rotate the secret
+
+If the signing secret is exposed, regenerate it from **Admin → Settings → Widget → Install**, then deploy the new value in your product. The old secret stops working immediately. The launcher is unaffected.
+
+<Warning>
+Regenerate and deploy together. Identify calls fail until your server signs tokens with the new secret.
+</Warning>
 
 ---
 
 ## Next steps
 
-- [Custom attributes](/widget/custom-attributes) — configure which attributes appear in the dashboard
-- [Widget configuration](/widget/configuration) — full list of widget init options
-- [Install the widget](/widget/installation) — embed snippet and SDK command reference
-- [Control portal access](/admin/portal-auth) — gate the standalone portal in addition to the widget
+- [Install the widget](/widget/installation) — Embed snippet and SDK methods
+- [Group users with segments](/admin/segments) — Send segment slugs in the JWT
+- [Control portal access](/admin/portal-auth) — Gate the standalone portal

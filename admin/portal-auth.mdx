@@ -98,15 +98,15 @@ If you change a segment's rules, membership re-evaluates on the next hourly run 
 
 ### Widget sign-in
 
-When your product embeds the [Quackback widget](/widget) and uses [verified identity](/widget/identify-users#verified-identity-with-jwt), you can let those visitors carry their widget identity over to the portal — no password, no second sign-up.
+When your product embeds the [Quackback widget](/widget) and [identifies signed-in users with `ssoToken`](/widget/identify-users), you can let those visitors carry their widget identity over to the portal — no password, no second sign-up.
 
-1. Verify your widget runs with **Verified identity only** on (Admin → Settings → Widget).
-2. On the Portal access tab, toggle **Widget sign-in** on.
+1. Identify widget users with a backend-signed `ssoToken` — see [Identify users](/widget/identify-users)
+2. On the Portal access tab, toggle **Widget sign-in** on
 
 Visitors who open your portal from inside a verified widget session are signed into the portal automatically. Behind the scenes the widget mints a one-time token (OTT) and the portal exchanges it for a session.
 
 <Warning>
-Widget sign-in requires HMAC-verified widget identity. If you turn off **Verified identity only** in the Widget settings, the widget falls back to email-capture mode and Quackback refuses to grant portal access through this channel — email-capture trust isn't strong enough to imply portal access.
+Widget sign-in requires a verified widget session (HMAC-signed `ssoToken`). Anonymous visitors and inline email capture are not strong enough to grant portal access.
 </Warning>
 
 ## Sign-in providers

@@ -47,11 +47,8 @@ Quackback.configure(QuackbackConfig(
 ))
 
 // 2. Identify the current user
-Quackback.identify(userId: "user_123", email: "user@example.com", name: "Jane Smith")
-// or, with a server-signed token (recommended for production):
 Quackback.identify(ssoToken: fetchedSsoToken)
-// or, for unauthenticated visitors:
-Quackback.identify()
+// omit identify for anonymous visitors
 
 // 3. Show the floating launcher button
 Quackback.showLauncher()
@@ -64,9 +61,9 @@ If you already know the user at app startup, you can bundle identity directly in
 ```swift
 Quackback.configure(
     QuackbackConfig(appId: "your-app-id", baseURL: URL(string: "https://feedback.yourapp.com")!),
-    identity: .user(id: "user_123", email: "user@example.com", name: "Jane Smith")
+    identity: .ssoToken(fetchedSsoToken)
 )
-// Also accepts .ssoToken("..."). Omit the `identity` parameter for anonymous sessions.
+// Omit the `identity` parameter for anonymous sessions.
 ```
 
 ### Configuration options
@@ -150,24 +147,16 @@ class MyApp : Application() {
     }
 }
 
-// After user signs in
-Quackback.identify(
-    userId = "user_123",
-    email = "user@example.com",
-    name = "Jane Smith"
-)
-// or, with a server-signed token (recommended for production):
+// After user signs in — omit identify for anonymous visitors
 Quackback.identify(ssoToken = fetchedSsoToken)
-// or, for unauthenticated visitors:
-Quackback.identify()
 
 // If you already know the user at app startup, bundle identity into configure:
 Quackback.configure(
     context = this,
     config = QuackbackConfig(appId = "your-app-id", baseURL = "https://feedback.yourapp.com"),
-    identity = Identity.User(id = "user_123", email = "user@example.com", name = "Jane Smith")
+    identity = Identity.SsoToken(fetchedSsoToken)
 )
-// Also accepts Identity.SsoToken("..."). Omit the `identity` parameter for anonymous sessions.
+// Omit the `identity` parameter for anonymous sessions.
 
 // Show the launcher button in your Activity
 Quackback.showLauncher()

@@ -12,7 +12,7 @@ Collect feedback without pulling users out of your product. The widget adds a fl
 
 The widget is a lightweight JavaScript SDK (~10 KB) that loads an iframe from your Quackback instance. It handles all rendering, authentication, and communication with your feedback portal.
 
-The widget appears as soon as `Quackback("init")` runs — visible to every visitor, anonymous by default. Call `identify` once you know who the user is so their votes and posts are attributed to their account. Pass their details, or a server-signed `ssoToken` in production.
+The widget appears as soon as `Quackback("init")` runs — visible to every visitor, anonymous by default. Identify is optional. Signed-in attribution uses a backend-signed `ssoToken` only. Unsigned `{ id, email }` is rejected.
 
 **On desktop**, the widget opens as a 400 x 600px popover panel anchored to the bottom corner of the screen. The launcher button stays visible and toggles between open and close states.
 
@@ -40,7 +40,7 @@ From the widget panel, users can:
 - **Read your changelog** without leaving your app
 - **Browse your roadmap** to see what's planned
 
-When you [identify users](/widget/identify-users), votes and submissions are attributed to them automatically. You can also show the widget to unauthenticated visitors with [anonymous sessions](/widget/identify-users#anonymous-sessions), and control what anonymous users can do via [anonymous interaction settings](/admin/moderation#allow-anonymous-interaction).
+When you [identify users](/widget/identify-users), votes and submissions are attributed to them automatically. You can also show the widget to unauthenticated visitors with [anonymous visitors](/widget/identify-users#anonymous-visitors), and control what anonymous users can do via [anonymous interaction settings](/admin/moderation#allow-anonymous-interaction).
 
 ## Integrate with your app
 
@@ -76,7 +76,7 @@ Configure the widget from **Admin → Settings → Widget**:
 | **Default board** | Restrict the widget to a single board, or show all boards |
 | **Tabs** | Control which tabs appear: Feedback, Changelog, Help |
 | **Image uploads** | Allow users to attach images in feedback submissions |
-| **Verified identity** | Require server-signed JWT tokens for user identification |
+| **Identification** | Verified-only. The browser sends `ssoToken`; unsigned client fields are rejected. |
 
 ## Next steps
 
