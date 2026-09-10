@@ -1,16 +1,23 @@
 ---
 title: "Install the widget"
-description: "Add the feedback widget to your site with a script tag and configure it with SDK commands."
+description: "Add the widget with a script tag or npm, then control it with the SDK."
 icon: "code-bracket"
 ---
 
 # Install the widget
 
-Add the feedback widget to your site in one step: paste the embed snippet. The widget appears immediately in anonymous mode. Call `identify` later to attribute activity to a specific user.
+Paste a snippet or install the npm package. The launcher appears in anonymous mode as soon as `init` runs — no signing secret needed. Call [identify](/widget/identify-users) later if you want signed-in activity to attach to a real person.
+
+Tabs, colors, and launcher copy come from **Admin → Settings → Widget**.
 
 ## Embed the snippet
 
-Paste this snippet before the closing `</body>` tag on any page where you want the widget:
+1. Go to **Admin → Settings → Widget → Install**
+2. Copy the launcher snippet (identify is optional)
+3. Paste it before the closing `</body>` tag
+4. Turn on **Show on your website** in Widget settings
+
+The snippet looks like this (your instance URL is pre-filled in admin):
 
 ```html
 <script>
@@ -26,190 +33,208 @@ Paste this snippet before the closing `</body>` tag on any page where you want t
 
 Replace `https://feedback.example.com` with your Quackback instance URL.
 
+The snippet creates a command queue, then loads the SDK. Calls you make before the script loads replay automatically. Script-tag installs can omit `instanceUrl` — the SDK reads it from `sdk.js`.
+
 <Note>
-The snippet is also available in **Admin → Settings → Widget** with your instance URL pre-filled.
+Turn on **Show on your website** in **Admin → Settings → Widget** or the launcher stays hidden even after the snippet loads.
 </Note>
 
-The snippet creates a lightweight command queue, then loads the SDK asynchronously. Commands called before the SDK loads are replayed automatically.
+## Install with npm
 
-The widget appears for every visitor the moment the snippet loads. To attribute feedback to logged-in users, see [Identify users](/widget/identify-users).
+```bash
+npm install @quackback/widget
+```
+
+```js
+import { Quackback } from "@quackback/widget";
+
+Quackback.init({ instanceUrl: "https://feedback.example.com" });
+```
+
+`instanceUrl` is required for the npm package. Vue, Svelte, Angular, and Solid can call `Quackback` the same way.
+
+### React
+
+```tsx
+import { useEffect, useState } from "react";
+import { useQuackbackInit, useQuackback, useQuackbackEvent } from "@quackback/widget/react";
+
+function App() {
+  const [ssoToken, setSsoToken] = useState<string | undefined>();
+
+  useEffect(() => {
+    fetch("/widget-token")
+      .then((r) => r.json())
+      .then(({ token }) => setSsoToken(token))
+      .catch(() => {});
+  }, []);
+
+  useQuackbackInit({
+    instanceUrl: "https://feedback.example.com",
+    identity: ssoToken ? { ssoToken } : undefined,
+  });
+
+  useQuackbackEvent("post:created", (post) => {
+    analytics.track("feedback_submitted", { postId: post.id });
+  });
+
+  return <Layout />;
+}
+
+function FeedbackButton() {
+  const qb = useQuackback();
+  return (
+    <button onClick={() => qb.open({ view: "new-post" })}>Feedback</button>
+  );
+}
+```
+
+No provider is required. The hooks wrap the singleton SDK.
+
+<Tip>
+Fetch `ssoToken` from your backend. Do not pass raw `id` or `email` from the browser. See [Identify users](/widget/identify-users).
+</Tip>
 
 ## Configure with init options
 
-Pass options to `Quackback("init")` to customize the widget:
+Script tag:
 
-```html
-<script>
-  Quackback("init", {
-    placement: "left",
-    defaultBoard: "feature-requests",
-    buttonColor: "#6366f1"
-  });
-</script>
+```js
+Quackback("init", {
+  placement: "left",
+  defaultBoard: "feature-requests",
+  locale: "fr",
+});
+```
+
+npm:
+
+```js
+Quackback.init({
+  instanceUrl: "https://feedback.example.com",
+  placement: "left",
+  defaultBoard: "feature-requests",
+  locale: "fr",
+});
 ```
 
 | Option | Type | Default | Description |
 |--------|------|---------|-------------|
-| `placement` | `"left"` \| `"right"` | `"right"` | Which corner the launcher button and panel appear in |
-| `defaultBoard` | string | - | Board slug to filter posts. Omit to show all boards |
-| `buttonColor` | string (hex) | Theme primary | Override the launcher button background color |
-| `launcher` | boolean | `true` | Set to `false` to hide the default floating button |
-| `tabs` | object | All enabled | Control visible tabs: `{ feedback: true, changelog: true, help: false }` |
-| `locale` | string | Auto-detected | Force a locale: `"en"`, `"fr"`, `"de"`, `"es"`, or `"ar"`. Omit to auto-detect from the browser |
-| `identity` | object | - | Bundle identity at init time. Accepts the same payloads as [`identify`](#identify) — `{ id, email, name }` or `{ ssoToken }`. Omit for anonymous. Equivalent to calling `init` and then `identify` back-to-back |
+| `instanceUrl` | string | — | Your Quackback URL. Required for npm. Baked into script-tag `sdk.js`. |
+| `placement` | `"left"` \| `"right"` | `"right"` | Corner for the launcher and panel until admin config loads |
+| `defaultBoard` | string | — | Board slug to filter the widget. Omit to show all boards |
+| `launcher` | boolean | `true` | Set `false` to hide the default floating button |
+| `locale` | string | Auto-detected | `"en"`, `"fr"`, `"de"`, `"es"`, `"ar"`, `"ru"`, `"pt-BR"`, `"zh-CN"`, or `"zh-TW"` |
+| `identity` | object | — | Bundle identify into init. Production shape is `{ ssoToken }`. Omit for anonymous |
 
-When `launcher` is `false`, no floating button appears. Use `Quackback("open")` from your own UI to open the widget programmatically:
+<Note>
+**Admin → Settings → Widget → Layout** owns launcher position, label, and greeting. The admin position overrides `placement` after the widget loads its config.
+</Note>
+
+When `launcher` is `false`, open the panel from your own UI:
 
 ```js
-Quackback("init", { launcher: false });
+Quackback.init({
+  instanceUrl: "https://feedback.example.com",
+  launcher: false,
+});
 
-// Your own button opens the widget
 document.getElementById("feedback-btn").addEventListener("click", () => {
-  Quackback("open");
+  Quackback.open();
 });
 ```
 
-## SDK commands
+Script-tag calls use the same names: `Quackback("open")`, `Quackback("identify", { ssoToken })`.
 
-The `Quackback()` function accepts the following commands:
+## SDK methods
 
-### init
-
-Initialize the widget. Call this once on page load. The widget appears immediately in anonymous mode. If you already know who the user is, pass an `identity` key to skip a separate `identify` call:
-
-```js
-Quackback("init");
-Quackback("init", { placement: "left", defaultBoard: "bugs" });
-
-// Init + identify in one call
-Quackback("init", {
-  identity: { id: "user_123", email: "jane@example.com", name: "Jane" },
-});
-```
+| Method | Description |
+|--------|-------------|
+| `Quackback.init(options)` | Create the launcher and iframe. `instanceUrl` required for npm. |
+| `Quackback.identify(identity?)` | Attribute activity to a user. Pass `{ ssoToken }` for a signed-in user. Omit for anonymous. |
+| `Quackback.logout()` | Clear identity. The widget stays visible in anonymous mode. |
+| `Quackback.open(options?)` | Open the panel. Optional deep-link payload (see below). |
+| `Quackback.close()` | Close the panel. |
+| `Quackback.showLauncher()` / `hideLauncher()` | Show or hide the floating button. |
+| `Quackback.metadata(patch)` | Attach session context to submitted feedback. Pass `null` to remove a key. |
+| `Quackback.on(event, handler)` | Subscribe to an event. Returns an unsubscribe function. |
+| `Quackback.off(event, handler?)` | Remove one handler, or all listeners for that event. |
+| `Quackback.destroy()` | Tear down widget state and DOM. |
+| `Quackback.isOpen()` | Whether the panel is visible. |
+| `Quackback.getUser()` | The current identified user, or `null`. |
+| `Quackback.isIdentified()` | `true` when a signed-in user is identified. |
 
 ### identify
 
-Associate the current widget session with a user. Call once you know who the user is — you don't need to call it for anonymous visitors. See [Identify users](/widget/identify-users) for the full guide.
-
-For signed-in users, pass their details:
+See [Identify users](/widget/identify-users) for JWT claims and server examples.
 
 ```js
-Quackback("identify", {
-  id: "user_123",
-  email: "jane@example.com",
-  name: "Jane"
-});
+const { token } = await fetch("/widget-token").then((r) => r.json());
+Quackback.identify({ ssoToken: token });
 ```
 
-Or, with a server-signed token (recommended for production — see [Identify users](/widget/identify-users)):
-
-```js
-const { ssoToken } = await fetch("/api/widget-token", { method: "POST" }).then(r => r.json());
-Quackback("identify", { ssoToken });
-```
-
-Calling `identify` again with different details switches the active user.
-
-### logout
-
-Clear the current identity. The widget stays visible in anonymous mode. Call from your logout handler.
-
-```js
-Quackback("logout");
-```
+Calling `identify` again with a new token switches the active user.
 
 ### open
 
-Programmatically open the widget panel. You can pass options to open to a specific view:
-
 ```js
-// Open to the home view (default)
-Quackback("open");
-
-// Open directly to the new post form
-Quackback("open", { view: "new-post" });
-
-// Open with a pre-filled title and board
-Quackback("open", { view: "new-post", title: "Bug: page crashes on save", board: "bugs" });
+Quackback.open();
+Quackback.open({ view: "new-post", title: "Bug: page crashes on save", board: "bugs" });
+Quackback.open({ view: "changelog" });
+Quackback.open({ view: "help", query: "pricing" });
+Quackback.open({ view: "chat" }); // Messages tab; `messages` also works
+Quackback.open({ view: "tickets" });
+Quackback.open({ postId: "post_01h..." });
+Quackback.open({ articleId: "art_01h..." });
 ```
 
-| Option | Type | Default | Description |
-|--------|------|---------|-------------|
-| `view` | `"home"` \| `"new-post"` \| `"changelog"` | `"home"` | Which view to show |
-| `title` | string | - | Pre-fill the post title (only with `view: "new-post"`) |
-| `board` | string | - | Board slug to pre-select (only with `view: "new-post"`) |
+| Option | Type | Description |
+|--------|------|-------------|
+| `view` | `"home"` \| `"new-post"` \| `"changelog"` \| `"help"` \| `"chat"` \| `"messages"` \| `"tickets"` | Which surface to open. Default is home. |
+| `title` | string | Pre-fill the post title with `view: "new-post"` |
+| `board` | string | Board slug to pre-select with `view: "new-post"` |
+| `query` | string | Help search query with `view: "help"` |
+| `body` | string | Pre-fill the post body with `view: "new-post"` |
+| `postId` | string | Deep-link to a post |
+| `articleId` | string | Deep-link to a help article |
+| `entryId` | string | Deep-link to a changelog entry |
 
-### close
+`view`, `title`, and `board` are handled by the iframe today. `body`, `query`, `postId`, `articleId`, and `entryId` pass through and render as iframe support lands.
 
-Programmatically close the widget panel.
-
-```js
-Quackback("close");
-```
-
-### destroy
-
-Remove all widget DOM elements and reset state. Use this for cleanup in single-page apps when navigating away from pages that use the widget.
+### logout, close, destroy
 
 ```js
-Quackback("destroy");
+Quackback.logout();
+Quackback.close();
+Quackback.destroy();
 ```
 
-### on
+Call `logout` from your logout handler. Call `destroy` in SPAs when you unmount the host page.
 
-Subscribe to widget events. Returns an unsubscribe function. See [Listen to widget events](/widget/events) for all available events.
+## Single-page apps
 
-```js
-const unsubscribe = Quackback("on", "post:created", (payload) => {
-  console.log("New post:", payload.title);
-});
-
-// Later:
-unsubscribe();
-```
-
-### off
-
-Remove event listeners. Pass a specific handler to remove it, or omit the handler to remove all listeners for that event.
-
-```js
-Quackback("off", "post:created", myHandler); // Remove specific handler
-Quackback("off", "post:created");            // Remove all handlers
-```
-
-### metadata
-
-Attach key-value context to the widget session. Metadata is stored on posts created through the widget. See [Attach session metadata](/widget/metadata) for the full guide.
-
-```js
-Quackback("metadata", { page: "/settings", app_version: "2.4.1" });
-```
-
-## Single-page app usage
-
-In React, Vue, or other SPA frameworks, initialize the widget in a layout component and clean up on unmount:
+Initialize once in a layout. Identify after auth resolves. Clean up on unmount.
 
 ```tsx
 import { useEffect } from "react";
+import { Quackback } from "@quackback/widget";
 import { useAuth } from "@/hooks/use-auth";
 
 export function FeedbackWidget() {
   const { user } = useAuth();
 
   useEffect(() => {
-    Quackback("init", { placement: "right" });
-    return () => Quackback("destroy");
+    Quackback.init({ instanceUrl: "https://feedback.example.com" });
+    return () => Quackback.destroy();
   }, []);
 
   useEffect(() => {
-    if (user) {
-      fetch("/api/widget-token", { method: "POST" })
-        .then((res) => res.json())
-        .then(({ ssoToken }) => {
-          Quackback("identify", { ssoToken });
-        });
-    }
-    // No else — the widget is already anonymous after init.
+    if (!user) return;
+    fetch("/widget-token", { method: "POST" })
+      .then((res) => res.json())
+      .then(({ token }) => {
+        Quackback.identify({ ssoToken: token });
+      });
   }, [user]);
 
   return null;
@@ -217,33 +242,11 @@ export function FeedbackWidget() {
 ```
 
 <Tip>
-Call `identify()` separately from `init()`, after your auth state resolves. The SDK queues commands and replays them once the iframe is ready.
+The SDK queues `identify` until the iframe is ready. You do not need to wait for a `ready` event.
 </Tip>
-
-## Launcher button
-
-The widget renders a circular floating button (48px) with a chat bubble icon in the bottom corner of the viewport. It uses your theme's primary color by default, or the `buttonColor` you specify.
-
-The button:
-- Appears immediately after `Quackback("init")` runs
-- Lifts slightly on hover with a shadow transition
-- Toggles between a chat icon (closed) and a close icon (open) with a smooth rotation
-- Stays visible while the panel is open on desktop so users can toggle it closed
-- Hides on mobile when the panel is open (the panel has its own close button)
-- Adapts to light/dark mode based on your theme settings
-
-## Mobile behavior
-
-On viewports under 640px, the widget switches from a desktop popover to a full-screen overlay:
-
-- The panel slides up from the bottom with a backdrop overlay
-- A close button appears inside the panel header
-- The launcher button hides while the panel is open
-- Closing the panel slides it back down and restores the launcher button
-
-This happens automatically based on viewport width — no configuration needed. If the user resizes the browser across the 640px breakpoint while the panel is open, the layout transitions smoothly.
 
 ## Next steps
 
-- [Identify users](/widget/identify-users) - Attribute votes and posts to logged-in users
-- [Widget overview](/widget) - Configuration and behavior reference
+- [Identify users](/widget/identify-users) — Sign `ssoToken` on your server
+- [Listen to widget events](/widget/events) — React to posts, votes, and comments
+- [Widget overview](/widget) — Surfaces, admin editor, and locales
