@@ -15,7 +15,7 @@ Tabs, colors, and launcher copy come from **Admin → Settings → Widget**.
 1. Go to **Admin → Settings → Widget → Install**
 2. Copy the launcher snippet (identify is optional)
 3. Paste it before the closing `</body>` tag
-4. Turn on **Show on your website** in Widget settings
+4. Turn on **Show on your website** on the Install page (also on Widget settings)
 
 The snippet looks like this (your instance URL is pre-filled in admin):
 
@@ -36,7 +36,7 @@ Replace `https://feedback.example.com` with your Quackback instance URL.
 The snippet creates a command queue, then loads the SDK. Calls you make before the script loads replay automatically. Script-tag installs can omit `instanceUrl` — the SDK reads it from `sdk.js`.
 
 <Note>
-Turn on **Show on your website** in **Admin → Settings → Widget** or the launcher stays hidden even after the snippet loads.
+Turn on **Show on your website** in **Admin → Settings → Widget → Install** (or Widget settings) or the launcher stays hidden even after the snippet loads.
 </Note>
 
 ## Install with npm
@@ -140,7 +140,7 @@ Script-tag calls use the same names: `Quackback("open")`, `Quackback("identify",
 | Method | Description |
 |--------|-------------|
 | `Quackback.init(options)` | Create the launcher and iframe. `instanceUrl` required for npm. |
-| `Quackback.identify(identity?)` | Attribute activity to a user. Pass `{ ssoToken }` for a signed-in user. Omit for anonymous. |
+| `Quackback.identify(identity)` | Attribute activity to a signed-in user. Pass `{ ssoToken }`. Do not call identify for anonymous visitors. |
 | `Quackback.logout()` | Clear identity. The widget stays visible in anonymous mode. |
 | `Quackback.open(options?)` | Open the panel. Optional deep-link payload (see below). |
 | `Quackback.close()` | Close the panel. |
@@ -158,8 +158,8 @@ Script-tag calls use the same names: `Quackback("open")`, `Quackback("identify",
 See [Identify users](/widget/identify-users) for JWT claims and server examples.
 
 ```js
-const { token } = await fetch("/widget-token").then((r) => r.json());
-Quackback.identify({ ssoToken: token });
+const { ssoToken } = await fetch("/widget-token").then((r) => r.json());
+Quackback.identify({ ssoToken });
 ```
 
 Calling `identify` again with a new token switches the active user.
@@ -219,10 +219,10 @@ export function FeedbackWidget() {
 
   useEffect(() => {
     if (!user) return;
-    fetch("/widget-token", { method: "POST" })
+    fetch("/widget-token")
       .then((res) => res.json())
-      .then(({ token }) => {
-        Quackback.identify({ ssoToken: token });
+      .then(({ ssoToken }) => {
+        Quackback.identify({ ssoToken });
       });
   }, [user]);
 

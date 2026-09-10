@@ -11,9 +11,9 @@ The widget loads for every visitor after `init`. Identify a signed-in user so vo
 Identification is **verified-only**. Your server signs a short-lived JWT and the browser sends that token as `ssoToken`. Quackback rejects unsigned `{ id, email, name }` from the client.
 
 ```js
-const { token } = await fetch("/widget-token").then((r) => r.json());
-Quackback.identify({ ssoToken: token });
-// Script tag: Quackback("identify", { ssoToken: token })
+const { ssoToken } = await fetch("/widget-token").then((r) => r.json());
+Quackback.identify({ ssoToken });
+// Script tag: Quackback("identify", { ssoToken })
 ```
 
 <Note>
@@ -88,7 +88,7 @@ export async function GET() {
     .setExpirationTime("5m")
     .sign(secret);
 
-  return Response.json({ token });
+  return Response.json({ ssoToken: token });
 }
 ```
 </Tab>
@@ -108,7 +108,7 @@ router.get("/widget-token", requireAuth, (req, res) => {
     { algorithm: "HS256", expiresIn: "5m" }
   );
 
-  res.json({ token });
+  res.json({ ssoToken: token });
 });
 ```
 </Tab>
@@ -134,7 +134,7 @@ def widget_token(request):
         settings.WIDGET_SIGNING_SECRET,
         algorithm="HS256",
     )
-    return JsonResponse({"token": token})
+    return JsonResponse({"ssoToken": token})
 ```
 </Tab>
 <Tab title="Rails">
@@ -153,13 +153,16 @@ class WidgetTokensController < ApplicationController
       exp: 5.minutes.from_now.to_i,
     }
     token = JWT.encode(payload, ENV["WIDGET_SIGNING_SECRET"], "HS256")
-    render json: { token: }
+    render json: { ssoToken: token }
   end
 end
 ```
 </Tab>
 <Tab title="Laravel">
 ```php
+// config/services.php
+// 'widget' => ['signing_secret' => env('WIDGET_SIGNING_SECRET')],
+
 // app/Http/Controllers/WidgetTokenController.php
 use Firebase\JWT\JWT;
 
@@ -176,9 +179,9 @@ class WidgetTokenController extends Controller
             'exp'   => time() + 300, // 5 minutes
         ];
 
-        $token = JWT::encode($payload, env('WIDGET_SIGNING_SECRET'), 'HS256');
+        $token = JWT::encode($payload, config('services.widget.signing_secret'), 'HS256');
 
-        return response()->json(['token' => $token]);
+        return response()->json(['ssoToken' => $token]);
     }
 }
 ```
@@ -188,8 +191,8 @@ class WidgetTokenController extends Controller
 ### Pass the token to the widget
 
 ```js
-const { token } = await fetch("/widget-token").then((r) => r.json());
-Quackback.identify({ ssoToken: token });
+const { ssoToken } = await fetch("/widget-token").then((r) => r.json());
+Quackback.identify({ ssoToken });
 ```
 
 <Tip>
