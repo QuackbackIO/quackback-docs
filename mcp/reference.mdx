@@ -1,13 +1,13 @@
 ---
 title: "MCP Reference"
-description: "Complete reference for Quackback's MCP tools and resources. Parameters, return values, and examples for all 27 tools and 5 resources."
+description: "Complete reference for Quackback's MCP tools and resources. Parameters, return values, and examples for all 38 tools and 6 resources."
 icon: "book-open"
 order: 2
 ---
 
 # MCP Reference
 
-Quackback's MCP server exposes 27 tools and 5 resources. Tools perform actions (search, create, update, delete). Resources provide lookup data (boards, statuses, tags) that tools reference by ID.
+Quackback's MCP server exposes 38 tools and 6 resources. Tools perform actions (search, create, update, delete). Resources provide lookup data (boards, statuses, tags) that tools reference by ID.
 
 ## Tools
 
@@ -57,8 +57,8 @@ Returns all fields including comments (for posts), linked posts (for changelogs)
 ```
 get_details({ id: "post_01abc..." })
 get_details({ id: "changelog_01xyz..." })
-get_details({ id: "helpcenter_article_01abc..." })
-get_details({ id: "helpcenter_category_01abc..." })
+get_details({ id: "article_01abc..." })
+get_details({ id: "kb_category_01abc..." })
 ```
 
 ---
@@ -313,29 +313,6 @@ unmerge_post({ postId: "post_01abc..." })
 
 ---
 
-### manage_roadmap_post
-
-Add or remove a post from a roadmap.
-
-| Parameter | Type | Description |
-|-----------|------|-------------|
-| `action` | `"add"` \| `"remove"` | Whether to add or remove the post |
-| `roadmapId` | string | Roadmap TypeID |
-| `postId` | string | Post TypeID |
-
-**Scope:** `write:feedback` + team role (admin or member)
-
-<Tip>
-Use the `quackback://roadmaps` resource to look up roadmap IDs.
-</Tip>
-
-```
-manage_roadmap_post({ action: "add", roadmapId: "roadmap_01abc...", postId: "post_01xyz..." })
-manage_roadmap_post({ action: "remove", roadmapId: "roadmap_01abc...", postId: "post_01xyz..." })
-```
-
----
-
 ### create_changelog
 
 Create a changelog entry. Saves as a draft by default. Set `publish: true` to publish immediately.
@@ -394,91 +371,52 @@ Soft-delete a changelog entry.
 delete_changelog({ changelogId: "changelog_01abc..." })
 ```
 
-### list_suggestions
-
-List AI-generated feedback suggestions. Suggestions are created when feedback is ingested from external sources (Slack, email, API) and processed by the AI pipeline.
-
-Three suggestion types:
-- `create_post` - AI extracted new feedback and suggests creating a post
-- `vote_on_post` - AI matched feedback to an existing post and suggests adding a vote
-- `duplicate_post` - AI detected two existing posts that may be duplicates
-
-| Parameter | Type | Default | Description |
-|-----------|------|---------|-------------|
-| `status` | `"pending"` \| `"dismissed"` | `"pending"` | Filter by suggestion status |
-| `suggestionType` | `"create_post"` \| `"vote_on_post"` \| `"duplicate_post"` | - | Filter by type |
-| `sort` | `"newest"` \| `"relevance"` | `"newest"` | Sort order |
-| `limit` | number (1-100) | `20` | Max results per page |
-| `cursor` | string | - | Pagination cursor from a previous response |
-
-**Scope:** `read:feedback` + team role (admin or member)
-
-Each suggestion includes the original raw feedback item, matched post (if applicable), AI signal data (summary, evidence, confidence), and source metadata.
-
-```
-list_suggestions()
-list_suggestions({ suggestionType: "create_post" })
-list_suggestions({ status: "dismissed", sort: "relevance" })
-```
-
----
-
 ### accept_suggestion
 
-Accept an AI-generated suggestion. The result depends on the suggestion type:
-
-- **create_post**: Creates a new post from the extracted feedback. Optional edits override the suggested title, body, or board.
-- **vote_on_post**: Adds a proxy vote to the matched existing post.
-- **duplicate_post**: Merges the source post into the target post. Use `swapDirection` to reverse which post is kept.
+Accept a post-to-post merge suggestion, merging the source post into the target. Use `swapDirection` to reverse which post is kept.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `id` | string | Suggestion TypeID (`feedback_suggestion_xxx` or `merge_sug_xxx`) |
-| `edits` | object | Optional. Override `title`, `body`, `boardId`, or `statusId` before accepting (create_post only) |
-| `swapDirection` | boolean | Optional. Reverse merge direction (duplicate_post only) |
+| `id` | string | Merge suggestion TypeID (`post_merge_sug_xxx`) |
+| `swapDirection` | boolean | Optional. Reverse which post is kept |
 
 **Scope:** `write:feedback` + team role (admin or member)
 
 ```
-accept_suggestion({ id: "feedback_suggestion_01abc..." })
-accept_suggestion({
-  id: "feedback_suggestion_01abc...",
-  edits: { title: "Better title" }
-})
-accept_suggestion({ id: "merge_sug_01abc...", swapDirection: true })
+accept_suggestion({ id: "post_merge_sug_01abc..." })
+accept_suggestion({ id: "post_merge_sug_01abc...", swapDirection: true })
 ```
 
 ---
 
 ### dismiss_suggestion
 
-Dismiss an AI-generated suggestion. The suggestion can be restored later via `restore_suggestion`.
+Dismiss a merge suggestion. Restore it later with `restore_suggestion`.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `id` | string | Suggestion TypeID (`feedback_suggestion_xxx` or `merge_sug_xxx`) |
+| `id` | string | Merge suggestion TypeID (`post_merge_sug_xxx`) |
 
 **Scope:** `write:feedback` + team role (admin or member)
 
 ```
-dismiss_suggestion({ id: "feedback_suggestion_01abc..." })
-dismiss_suggestion({ id: "merge_sug_01abc..." })
+dismiss_suggestion({ id: "post_merge_sug_01abc..." })
 ```
 
 ---
 
 ### restore_suggestion
 
-Restore a dismissed suggestion back to pending status.
+Restore a dismissed merge suggestion back to pending.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
-| `id` | string | Suggestion TypeID (`feedback_suggestion_xxx` or `merge_sug_xxx`) |
+| `id` | string | Merge suggestion TypeID (`post_merge_sug_xxx`) |
 
 **Scope:** `write:feedback` + team role (admin or member)
 
 ```
-restore_suggestion({ id: "feedback_suggestion_01abc..." })
+restore_suggestion({ id: "post_merge_sug_01abc..." })
 ```
 
 ---
@@ -585,7 +523,7 @@ List support-inbox conversations, newest activity first. Returns a compact, pagi
 
 | Parameter | Type | Default | Description |
 |-----------|------|---------|-------------|
-| `status` | `"open"` \| `"pending"` \| `"closed"` | - | Filter by conversation status |
+| `status` | `"open"` \| `"snoozed"` \| `"closed"` | - | Filter by conversation status |
 | `priority` | `"none"` \| `"low"` \| `"medium"` \| `"high"` \| `"urgent"` | - | Filter by priority |
 | `assignedAgentPrincipalId` | string | - | Filter to a specific assigned agent (principal TypeID) |
 | `limit` | number (1-100) | `20` | Max results per page |
@@ -640,12 +578,12 @@ reply_to_conversation({ conversationId: "conversation_01abc...", content: "Thank
 
 ### set_conversation_status
 
-Change a conversation's status. Closing stamps the resolution time; a later visitor reply reopens it.
+Change a conversation's status. Snoozing defers it until the next visitor reply; closing stamps the resolution time; a later reply reopens it.
 
 | Parameter | Type | Description |
 |-----------|------|-------------|
 | `conversationId` | string | Conversation TypeID |
-| `status` | `"open"` \| `"pending"` \| `"closed"` | New status |
+| `status` | `"open"` \| `"snoozed"` \| `"closed"` | New status |
 
 **Scope:** `write:chat` + team role (admin or member)
 
@@ -655,19 +593,165 @@ set_conversation_status({ conversationId: "conversation_01abc...", status: "clos
 
 ---
 
+### suggest_post
+
+Suggest to the support team (not the visitor) that a resolved conversation be tracked as a feedback post. Appears as an internal note; a teammate confirms with one click.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `conversationId` | string | Conversation TypeID (must be resolved) |
+| `boardId` | string | Suggested board TypeID |
+| `title` | string | Suggested post title |
+| `content` | string | Suggested post body |
+
+**Scope:** `write:chat` + team role (admin or member)
+
+```
+suggest_post({ conversationId: "conversation_01abc...", boardId: "board_01abc...", title: "Add dark mode", content: "Customer asked for a night theme." })
+```
+
+---
+
+### share_post
+
+Embed an existing feedback post as a card in the conversation so the visitor can view and upvote it.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `conversationId` | string | Conversation TypeID |
+| `postId` | string | Post TypeID |
+
+**Scope:** `write:chat` + team role (admin or member)
+
+```
+share_post({ conversationId: "conversation_01abc...", postId: "post_01xyz..." })
+```
+
+---
+
+## Ticket Tools
+
+Tickets share the conversation scopes: reads need `read:chat`, writes need `write:chat`. All ticket tools require a team role.
+
+### list_tickets
+
+List support tickets. A service key sees every ticket; a human caller sees the tickets their role can view.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `type` | `"customer"` \| `"back_office"` \| `"tracker"` | Filter by ticket type |
+| `ticketTypeId` | string | Filter by registry ticket-type TypeID |
+| `statusCategory` | `"open"` \| `"pending"` \| `"closed"` | Filter by internal status category |
+| `stage` | `"received"` \| `"in_progress"` \| `"awaiting_requester"` \| `"resolved"` | Filter by customer-facing stage |
+| `requesterPrincipalId` | string | Filter to a requester |
+| `companyId` | string | Filter to a company |
+| `sort` | `"recent"` \| `"oldest"` \| `"created"` \| `"priority"` | Sort order (default `recent`) |
+| `limit` | number (1-100) | Max results (default 20) |
+
+**Scope:** `read:chat` + team role
+
+```
+list_tickets({ type: "customer", statusCategory: "open" })
+```
+
+---
+
+### get_ticket
+
+Get one ticket and its thread.
+
+**Scope:** `read:chat` + team role
+
+```
+get_ticket({ ticketId: "ticket_01abc..." })
+```
+
+---
+
+### create_ticket
+
+Open a support ticket. `type` is `customer` (a requester's request), `back_office` (an internal task), or `tracker` (an umbrella others link to).
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `type` | `"customer"` \| `"back_office"` \| `"tracker"` | Ticket object type (default `customer`) |
+| `ticketTypeId` | string | Registry ticket-type TypeID |
+| `title` | string | Short summary |
+| `description` | string | Opening message body (Markdown) |
+| `priority` | `"none"` \| `"low"` \| `"medium"` \| `"high"` \| `"urgent"` | Triage priority |
+| `requesterPrincipalId` | string | Requester principal TypeID |
+| `companyId` | string | Associated company TypeID |
+
+**Scope:** `write:chat` + team role
+
+```
+create_ticket({ type: "customer", title: "Refund not received", description: "Customer reports a missing refund." })
+```
+
+---
+
+### reply_to_ticket
+
+Post a reply on a ticket thread (visible to the requester).
+
+**Scope:** `write:chat` + team role
+
+```
+reply_to_ticket({ ticketId: "ticket_01abc...", content: "We've issued your refund." })
+```
+
+---
+
+### add_ticket_note
+
+Add an internal note. Never visible to the requester.
+
+**Scope:** `write:chat` + team role
+
+```
+add_ticket_note({ ticketId: "ticket_01abc...", content: "Confirmed with billing." })
+```
+
+---
+
+### link_ticket
+
+Link a customer ticket to a tracker so the tracker's stage changes cascade onto it.
+
+**Scope:** `write:chat` + team role
+
+```
+link_ticket({ trackerTicketId: "ticket_01tracker...", ticketId: "ticket_01customer..." })
+```
+
+---
+
+### unlink_ticket
+
+Remove a customer ticket from a tracker.
+
+**Scope:** `write:chat` + team role
+
+```
+unlink_ticket({ trackerTicketId: "ticket_01tracker...", ticketId: "ticket_01customer..." })
+```
+
+---
+
 ## Resources
 
-Resources provide lookup data for boards, statuses, tags, roadmaps, and team members. Use them to find IDs before calling tools like `triage_post` or `create_post`.
+Resources provide lookup data for boards, statuses, tags, roadmaps, team members, and help-center categories. Use them to find IDs before calling tools like `triage_post` or `create_post`.
 
-All resources require the `read:feedback` scope.
+Feedback resources require `read:feedback`. The help-center category list requires `read:article` and a team role.
 
-| URI | Returns | Fields |
-|-----|---------|--------|
-| `quackback://boards` | All boards | `id`, `name`, `slug` |
-| `quackback://statuses` | All statuses | `id`, `name`, `slug`, `color` |
-| `quackback://tags` | All tags | `id`, `name`, `color` |
-| `quackback://roadmaps` | All roadmaps | `id`, `name`, `slug` |
-| `quackback://members` | Team members | `id`, `name`, `role` |
+| URI | Scope | Returns | Fields |
+|-----|-------|---------|--------|
+| `quackback://boards` | `read:feedback` | All boards | `id`, `name`, `slug` |
+| `quackback://statuses` | `read:feedback` | All statuses | `id`, `name`, `slug`, `color` |
+| `quackback://tags` | `read:feedback` | All tags | `id`, `name`, `color` |
+| `quackback://roadmaps` | `read:feedback` | All roadmaps | `id`, `name`, `slug` |
+| `quackback://members` | `read:feedback` | Team members | `id`, `name`, `role` |
+| `quackback://help-center/categories` | `read:article` + team | Categories with article counts | `id`, `slug`, `name`, `description`, `icon`, `parentId`, `isPublic`, `position`, `articleCount` |
 
 <Tip>
 A typical workflow: read `quackback://statuses` to find the "planned" status ID, then call `triage_post` with that status ID.
