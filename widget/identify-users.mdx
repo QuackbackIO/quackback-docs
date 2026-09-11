@@ -10,6 +10,8 @@ The widget loads for every visitor after `init`. Identify a signed-in user so vo
 
 Identification is **verified-only**. Your server signs a short-lived JWT and the browser sends that token as `ssoToken`. Quackback rejects unsigned `{ id, email, name }` from the client.
 
+The signing secret lives in **your host app** server environment (any name). It is not a Quackback Cloud or Quackback-host env var. Do not set `QUACKBACK_WIDGET_SECRET` on the Quackback instance.
+
 ```js
 const { ssoToken } = await fetch("/widget-token").then((r) => r.json());
 Quackback.identify({ ssoToken });
@@ -26,14 +28,15 @@ Anonymous visitors keep using the widget after `init`. A session mints on their 
 
 Call `identify` after login, on page load if the session already exists, and whenever the signed-in user changes. Once per session — not on every navigation.
 
-1. Copy the **signing secret** from **Admin → Settings → Widget → Install**
-2. Store it in your product's server-side secret store (example: `WIDGET_SIGNING_SECRET`). This is not a Quackback Cloud or self-host setting — Cloud and self-host use the same admin copy path.
+1. Get the signing secret into the host app (private and server-side only):
+   - Copy **Copy prompt for your agent** on **Admin → Settings → Widget → Install**. The prompt carries a short-lived pairing code. Your coding agent redeems `POST /api/widget/install-context` and writes `signingSecret` to a server-only host env var (any name). The agent also wires identify when the host already has login.
+   - Or Reveal / Copy the secret on that page and store it in your product's server-side secret store (example: `WIDGET_SIGNING_SECRET`).
 3. Sign a JWT (HS256, ~5 minutes) with `sub` and `email`
 4. Send `{ ssoToken }` to the page the same way you already expose session data
 5. Call `Quackback.identify({ ssoToken })`
 
 <Warning>
-Never put the signing secret in client-side code, commits, or logs. Sign tokens on your server only.
+Never put the signing secret in client-side code, commits, or logs. Sign tokens on your server only. Any server-only env name works.
 </Warning>
 
 ---
@@ -153,7 +156,11 @@ class WidgetTokensController < ApplicationController
       exp: 5.minutes.from_now.to_i,
     }
     token = JWT.encode(payload, ENV["WIDGET_SIGNING_SECRET"], "HS256")
+<<<<<<< Updated upstream
     render json: { ssoToken: token }
+=======
+    render json: { token: }
+>>>>>>> Stashed changes
   end
 end
 ```
@@ -179,7 +186,11 @@ class WidgetTokenController extends Controller
             'exp'   => time() + 300, // 5 minutes
         ];
 
+<<<<<<< Updated upstream
         $token = JWT::encode($payload, config('services.widget.signing_secret'), 'HS256');
+=======
+        $token = JWT::encode($payload, config('services.quackback.widget_signing_secret'), 'HS256');
+>>>>>>> Stashed changes
 
         return response()->json(['ssoToken' => $token]);
     }

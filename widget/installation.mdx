@@ -6,16 +6,27 @@ icon: "code-bracket"
 
 # Install the widget
 
-Paste a snippet or install the npm package. The launcher appears in anonymous mode as soon as `init` runs — no signing secret needed. Call [identify](/widget/identify-users) later if you want signed-in activity to attach to a real person.
+The default path is **Copy prompt for your agent** on **Admin → Settings → Widget → Install**. Paste it into the coding agent in the **host app** repo. The launcher appears in anonymous mode as soon as `init` runs. If the host already has login, the agent also [identifies](/widget/identify-users) signed-in users.
+
+## Install with your coding agent
+
+The prompt includes a short-lived pairing code. The agent redeems `POST /api/widget/install-context` and writes the signing secret to a **server-only host** env var (any name). The secret never goes in the chat. Redeeming also turns on **Show on your website**.
+
+The agent wires identify only when the host already has a session or login. On a static or logged-out-only site it stops after `init` and leaves the secret in env.
+
+Humans who are not using an agent can open **Install without an agent** on that page for the snippet. The signing secret is not an install step — open it only for hand wiring or rotation. After the widget connects, the same page becomes a manage screen (status, visibility, add to another site, secret).
 
 Tabs, colors, and launcher copy come from **Admin → Settings → Widget**.
 
 ## Embed the snippet
 
+Hand install is secondary. Prefer the agent prompt above.
+
 1. Go to **Admin → Settings → Widget → Install**
-2. Copy the launcher snippet (identify is optional)
-3. Paste it before the closing `</body>` tag
-4. Turn on **Show on your website** on the Install page (also on Widget settings)
+2. Open **Install without an agent**, copy the snippet, and paste it before the closing `</body>` tag
+3. Turn on **Show on your website** if the agent did not already (also on Widget settings)
+
+The snippet includes commented identify steps. Init the launcher first. Identify signed-in users with a backend-signed `ssoToken` when the host has login.
 
 The snippet looks like this (your instance URL is pre-filled in admin):
 
@@ -28,6 +39,8 @@ The snippet looks like this (your instance URL is pre-filled in admin):
   d.head.appendChild(s)})(window,document);
 
   Quackback("init");
+  // Quackback("identify", { ssoToken });
+  // Quackback("logout");
 </script>
 ```
 
