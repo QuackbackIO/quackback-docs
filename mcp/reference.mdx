@@ -29,7 +29,7 @@ Search feedback posts or changelog entries. Returns paginated results with a cur
 | `limit` | number (1-100) | `20` | Max results per page |
 | `cursor` | string | - | Pagination cursor from a previous response |
 
-**Scope:** `read:feedback`
+**Scope:** `read:feedback` for posts and changelogs; `read:article` when `entity` is `"articles"`
 
 ```
 search({ query: "dark mode", sort: "votes", limit: 10 })
@@ -50,9 +50,9 @@ Get full details for any entity by TypeID. The entity type is auto-detected from
 |-----------|------|-------------|
 | `id` | string | TypeID of the entity (e.g., `post_01abc...`, `changelog_01xyz...`) |
 
-**Scope:** `read:feedback`
+**Scope:** `read:feedback` for posts and changelogs; `read:article` for `article_*` / `kb_article_*` / `kb_category_*` IDs
 
-Returns all fields including comments (for posts), linked posts (for changelogs), tags, official response, and timestamps. Also supports `helpcenter_article_*` and `helpcenter_category_*` IDs.
+Returns all fields including comments (for posts), linked posts (for changelogs), tags, official response, and timestamps.
 
 ```
 get_details({ id: "post_01abc..." })
@@ -519,7 +519,7 @@ Create a new help center article as a draft.
 | `content` | string | Article body in Markdown |
 | `description` | string | Short description for search results and SEO |
 
-**Scope:** `write:help-center` + team role
+**Scope:** `write:article` + team role
 
 Articles are created as drafts. Use `update_article` with `publish: true` to publish.
 
@@ -539,7 +539,7 @@ Update an existing help center article. Publish or unpublish by setting the `pub
 | `categoryId` | string | Move to a different category |
 | `publish` | boolean | `true` to publish, `false` to unpublish |
 
-**Scope:** `write:help-center` + team role
+**Scope:** `write:article` + team role
 
 All fields except `articleId` are optional. Only provided fields are updated.
 
@@ -553,7 +553,7 @@ Soft-delete a help center article.
 |-----------|------|-------------|
 | `articleId` | string | Article TypeID to delete |
 
-**Scope:** `write:help-center` + team role
+**Scope:** `write:article` + team role
 
 ---
 
@@ -571,7 +571,7 @@ Create, update, or delete a help center category.
 | `icon` | string | Icon identifier |
 | `parentId` | string | Parent category TypeID for nesting |
 
-**Scope:** `write:help-center` + team role
+**Scope:** `write:article` + team role
 
 ---
 

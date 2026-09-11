@@ -110,9 +110,7 @@ Add to `.vscode/mcp.json` in your project root. VS Code will prompt you for the 
 }
 ```
 
-<Note>
-VS Code uses `servers` (not `mcpServers`) as the top-level key.
-</Note>
+<Note>VS Code uses `servers` (not `mcpServers`) as the top-level key.</Note>
 
 #### Windsurf
 
@@ -131,9 +129,7 @@ Add to `~/.codeium/windsurf/mcp_config.json`. Set the `QUACKBACK_API_KEY` enviro
 }
 ```
 
-<Note>
-Windsurf uses `serverUrl` instead of `url`.
-</Note>
+<Note>Windsurf uses `serverUrl` instead of `url`.</Note>
 
 #### Claude Desktop
 
@@ -163,21 +159,25 @@ Replace `qb_YOUR_API_KEY` with your actual API key. Requires Node.js.
 Two authentication methods are supported:
 
 - **API keys** (`qb_` prefix): Full access to all scopes. Available to team members (admin or member role). Create them in **Admin → Settings → Developers**.
-- **OAuth 2.1**: Scoped access. Supports MCP OAuth discovery so clients like Claude Code can authenticate automatically without manual key setup.
+- **OAuth 2.1**: Scoped access. Supports MCP OAuth discovery so clients like Cursor and Claude Code can authenticate automatically without manual key setup.
 
 ## Scopes
 
-| Scope | Grants |
-|-------|--------|
-| `read:feedback` | Search posts and changelogs, get details, read resources |
-| `write:feedback` | Create posts, vote, comment, triage |
-| `write:changelog` | Create changelog entries |
-| `read:help-center` | Search and read help center articles and categories |
-| `write:help-center` | Create, update, publish, and delete articles and categories |
-| `read:chat` | List and read support-inbox conversations and messages |
-| `write:chat` | Reply to conversations and change their status |
+| Scope             | Grants                                                                                                     |
+| ----------------- | ---------------------------------------------------------------------------------------------------------- |
+| `read:feedback`   | Search posts and changelogs, get details, read feedback resources                                          |
+| `write:feedback`  | Create posts, vote, comment, triage. Includes `read:feedback`.                                             |
+| `write:changelog` | Create changelog entries. Does not include `read:feedback` — changelog reads already ride `read:feedback`. |
+| `read:article`    | Search and read help center articles and categories                                                        |
+| `write:article`   | Create, update, publish, and delete articles and categories. Includes `read:article`.                      |
+| `read:chat`       | List and read support-inbox conversations and messages                                                     |
+| `write:chat`      | Reply to conversations and change their status. Includes `read:chat`.                                      |
 
-API keys get all seven scopes. OAuth tokens get only the scopes the user approved.
+A write scope includes the matching read on the same domain. Changelog has no read scope; those reads ride `read:feedback`, and `write:changelog` does not grant them.
+
+API keys (`qb_`) hold whichever scopes were stored on the key. A missing scope stays a JSON-RPC `isError` at HTTP 200.
+
+OAuth first-connect grants the three read scopes: `read:feedback`, `read:article`, and `read:chat`. Those are what protected-resource metadata and the unauthenticated 401 `scope=` challenge advertise. Write scopes stay on the authorization server so a client can step up: a missing write returns HTTP 403 with `insufficient_scope` and that operation's `scope=`. `offline_access` is an authorization-server scope only — it is not advertised on protected-resource metadata.
 
 ## Service principals
 
@@ -186,5 +186,5 @@ Every API key gets its own identity. When an agent triages a post, the audit tra
 ## Next steps
 
 - [MCP Reference](/docs/mcp/reference): Full tool and resource documentation
-- [API Overview](/docs/api/introduction): REST API for programmatic integrations
+- [API Overview](/api/introduction): REST API for programmatic integrations
 - [Webhooks](/docs/integrations/webhooks): Receive real-time event notifications
