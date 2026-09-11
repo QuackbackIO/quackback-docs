@@ -28,12 +28,10 @@ Anonymous visitors keep using the widget after `init`. A session mints on their 
 
 Call `identify` after login, on page load if the session already exists, and whenever the signed-in user changes. Once per session — not on every navigation.
 
-1. Get the signing secret into the host app (private and server-side only):
-   - Copy **Copy prompt for your agent** on **Admin → Settings → Widget → Install**. The prompt carries a short-lived pairing code. Your coding agent redeems `POST /api/widget/install-context` and writes `signingSecret` to a server-only host env var (any name). The agent also wires identify when the host already has login.
-   - Or Reveal / Copy the secret on that page and store it in your product's server-side secret store (example: `WIDGET_SIGNING_SECRET`).
-3. Sign a JWT (HS256, ~5 minutes) with `sub` and `email`
-4. Send `{ ssoToken }` to the page the same way you already expose session data
-5. Call `Quackback.identify({ ssoToken })`
+1. Get the host signing secret (agent prompt on [Install](/widget/installation), or Reveal / Copy). Any server-only env name works.
+2. Sign a JWT (HS256, ~5 minutes) with `sub` and `email`
+3. Send `{ ssoToken }` to the page the same way you already expose session data
+4. Call `Quackback.identify({ ssoToken })`
 
 <Warning>
 Never put the signing secret in client-side code, commits, or logs. Sign tokens on your server only. Any server-only env name works.
