@@ -156,11 +156,7 @@ class WidgetTokensController < ApplicationController
       exp: 5.minutes.from_now.to_i,
     }
     token = JWT.encode(payload, ENV["WIDGET_SIGNING_SECRET"], "HS256")
-<<<<<<< Updated upstream
     render json: { ssoToken: token }
-=======
-    render json: { token: }
->>>>>>> Stashed changes
   end
 end
 ```
@@ -186,11 +182,7 @@ class WidgetTokenController extends Controller
             'exp'   => time() + 300, // 5 minutes
         ];
 
-<<<<<<< Updated upstream
         $token = JWT::encode($payload, config('services.widget.signing_secret'), 'HS256');
-=======
-        $token = JWT::encode($payload, config('services.quackback.widget_signing_secret'), 'HS256');
->>>>>>> Stashed changes
 
         return response()->json(['ssoToken' => $token]);
     }
