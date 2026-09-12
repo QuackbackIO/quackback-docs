@@ -312,9 +312,11 @@ Team management interface:
 
 ### Authentication
 
-Two separate auth flows:
+Sign-in routes:
 - `auth.*` - Portal users (password, email OTP, OAuth, OIDC)
 - `admin.login` - Team members (password, email OTP, OAuth, OIDC)
+
+Sessions also record **where** the sign-in came from (`dashboard`, `widget`, or `portal`). Only a host/`dashboard` sign-in can use team permissions. Widget and portal-from-widget sign-ins always act as customers — even if that person is later invited as admin or member. See [Session types](/auth/overview#session-types).
 
 ## Data Flow
 

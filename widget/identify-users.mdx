@@ -59,6 +59,8 @@ Reserved JWT fields are not stored as attributes: `sub`, `id`, `email`, `name`, 
 Team and admin accounts cannot be identified through the widget. A token whose `sub` or `email` matches a staff user returns `IDENTITY_NOT_ALLOWED`.
 </Note>
 
+Identify signs the visitor in as a **customer in the widget** only. That sign-in never unlocks the admin dashboard — even if you later invite the same person to your team. See [Session types](/auth/overview#session-types).
+
 ---
 
 ## Sign a token on your server
@@ -269,12 +271,12 @@ Configure attributes in **Admin → Settings → People → Attributes** first. 
 
 ## Sign portal users in from the widget
 
-If you run a private portal, a verified widget session can sign the visitor into the portal so they do not authenticate twice.
+If you run a private portal, a verified widget visitor can open the portal already signed in — no password, no second sign-up.
 
 1. Identify widget users with `ssoToken` (this page)
 2. Turn on **Widget sign-in** under **Admin → Settings → Security → Authentication → Portal access**
 
-Visitors who open the full portal from the widget are signed in with a one-time token. See [Control portal access](/admin/portal-auth#widget-sign-in).
+They stay a **customer** on the portal. Opening the portal from the widget does not grant admin access. See [Control portal access](/admin/portal-auth#widget-sign-in) and [Session types](/auth/overview#session-types).
 
 ---
 

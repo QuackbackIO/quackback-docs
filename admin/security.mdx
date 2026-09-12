@@ -96,8 +96,11 @@ Review the audit log after any access change — a new admin, a removed member, 
 
 Quackback rate-limits password and magic-link sign-in attempts per IP and email address, and tracks devices so it can email the account owner the first time a new device signs in. The new-device email is on by default and can be turned off on the Team tab.
 
+Signing in through the widget or from widget→portal never unlocks admin tools — even after you invite that person to your team. See [Session types](/auth/overview#session-types).
+
 ## Next steps
 
 - [Set up single sign-on](/auth/sso) — connect your IdP and require SSO
 - [Portal Authentication](/admin/portal-auth) — configure sign-in for customers
 - [Team Members](/admin/team) — invite and manage your team
+- [Session types](/auth/overview#session-types) — keep widget and admin access separate

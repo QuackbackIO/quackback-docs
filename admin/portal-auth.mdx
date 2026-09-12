@@ -103,10 +103,10 @@ When your product embeds the [Quackback widget](/widget) and [identifies signed-
 1. Identify widget users with a backend-signed `ssoToken` — see [Identify users](/widget/identify-users)
 2. On the Portal access tab, toggle **Widget sign-in** on
 
-Visitors who open your portal from inside a verified widget session are signed into the portal automatically. Behind the scenes the widget mints a one-time token (OTT) and the portal exchanges it for a session.
+Visitors who open your portal from inside a verified widget session are signed into the portal automatically. Behind the scenes the widget hands the portal a one-time token so they do not sign in twice. They remain a **customer** on the portal — this path never grants admin access. See [Session types](/auth/overview#session-types).
 
 <Warning>
-Widget sign-in requires a verified widget session (HMAC-signed `ssoToken`). Anonymous visitors and inline email capture are not strong enough to grant portal access.
+Widget sign-in needs a verified identify (`ssoToken` signed on your server). Guests and inline email capture are not enough to open a private portal this way.
 </Warning>
 
 ## Sign-in providers
