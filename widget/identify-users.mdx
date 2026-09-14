@@ -55,11 +55,7 @@ Never put the signing secret in client-side code, commits, or logs. Sign tokens 
 
 Reserved JWT fields are not stored as attributes: `sub`, `id`, `email`, `name`, `avatarURL`, `avatarUrl`, `segments`, `iat`, `exp`, `nbf`, `iss`, `aud`, `jti`.
 
-<Note>
-Team and admin accounts cannot be identified through the widget. A token whose `sub` or `email` matches a staff user returns `IDENTITY_NOT_ALLOWED`.
-</Note>
-
-Identify signs the visitor in as a **customer in the widget** only. That sign-in never unlocks the admin dashboard — even if you later invite the same person to your team. See [Session types](/auth/overview#session-types).
+Identify signs the visitor in as a **customer in the widget** only. That sign-in never unlocks the admin dashboard — even if the same email is a workspace admin or member. Team members can identify and use the widget the way a customer would; their dashboard name and avatar are not overwritten by the host-app token. See [Session types](/auth/overview#session-types).
 
 ---
 
