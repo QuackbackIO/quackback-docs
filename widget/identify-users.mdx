@@ -55,11 +55,7 @@ Never put the signing secret in client-side code, commits, or logs. Sign tokens 
 
 Reserved JWT fields are not stored as attributes: `sub`, `id`, `email`, `name`, `avatarURL`, `avatarUrl`, `segments`, `iat`, `exp`, `nbf`, `iss`, `aud`, `jti`.
 
-<Note>
-Team and admin accounts cannot be identified through the widget. A token whose `sub` or `email` matches a staff user returns `IDENTITY_NOT_ALLOWED`.
-</Note>
-
-Identify signs the visitor in as a **customer in the widget** only. That sign-in never unlocks the admin dashboard — even if you later invite the same person to your team. See [Session types](/auth/overview#session-types).
+Identify signs the visitor in as a **customer in the widget** only. That sign-in never unlocks the admin dashboard — even if the same email is a workspace admin or member. Team members can identify and use the widget the way a customer would; their dashboard name and avatar are not overwritten by the host-app token. See [Session types](/auth/overview#session-types).
 
 ---
 
@@ -276,7 +272,7 @@ If you run a private portal, a verified widget visitor can open the portal alrea
 1. Identify widget users with `ssoToken` (this page)
 2. Turn on **Widget sign-in** under **Admin → Settings → Security → Authentication → Portal access**
 
-They stay a **customer** on the portal. Opening the portal from the widget does not grant admin access. See [Control portal access](/admin/portal-auth#widget-sign-in) and [Session types](/auth/overview#session-types).
+They stay a **customer** on the portal. Opening the portal from the widget does not grant admin access. Workspace teammates can identify in the widget, but **Go to portal** does not sign them in — they land on the portal sign-in screen (or stay on an existing dashboard login). See [Control portal access](/admin/portal-auth#widget-sign-in) and [Session types](/auth/overview#session-types).
 
 ---
 

@@ -21,7 +21,7 @@ Quackback splits authentication into two concerns: **who's allowed in** and **ho
 | **Portal users** | Customers who submit and vote on feedback. |
 | **Team members** | Admins and members who manage feedback. |
 
-Team members can browse the public portal while signed into Quackback. The [widget will not treat a team email as a customer](#session-types) — use the portal login or Team access channel instead.
+Team members can browse the public portal while signed into Quackback. They can also [identify in the widget as a customer](#session-types); that session does not unlock the dashboard.
 
 ## Portal access channels
 
@@ -89,7 +89,7 @@ Signs in at Quackback            →  Quackback (separate)
 ```
 
 <Note>
-You cannot identify a team member through the widget. If the signed identity matches an admin or member, identify returns `IDENTITY_NOT_ALLOWED`. Invite them to use the portal login or admin login instead. If a customer is later added to your team, their existing widget or portal-from-widget sign-in stays a customer sign-in until they sign in on Quackback itself.
+Team members can identify in the widget. That session stays a customer session — it never unlocks the admin dashboard, exports, or the inbox. Opening the portal from the widget does not sign a teammate in (so it cannot replace a dashboard login). If a customer is later added to your team, their existing widget or portal-from-widget sign-in stays a customer sign-in until they sign in on Quackback itself.
 </Note>
 
 ## Roles
