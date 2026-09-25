@@ -1,6 +1,6 @@
 ---
 title: "Internationalize your widget"
-description: "Configure language and locale settings for the widget and portal across six supported languages."
+description: "Configure language and locale settings for the widget and portal across ten supported languages."
 icon: "language"
 ---
 
@@ -18,6 +18,10 @@ Reach users in their language without rebuilding anything. The widget and portal
 | `es` | Spanish | LTR |
 | `ar` | Arabic | RTL |
 | `ru` | Russian | LTR |
+| `pt-BR` | Portuguese (Brazil) | LTR |
+| `zh-CN` | Chinese (Simplified) | LTR |
+| `zh-TW` | Chinese (Traditional) | LTR |
+| `nl` | Dutch | LTR |
 
 RTL layout is also enabled automatically for Hebrew (`he`), Farsi (`fa`), and Urdu (`ur`) if you pass those locale codes explicitly.
 
@@ -30,7 +34,7 @@ The widget and portal resolve locale in this order:
 3. **Browser `Accept-Language` header** — used by the portal automatically
 4. **English** — the fallback if nothing matches
 
-Region subtags are stripped automatically. A browser sending `fr-FR` resolves to `fr`.
+Region subtags are stripped automatically. A browser sending `fr-FR` resolves to `fr`, and `nl-BE` resolves to `nl`. Chinese resolves by script instead: `zh-TW`, `zh-HK`, and `zh-Hant` get Traditional Chinese, and every other `zh` tag gets Simplified Chinese.
 
 ## Set locale in the widget
 
