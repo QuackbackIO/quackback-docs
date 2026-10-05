@@ -41,6 +41,9 @@ BACKUP="../quackback-0.13-backup-$(date -u +%Y%m%dT%H%M%SZ)"
 mkdir "$BACKUP"
 cp .env "$BACKUP/environment.env"
 cp docker-compose.prod.yml "$BACKUP/compose-before.yml"
+# Save the current storage server image, needed for a rollback
+docker image save "$(docker inspect quackback-minio --format '{{.Image}}')" \
+  > "$BACKUP/server-image.tar"
 
 # Keep PostgreSQL running; stop writers first (stopping a stopped service is harmless)
 docker compose -f docker-compose.prod.yml stop app minio
@@ -50,7 +53,7 @@ docker cp quackback-minio:/data/. - > "$BACKUP/data.tar"
 tar -tf "$BACKUP/data.tar" > /dev/null
 ```
 
-Keep the backup private: the storage archive includes credentials. The product repository's `deploy/self-hosted/README.md` also saves the old storage image so you can rehearse a restore offline.
+Keep the backup private: the storage archive includes credentials.
 
 Then stop the rest of the stack, still without `-v`:
 
@@ -245,7 +248,7 @@ With AI configured, Quackback can send new email and Messenger conversations to 
 
 Migrations can't be undone, so rolling back means restoring the backup from step 1 into fresh volumes and running 0.13 again. This sequence deletes the current volumes, so run it only when you mean to roll back. Uploads and credential changes made after the backup are lost.
 
-In a new shell, set `BACKUP` to your backup directory first, for example `BACKUP=../quackback-0.13-backup-20261005T120000Z`.
+Replace `0.13.2` with the exact 0.13 release you ran. In a new shell, set `BACKUP` to your backup directory first, for example `BACKUP=../quackback-0.13-backup-20261005T120000Z`.
 
 ```bash
 docker compose -f docker-compose.prod.yml down
@@ -253,10 +256,15 @@ docker volume ls | grep -E 'postgres_data|minio_data'   # find <project>
 docker volume rm <project>_postgres_data <project>_minio_data
 cp "$BACKUP/compose-before.yml" docker-compose.prod.yml
 cp "$BACKUP/environment.env" .env
+# Pin the exact release you're returning to. A restored QUACKBACK_TAG=latest would
+# start the 0.14 image you already pulled and migrate the database forward again.
+sed -i 's/^QUACKBACK_TAG=.*/QUACKBACK_TAG=0.13.2/' .env
+docker image load < "$BACKUP/server-image.tar"
 docker compose -f docker-compose.prod.yml create
-docker compose -f docker-compose.prod.yml up -d postgres
+docker compose -f docker-compose.prod.yml up -d --wait postgres
+# "already exists" errors for the vector and pg_cron extensions are harmless.
 docker compose -f docker-compose.prod.yml exec -T postgres \
-  sh -c 'pg_restore --no-owner -U "$POSTGRES_USER" -d "$POSTGRES_DB"' \
+  sh -c 'pg_restore --no-owner -h 127.0.0.1 -U "$POSTGRES_USER" -d "$POSTGRES_DB"' \
   < "$BACKUP/database.dump"
 docker cp - quackback-minio:/data < "$BACKUP/data.tar"
 docker compose -f docker-compose.prod.yml up -d
