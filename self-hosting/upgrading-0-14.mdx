@@ -1,0 +1,219 @@
+---
+title: "Upgrade from 0.13 to 0.14"
+description: "Back up, upgrade a 0.13 install to 0.14, and see what changes for admins and integrations."
+icon: "rocket"
+---
+
+# Upgrade from 0.13 to 0.14
+
+0.14 is a large release. Redis is gone, the bundled object storage changed, and the first start runs around 140 database migrations. Read this page before you upgrade, and plan a short maintenance window.
+
+<Warning>
+There is no rolling upgrade and no downgrade. Migrations can't be reversed, so the only way back is restoring the backup you take in step 1. Never run 0.13 and 0.14 against the same database.
+</Warning>
+
+## Before you start
+
+Check that your setup meets the 0.14 [requirements](/self-hosting/requirements):
+
+- **PostgreSQL 14 or newer**, with **pgvector 0.5.0 or newer** and the **`pg_trgm`** extension available
+- The database user has the **`TEMPORARY`** privilege (PostgreSQL grants it by default)
+- `DATABASE_URL` is a **direct or session-mode connection**, not a transaction-mode pooler (for example a pooler on port 6543). Realtime uses `LISTEN`/`NOTIFY`, which a transaction pooler drops.
+- `SECRET_KEY` is set to the value your 0.13 install used, and is at least 32 characters
+
+If something is missing, the migrator stops before changing anything and lists each problem with its fix.
+
+## Upgrade with Docker Compose
+
+### 1. Stop the app and back up
+
+With your 0.13 files still in place, stop the app so nothing writes. Don't use `-v`: the volumes must stay.
+
+```bash
+docker compose -f docker-compose.prod.yml stop app
+```
+
+Back up PostgreSQL:
+
+```bash
+docker compose -f docker-compose.prod.yml exec -T postgres \
+  sh -c 'exec pg_dump -Fc -U "$POSTGRES_USER" "$POSTGRES_DB"' > quackback-0.13.dump
+```
+
+Back up object storage too. The bundled storage server changes in this release (see [Bundled object storage is now Silo](#bundled-object-storage-is-now-silo)), so take an offline copy of the whole volume:
+
+```bash
+docker compose -f docker-compose.prod.yml stop minio
+docker cp quackback-minio:/data/. - > quackback-0.13-storage.tar
+tar -tf quackback-0.13-storage.tar > /dev/null
+```
+
+Keep both backups private: the storage archive includes credentials. The product repository's `deploy/self-hosted/README.md` has a fuller backup script that also saves the old image and configuration for a rehearsed restore.
+
+Then stop the rest of the stack, still without `-v`:
+
+```bash
+docker compose -f docker-compose.prod.yml down
+```
+
+### 2. Update the files
+
+Pull the new source and set `QUACKBACK_TAG` in `.env` to the 0.14 release. Then make these `.env` changes:
+
+- **Delete `REDIS_URL`.** Redis and Dragonfly are no longer used.
+- **Delete `MINIO_IMAGE_TAG` and `MC_IMAGE_TAG`.** They're ignored now.
+- **Set `SECRET_KEY`** to the value your 0.13 install used. The compose file refuses to start without it.
+- **Set `TRUSTED_PROXY_HOPS`.** Behind Nginx, Caddy, Traefik, or a Cloudflare Tunnel, set `1`. Behind a CDN plus a proxy, set `2`. If clients connect straight to the app port, keep `0`. See [Trusted proxy hops](#trusted-proxy-hops).
+- **Keep only one email provider.** See [Email](#configure-one-email-provider).
+
+### 3. Pull the new image
+
+```bash
+docker compose -f docker-compose.prod.yml pull
+```
+
+### 4. Start once and wait
+
+```bash
+docker compose -f docker-compose.prod.yml up -d --remove-orphans
+docker compose -f docker-compose.prod.yml logs -f app
+```
+
+The first start runs about 140 migrations in one transaction and logs each one as `[n/total]`. On a large database this can take several minutes.
+
+<Warning>
+Don't stop or restart the container while migrations run. An interrupted run rolls back completely and starts over on the next start.
+</Warning>
+
+After the migrations commit, the app builds its search indexes, then starts serving. Wait for the healthcheck (`/api/health/ready`) to pass.
+
+In the background, files uploaded before 0.14 are copied into the new storage layout. The originals are kept, and links keep working while the copy runs.
+
+### 5. Check and clean up
+
+1. Sign in, open an existing post with an attachment, and upload a new file.
+2. Remove the unused Dragonfly volume:
+
+   ```bash
+   docker volume rm <project>_dragonfly_data
+   ```
+
+3. Keep your backups until you're happy with the upgrade.
+
+## Upgrade other installs
+
+The same order applies to every deployment: stop the old version, back up the database and object storage, change the configuration, start 0.14 once, and wait for migrations.
+
+- **`docker run` or Kubernetes**: remove `REDIS_URL` and your Redis or Dragonfly service, add `TRUSTED_PROXY_HOPS`, and run migrations once before starting replicas. With several replicas, set `SKIP_MIGRATIONS=true` on all of them and run the migrate-only container first:
+
+  ```bash
+  docker run --rm -e DATABASE_URL="..." --entrypoint bun \
+    ghcr.io/quackbackio/quackback:<0.14 tag> /app/migrate.mjs
+  ```
+
+  Then make sure at least one replica runs with `QUACKBACK_ROLE=worker` or `all`. Background jobs now run from a queue in PostgreSQL. See [Scale with multiple replicas](/self-hosting/scaling).
+- **Railway**: delete the Redis service and the `REDIS_URL` variable, add `TRUSTED_PROXY_HOPS=1` (`2` if Railway's CDN is on), then deploy the 0.14 image. Give the health check a long timeout for the first start.
+- **Without Docker**: stop the service, back up, `git pull`, `bun install`, `bun run db:migrate`, `bun run build`, then start. Uninstall Redis or Dragonfly if nothing else uses it.
+
+## What changed for operators
+
+### Redis is gone
+
+Background jobs, caches, rate limits, and realtime events now run on PostgreSQL. There is nothing to replace Redis with. Jobs run in the app's `worker` role (or the default `all` role). `/api/health/ready` now checks the database, migrations, and workers. `/api/health` and `/api/health/live` remain liveness checks.
+
+### Bundled object storage is now Silo
+
+The Docker Compose stack runs PGSTY Silo, a maintained fork of MinIO, instead of MinIO. The `minio` service name, the `minio_data` volume, `MINIO_ROOT_USER`, `MINIO_ROOT_PASSWORD`, and the S3 endpoint stay the same, and Silo reads the existing data. Both images are pinned by digest. To use a mirror, set `SILO_IMAGE` and `SILO_CLIENT_IMAGE` to full image references.
+
+If you use an external S3 provider, nothing changes here. `S3_PUBLIC_URL` no longer changes the URLs of new files: every file is served through `/api/storage`. Keep it set only if older content links to your public bucket or CDN URL.
+
+### Trusted proxy hops
+
+Rate limits are per client IP. Behind a proxy, the app only sees the real IP if you tell it how many proxies to skip. Left at `0` behind a proxy, every visitor shares one rate-limit bucket and the app logs a warning. Never set it above `0` if clients can reach the app port directly, because anyone could then pick the IP the app sees. See [Set the trusted proxy hops](/self-hosting/reverse-proxy#set-the-trusted-proxy-hops).
+
+### Configure one email provider
+
+You can send through SMTP, Amazon SES (`EMAIL_SES_ACCESS_KEY_ID`, `EMAIL_SES_SECRET_ACCESS_KEY`, and `EMAIL_SES_REGION`, all required), or Resend (`EMAIL_RESEND_API_KEY` or `RESEND_API_KEY`). Configure exactly one. If more than one is set, the app refuses to start and names the variables.
+
+The one exception: if you receive inbound email through Resend while SMTP or SES sends, keep the Resend key and set `EMAIL_INBOUND_PROVIDER=resend`. The key is then used only for receiving. See [Email](/integrations/email).
+
+### Telemetry
+
+The anonymous daily snapshot now reports usage in bands (such as `11-50`) and goes to the project's PostHog analytics. It never includes names, emails, URLs, hostnames, or content. Opt out with `DISABLE_TELEMETRY=true`. See [Telemetry](/self-hosting/telemetry).
+
+### Renamed tables
+
+If you run SQL reports against the database, update table names. The main renames:
+
+| 0.13 | 0.14 |
+|------|------|
+| `votes` | `post_votes` |
+| `comments` | `post_comments` |
+| `tags` | `post_tags` |
+| `post_tags` (post-to-tag join) | `post_tag_assignments` |
+| `comment_reactions` | `post_comment_reactions` |
+| `merge_suggestions` | `post_merge_suggestions` |
+| `chat_messages` | `conversation_messages` |
+| `chat_tags` | `conversation_tags` |
+| `conversation_tags` (conversation-to-tag join) | `conversation_tag_assignments` |
+
+## What changed for admins
+
+### Roles
+
+Existing admins become **Owners** and existing members become **Managers**. Review roles in **Admin → Settings → Members & Teams** after the upgrade. See [Roles and permissions](/admin/roles-permissions).
+
+### Roadmaps follow statuses
+
+Roadmaps are now built from post statuses, so you no longer place posts on a roadmap by hand. Old manual placements are kept in a `post_roadmaps_archived` table for reference until a later release. Nothing reads it. See [Build a public roadmap](/admin/roadmap).
+
+### Conversation status "pending" is now "snoozed"
+
+Conversations that were pending are now snoozed. Conversations are open, snoozed, or closed.
+
+### SSO and OIDC redirect URIs
+
+New sign-in providers use the redirect URI `/api/auth/callback/<id>`. Providers you added before 0.14 keep working with their original `/api/auth/oauth2/callback/<id>`. To switch one to the new URI, add the new URI at your identity provider first, then change it in the provider's **Edit** view in Quackback, and test the connection again.
+
+### Slack
+
+The Slack app's request URLs changed to:
+
+- `https://<your domain>/api/integrations/slack/hooks/events`
+- `https://<your domain>/api/integrations/slack/hooks/interactions`
+- `https://<your domain>/api/integrations/slack/hooks/commands`
+- `https://<your domain>/api/integrations/slack/hooks/options`
+
+Update them in your Slack app's settings, then reconnect Slack in **Admin → Settings → Integrations** to re-authorise it. See [Slack](/integrations/slack).
+
+### Imports
+
+The importers for other feedback tools were removed. CSV import remains in **Admin → Settings → Imports & exports**.
+
+### AI spam filter
+
+{/* TODO(0.14): confirm against the merged privacy/API PR. Planned behaviour: the AI spam filter is off on upgraded installs (opt-in), on for new installs. Name the exact settings path once it lands. */}
+
+Upgraded installs start with the AI spam filter switched off. Turn it on in the inbox spam settings if you want AI to classify inbound conversations as spam.
+
+## What changed for developers
+
+- **Widget identify needs a signed token.** `identify` only accepts a signed `ssoToken` generated on your server. Unsigned `{ id, email, name }` payloads are rejected. See [Identify users](/widget/identify-users).
+- **Retired ID prefixes still work.** The API accepts IDs with prefixes retired in this release (such as `kb_article_...`) and returns the current prefix. {/* TODO(0.14): confirm the full alias list once the privacy/API PR merges. */}
+- **Roadmap `isPublic` is deprecated.** It's still accepted on roadmap requests as an alias of `visibility`. Use `visibility` (`public`, `team`, or `segment`) in new code. {/* TODO(0.14): confirm against the merged privacy/API PR. */}
+- **Webhooks and events** cover more of the product. See [Webhooks](/integrations/webhooks) for the full catalogue.
+
+## If something goes wrong
+
+- **Migrations stop with a list of problems**: fix each item (PostgreSQL version, pgvector, `pg_trgm`, `TEMPORARY`) and start again. Nothing was changed.
+- **A migration fails**: the log names it, and the whole run is rolled back. Check the error, then start again. If you're stuck, restore the backup and run 0.13 while you ask for help on [GitHub](https://github.com/QuackbackIO/quackback/issues).
+- **The app exits naming email variables**: you have more than one email provider configured. Keep one.
+- **Realtime updates don't arrive**: `DATABASE_URL` points at a transaction-mode pooler. Use a direct or session-mode connection.
+
+To roll back, stop 0.14, restore the PostgreSQL dump and the storage archive into fresh volumes, set `QUACKBACK_TAG` back to your 0.13 version, and start. Don't run the old image against the migrated database.
+
+## Next steps
+
+- [Deploy with Docker](/self-hosting/docker): The full Compose guide
+- [Environment Variables](/reference/environment-variables): Every configuration option
+- [Troubleshooting](/self-hosting/troubleshooting): Common issues and fixes
