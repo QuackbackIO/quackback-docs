@@ -6,23 +6,51 @@ icon: "gear"
 
 # Environment Variables
 
-Complete reference for all Quackback configuration options. Copy `.env.example` to `.env` and fill in your values.
+Every option a self-hosted Quackback reads from its environment. Copy `.env.example` (or `.env.prod.example` for the Docker Compose stack) to `.env` and fill in your values.
+
+<Tip>
+Don't wrap values in quotes and don't put `# comments` on a value line. Docker's `--env-file` and Compose's `env_file` read everything after `=` literally, so `DATABASE_URL="postgresql://..."` keeps the quotes and fails with `ERR_INVALID_URL`.
+</Tip>
 
 ## Required Variables
 
 <Warning>
-These variables must be set for Quackback to run.
+These variables must be set for Quackback to run. The app checks its configuration at startup and exits with a message naming any missing or invalid variable.
 </Warning>
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `DATABASE_URL` | PostgreSQL connection string | `postgresql://postgres:password@localhost:5432/quackback` |
-| `BASE_URL` | Public URL for your instance (used for auth, emails, and OAuth callbacks) | `https://feedback.example.com` |
-| `PORT` | Port the application server listens on | `3000` |
-| `SECRET_KEY` | Secret key for authentication and encryption (32+ chars). Used for session signing and deriving encryption keys. | `openssl rand -base64 32` |
-| `REDIS_URL` | Redis/Dragonfly connection for background job queue (BullMQ). Dragonfly is included in docker-compose. | `redis://localhost:6379` |
+| `DATABASE_URL` | PostgreSQL connection string. Must be a direct or session-mode connection, not a transaction-mode pooler, because realtime uses `LISTEN`/`NOTIFY`. | `postgresql://quackback:password@localhost:5432/quackback` |
+| `BASE_URL` | Public URL of your instance, used for auth, emails, and OAuth callbacks | `https://feedback.example.com` |
+| `SECRET_KEY` | At least 32 characters. Signs sessions and derives encryption keys. Keep it the same across upgrades. | Generate with `openssl rand -base64 32` |
 
-### Database connection tuning
+PostgreSQL is the only service Quackback needs. The background job queue, caches, rate limits, and realtime events all live in it. See [System Requirements](/self-hosting/requirements#postgresql).
+
+## Server
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `PORT` | `3000` | Port the server listens on |
+| `NODE_ENV` | `production` in the Docker image | `production`, `development`, or `test` |
+| `TRUSTED_PROXY_HOPS` | `0` | Number of reverse proxies in front of the app. See [Reverse proxy](#reverse-proxy). |
+| `TRUSTED_ORIGINS` | none | Extra origins allowed to make authenticated requests, comma-separated. `BASE_URL` is always trusted. |
+| `QUACKBACK_COMPRESSION` | on | Set to `off` to stop the app compressing responses, for example when your proxy already compresses them |
+| `CHAT_TRANSPORT_MODE` | `live` | `live` streams chat over server-sent events. Set to `poll` to force the widget and portal onto polling if a proxy buffers or drops long-lived streams. |
+| `QUACKBACK_CONFIG_FILE` | `/etc/quackback/config.yaml` | Path of the [declarative config file](/self-hosting/config-file) |
+
+### Reverse proxy
+
+`TRUSTED_PROXY_HOPS` tells the app how many proxies to look past in `X-Forwarded-For` to find the client IP used for rate limiting.
+
+| Setup | Value |
+|-------|-------|
+| Clients connect directly | `0` |
+| One reverse proxy (Nginx, Caddy, Traefik, Cloudflare Tunnel, Railway) | `1` |
+| A CDN in front of a reverse proxy | `2` |
+
+Left at `0` behind a proxy, every visitor shares one rate-limit bucket and the app logs a warning. Never set it above `0` if clients can reach the app port directly: they could then choose the IP the app sees. See [Set the trusted proxy hops](/self-hosting/reverse-proxy#set-the-trusted-proxy-hops).
+
+## Database
 
 <Note>
 These are optional. The defaults work for most deployments. Tune them only if you've measured a connection-pool bottleneck.
@@ -30,73 +58,92 @@ These are optional. The defaults work for most deployments. Tune them only if yo
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `DB_POOL_MAX` | `10` (web/all), `20` (worker) | Max Postgres connections this process opens. The default is role-aware: [worker replicas](/self-hosting/scaling) get a larger pool since they run more concurrent jobs. |
-| `DB_IDLE_TIMEOUT` | `20` | Seconds an idle pooled connection stays open before closing (1-3600). |
+| `DB_POOL_MAX` | `10` (web/all), `20` (worker) | Max PostgreSQL connections this process opens (1-100). [Worker replicas](/self-hosting/scaling) get a larger pool because they run more concurrent jobs. |
+| `DB_IDLE_TIMEOUT` | `20` | Seconds an idle pooled connection stays open before closing (1-3600) |
 
-### Reverse proxy
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `TRUSTED_PROXY_HOPS` | `0` | Number of trusted reverse-proxy hops allowed to supply client-IP headers (`X-Forwarded-For`). Set to `1` behind a single proxy (Nginx, Caddy, Railway). `0` means no proxy headers are trusted. |
-
-## Server Roles
+## Server Roles and Background Jobs
 
 <Tip>
-Single-container self-hosters can skip this. The default already does what you want. Read [Scale with multiple replicas](/self-hosting/scaling) before splitting roles.
+Single-container installs can skip this section. The defaults already do what you want. Read [Scale with multiple replicas](/self-hosting/scaling) before splitting roles.
 </Tip>
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `QUACKBACK_ROLE` | `all` | Controls whether this process runs background workers. `all` serves HTTP and runs queue workers/sweepers (single-container default). `web` serves HTTP only and enqueues jobs without consuming them. `worker` runs queue workers/sweepers and still serves HTTP (for health probes), but shouldn't receive user traffic. |
+| `QUACKBACK_ROLE` | `all` | What this process does. `all` serves HTTP and runs background jobs. `web` serves HTTP and enqueues jobs without running them. `worker` runs background jobs and serves HTTP only for health probes. `migrator` is reserved for multi-workspace hosting and isn't used by a single install; to run migrations on their own, use the [migrate-only container](/self-hosting/scaling#run-migrations-once). An unrecognised value stops the process from starting. |
+
+Background jobs run on a queue table in PostgreSQL. These settings tune the job worker on `worker` and `all` processes:
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `JOB_POLL_INTERVAL_MS` | `1000` | How often the worker checks for jobs when no wake-up notification arrives (50-600000) |
+| `JOB_BATCH_SIZE` | `5` | Max jobs claimed from one queue in a single pass (1-100) |
+| `JOB_MAX_CONCURRENCY` | sum of all queues' limits | Max jobs running at once in this process (1-512) |
+| `JOB_REAP_INTERVAL_MS` | `15000` | How often jobs whose worker died are made claimable again (500-3600000) |
+| `JOB_PRUNE_INTERVAL_MS` | `3600000` | How often finished jobs past retention are deleted (1000-86400000) |
+| `JOB_RETENTION_MS` | `604800000` (7 days) | How long finished and failed jobs are kept |
 
 ## Email Configuration
 
-Configure email delivery for OTP codes, notifications, and invitations.
+Email delivers sign-in codes, invitations, and notifications. Configure **exactly one** sending provider: SMTP, Amazon SES, or Resend. If more than one is configured, the app refuses to start and names the conflicting variables. See [Email](/integrations/email).
 
 <Tip>
-If email is not configured, OTP codes and other emails are printed to the console. This is useful for local development.
+If no provider is configured, sign-in codes and other emails are printed to the server log. This is useful for local development.
 </Tip>
 
-Priority order: SMTP (if configured) > Resend (if configured) > Console logging.
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `EMAIL_FROM` | Sender address. Required with any provider. | `Quackback <feedback@example.com>` |
 
 ### SMTP
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `EMAIL_SMTP_HOST` | SMTP server hostname | `smtp.sendgrid.net` |
+| `EMAIL_SMTP_HOST` | SMTP server hostname. Setting it selects SMTP. | `smtp.sendgrid.net` |
 | `EMAIL_SMTP_PORT` | SMTP port | `587` |
 | `EMAIL_SMTP_USER` | SMTP username | `apikey` |
 | `EMAIL_SMTP_PASS` | SMTP password | `SG.xxxx` |
-| `EMAIL_SMTP_SECURE` | Use TLS (for port 465) | `true` |
-| `EMAIL_FROM` | Sender email address | `Quackback <feedback@example.com>` |
+| `EMAIL_SMTP_SECURE` | Set to `true` for implicit TLS on port 465 | `true` |
+
+### Amazon SES
+
+| Variable | Description | Example |
+|----------|-------------|---------|
+| `EMAIL_SES_ACCESS_KEY_ID` | Access key of an IAM user with `ses:SendEmail`. Required. | `AKIA...` |
+| `EMAIL_SES_SECRET_ACCESS_KEY` | Matching secret. Required. | |
+| `EMAIL_SES_REGION` | Region your sending identity is verified in. Required, with no default: identities are regional and a wrong region rejects every send. | `us-east-1` |
+| `EMAIL_SES_IDENTITY_ACCESS_KEY_ID` | Optional. A separate key used only to verify a custom sending domain. Grant it `ses:CreateEmailIdentity`, `ses:GetEmailIdentity`, and `ses:PutEmailIdentityMailFromAttributes`, never `ses:DeleteEmailIdentity`. | |
+| `EMAIL_SES_IDENTITY_SECRET_ACCESS_KEY` | Matching secret for the identity key | |
 
 ### Resend
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `EMAIL_RESEND_API_KEY` | Resend API key | `re_xxxxxxxxxxxx` |
-| `EMAIL_FROM` | Sender email address | `Quackback <feedback@example.com>` |
+| `EMAIL_RESEND_API_KEY` | Resend API key. `RESEND_API_KEY` is accepted as an alias. | `re_xxxxxxxxxxxx` |
+
+The Resend key also fetches inbound message bodies when you receive mail through Resend. To keep it for receiving only while SMTP or SES sends, set `EMAIL_INBOUND_PROVIDER=resend` (see below).
 
 ## Inbound Email
 
-Lets a visitor's email reply thread back into their conversation. Two independent ways to receive inbound mail: configure the one that fits your deployment, or both.
+Lets a customer's email reply thread back into their conversation. There are two ways to receive: a provider webhook or IMAP polling.
 
 ### Provider webhook
 
 | Variable | Description |
 |----------|-------------|
-| `EMAIL_INBOUND_DOMAIN` | Receiving domain (e.g. a Resend inbound domain). Agent replies use `reply+<conversationId>@<domain>`. |
-| `EMAIL_INBOUND_SIGNING_SECRET` | The provider's webhook signing secret (Svix `whsec_...`). |
+| `EMAIL_INBOUND_DOMAIN` | Receiving domain. Agent replies use `reply+<conversationId>@<domain>`. Exactly one domain. |
+| `EMAIL_INBOUND_SIGNING_SECRET` | The provider's webhook signing secret (Svix `whsec_...`) |
+| `EMAIL_INBOUND_EXTRA_DOMAINS` | Optional. More domains to keep accepting replies on, comma- or space-separated. Use it when you change `EMAIL_INBOUND_DOMAIN`: list the old domain here so reply addresses already sent keep working. |
+| `EMAIL_INBOUND_PROVIDER` | Set to `resend` when you receive through Resend but send through SMTP or SES. The Resend key is then used for inbound only. |
 
-Both must be set together. Point the provider's inbound webhook at `<BASE_URL>/api/chat/email/inbound`.
+Set `EMAIL_INBOUND_DOMAIN` and `EMAIL_INBOUND_SIGNING_SECRET` together, and point the provider's inbound webhook at `<BASE_URL>/api/chat/email/inbound`.
 
 ### IMAP polling
 
-Self-hosted alternative that needs no public webhook endpoint. See [Receive email over IMAP](/self-hosting/email-imap) for the full guide.
+Needs no public webhook endpoint. A background worker polls the mailbox about every 60 seconds. See [Receive email over IMAP](/self-hosting/email-imap).
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `EMAIL_INBOUND_PROVIDER` | unset | Set to `imap` to enable the poller. Leave unset to disable it entirely. |
+| `EMAIL_INBOUND_PROVIDER` | unset | Set to `imap` to enable the poller. Leave unset to disable it. |
 | `IMAP_HOST` | required | IMAP server hostname |
 | `IMAP_PORT` | `993` (TLS) or `143` (plaintext) | IMAP server port |
 | `IMAP_USER` | required | Mailbox username |
@@ -105,68 +152,53 @@ Self-hosted alternative that needs no public webhook endpoint. See [Receive emai
 | `IMAP_MAILBOX` | `INBOX` | Mailbox to poll |
 
 <Note>
-`EMAIL_INBOUND_PROVIDER`, `IMAP_HOST`, `IMAP_USER`, and `IMAP_PASSWORD` are required together. The poller never connects unless all four are set.
+`EMAIL_INBOUND_PROVIDER=imap`, `IMAP_HOST`, `IMAP_USER`, and `IMAP_PASSWORD` are required together. The poller never connects unless all four are set.
 </Note>
 
-## OAuth Providers
+## Sign-in Providers and Integrations
 
-Enable social login for portal users and team members.
-
-### GitHub
-
-| Variable | Description |
-|----------|-------------|
-| `GITHUB_CLIENT_ID` | GitHub OAuth App client ID |
-| `GITHUB_CLIENT_SECRET` | GitHub OAuth App client secret |
-
-Create at: [GitHub Developer Settings](https://github.com/settings/developers)
-
-Callback URL: `https://your-domain.com/api/auth/callback/github`
-
-### Google
-
-| Variable | Description |
-|----------|-------------|
-| `GOOGLE_CLIENT_ID` | Google OAuth client ID |
-| `GOOGLE_CLIENT_SECRET` | Google OAuth client secret |
-
-Create at: [Google Cloud Console](https://console.cloud.google.com/apis/credentials)
-
-Callback URL: `https://your-domain.com/api/auth/callback/google`
-
-<Note>
-Integration credentials (Slack, Microsoft Teams, Linear, etc.) are configured through the admin UI and stored securely in the database, not as environment variables.
-</Note>
-
-## Realtime Chat Transport
-
-| Variable | Default | Description |
-|----------|---------|-------------|
-| `CHAT_TRANSPORT_MODE` | `live` | `live` streams chat over SSE (`/api/chat/stream`). Set to `poll` to force the widget and portal onto the polling fallback if you're behind a reverse proxy that buffers or drops long-lived event streams. |
+GitHub, Google, and other sign-in providers, custom OIDC, and integrations such as Slack, Linear, and Microsoft Teams are configured in the admin UI (**Admin → Settings → Access & Security** and **Admin → Settings → Integrations**). Their credentials are stored encrypted in the database, not in environment variables.
 
 ## AI
 
-Enable AI features: post summaries, duplicate detection, feedback extraction, and help center semantic search. AI is off unless you set the key, the endpoint, and a model for each role -- Quackback works with any OpenAI-compatible endpoint but never assumes one.
+AI powers post summaries, duplicate detection, feedback extraction, help center answers, and Quinn. AI is off unless you set the key, the endpoint, and a model. Quackback works with any OpenAI-compatible endpoint but never assumes one.
 
 | Variable | Description | Example |
 |----------|-------------|---------|
 | `OPENAI_API_KEY` | API key for your AI endpoint | `sk-...` |
-| `OPENAI_BASE_URL` | OpenAI-compatible endpoint. Required -- there is no default | `https://api.openai.com/v1` |
-| `AI_CHAT_MODEL` | Default model for chat features (summaries, suggestions, merge verification) | `gpt-4o-mini` |
+| `OPENAI_BASE_URL` | OpenAI-compatible endpoint. Required, with no default. | `https://api.openai.com/v1` |
+| `AI_CHAT_MODEL` | Default model for every chat feature | `gpt-4o-mini` |
 | `AI_EMBEDDING_MODEL` | Model for embeddings (duplicate detection, semantic search) | `text-embedding-3-small` |
-| `AI_SUMMARY_MODEL` | Per-feature override of `AI_CHAT_MODEL` for post summaries | `off` |
-| `AI_SENTIMENT_MODEL` | Per-feature override for sentiment analysis | `gpt-4o-mini` |
-| `AI_EXTRACTION_MODEL` | Per-feature override for suggestion extraction | `gpt-4o-mini` |
-| `AI_QUALITY_GATE_MODEL` | Per-feature override for the suggestion quality gate | `gpt-4o-mini` |
-| `AI_INTERPRETATION_MODEL` | Per-feature override for feedback interpretation | `gpt-4o-mini` |
-| `AI_MERGE_MODEL` | Per-feature override for merge verification | `gpt-4o` |
-| `AI_HELP_CENTER_MODEL` | Per-feature override for help center Ask AI | `gpt-4o-mini` |
-| `AI_HELP_CENTER_TRANSLATE_MODEL` | Per-feature override for help center article auto-translation | `gpt-4o-mini` |
-| `AI_ASSISTANT_MODEL` | Per-feature override for the Quinn AI assistant | `gpt-4o` |
-| `AI_INBOX_TRANSLATION_MODEL` | Per-feature override for inbox message translation | `gpt-4o-mini` |
-| `AI_CLASSIFICATION_MODEL` | Per-feature override for ticket/message classification | `gpt-4o-mini` |
 
-Per-feature overrides fall back to `AI_CHAT_MODEL` when unset. Set an override to `off` to disable just that feature. Use model ids your endpoint accepts -- gateways typically want provider-prefixed ids like `google/gemini-3.1-flash-lite-preview`.
+### Per-feature models
+
+Each override falls back to `AI_CHAT_MODEL` when unset. Set one to `off` to turn just that feature off while the rest keep working. `AI_CHAT_MODEL=off` or `AI_EMBEDDING_MODEL=off` turns off the whole role.
+
+| Variable | Feature |
+|----------|---------|
+| `AI_SUMMARY_MODEL` | Post summaries |
+| `AI_SENTIMENT_MODEL` | Sentiment analysis |
+| `AI_EXTRACTION_MODEL` | Feedback extraction into suggestions |
+| `AI_QUALITY_GATE_MODEL` | Suggestion quality gate |
+| `AI_INTERPRETATION_MODEL` | Feedback interpretation |
+| `AI_MERGE_MODEL` | Duplicate merge verification |
+| `AI_HELP_CENTER_MODEL` | Help center Ask AI answers |
+| `AI_HELP_CENTER_TRANSLATE_MODEL` | Help center article translation |
+| `AI_ASSISTANT_MODEL` | Quinn |
+| `AI_INBOX_TRANSLATION_MODEL` | Inbox message translation |
+| `AI_CLASSIFICATION_MODEL` | Conversation attribute classification |
+
+Use model ids your endpoint accepts. Gateways usually want provider-prefixed ids such as `google/gemini-3.1-flash-lite-preview`.
+
+### Model behaviour
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `AI_ASSISTANT_VISION` | detected from the model name | `on` or `off`. Whether Quinn may send images to the model. Set it when a proxied or renamed model hides its capabilities. |
+| `AI_REQUIRE_PARAMETERS` | `true` on OpenRouter | OpenRouter only. Routes structured-output requests to providers that enforce the JSON schema. Set `false` only if your model has no such provider. |
+| `AI_REASONING_EXCLUDE` | `false` | OpenRouter only. Set `true` to hide reasoning tokens on structured streams, for reasoning models. |
+| `AI_REASONING_EFFORT` | unset | OpenRouter only. `minimal`, `low`, `medium`, `high`, or `max`, passed to models that support a reasoning effort. |
+| `AI_COMBINED_TOOLS_AND_SCHEMA` | `false` | Set `true` if your model can return tool calls and the final JSON in one request. Unset splits them into two calls. |
 
 <Note>
 Before v0.12.0, `OPENAI_API_KEY` alone enabled AI with an implicit OpenAI endpoint and built-in model names. If you upgraded and AI features turned off, add `OPENAI_BASE_URL`, `AI_CHAT_MODEL`, and `AI_EMBEDDING_MODEL`.
@@ -174,111 +206,116 @@ Before v0.12.0, `OPENAI_API_KEY` alone enabled AI with an implicit OpenAI endpoi
 
 ## File Storage
 
-S3-compatible storage for image uploads in changelogs and rich text content. Supports AWS S3, Cloudflare R2, Backblaze B2, MinIO, and other S3-compatible services.
-
-<Note>
-If not configured, image upload is disabled in the rich text editor. For local development, MinIO is included in `docker-compose` and configured by default. Run `bun run setup` to start it.
-</Note>
+S3-compatible storage for uploads: images, attachments, logos, and videos. Works with AWS S3, Cloudflare R2, Backblaze B2, Railway buckets, the bundled PGSTY Silo, and other S3-compatible services. Without it, uploads are disabled.
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `S3_ENDPOINT` | S3 endpoint URL (leave empty for AWS S3) | `http://localhost:9000` |
-| `S3_BUCKET` | S3 bucket name | `quackback` |
-| `S3_REGION` | S3 region | `us-east-1` |
-| `S3_ACCESS_KEY_ID` | S3 access key | `minioadmin` |
-| `S3_SECRET_ACCESS_KEY` | S3 secret key | `minioadmin` |
-| `S3_FORCE_PATH_STYLE` | Use path-style URLs (required for MinIO, R2) | `true` |
-| `S3_PUBLIC_URL` | Public URL for uploaded files (optional) | `https://cdn.example.com` |
+| `S3_ENDPOINT` | S3 endpoint URL. Leave empty for AWS S3. | `http://localhost:9000` |
+| `S3_BUCKET` | Bucket name | `quackback` |
+| `S3_REGION` | Region | `us-east-1` |
+| `S3_ACCESS_KEY_ID` | Access key | |
+| `S3_SECRET_ACCESS_KEY` | Secret key | |
+| `S3_FORCE_PATH_STYLE` | Use path-style URLs. Required for Silo, MinIO, and R2. | `true` |
+| `S3_PROXY` | Set `true` to stream uploads and downloads through the app instead of redirecting the browser to presigned URLs. Use it when browsers can't reach the bucket, as in the Docker Compose stack. | `false` |
+| `S3_PUBLIC_URL` | Optional. Doesn't change the URLs of new files. Set it only if content from an earlier version links to files at a public bucket or CDN URL: links under that base are then still recognised as this install's own files. | `https://cdn.example.com` |
+| `USER_CONTENT_URL` | Optional. A separate origin pointed at this app. Attachment links then load from that host, away from the app's cookies. A bare origin with no path. | `https://files.example.com` |
+
+Files are always served through `<BASE_URL>/api/storage`, which works with private buckets. New files are stored under `w/<workspace id>/` in the bucket. Files from before that layout are copied into it in the background on first start, and the originals are kept.
 
 ## Telemetry
 
-Anonymous usage statistics help improve Quackback. Telemetry is enabled by default and can be disabled via environment variable.
+Quackback sends one anonymous snapshot a day so the project can see which versions, setups, and features are in use. It never includes names, emails, URLs, hostnames, content, or exact counts. Counts are reported in bands such as `11-50`. See [Telemetry](/self-hosting/telemetry) for every field.
 
 | Variable | Description | Example |
 |----------|-------------|---------|
-| `DISABLE_TELEMETRY` | Set to `"true"` to disable anonymous usage statistics | `true` |
+| `DISABLE_TELEMETRY` | Set to `true` to turn the daily snapshot off | `true` |
+
+## Product Analytics
+
+Optional. Sends admin-app usage (pageviews, clicks, and masked session replay) to **your own** PostHog project. Off unless `POSTHOG_KEY` is set. Portal, widget, and help center visitors are never tracked, and neither is a browser that sends Do Not Track or Global Privacy Control.
+
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `POSTHOG_KEY` | unset | Your PostHog project key. Setting it turns product analytics on. |
+| `POSTHOG_HOST` | `https://us.i.posthog.com` | Ingestion host, or your own reverse proxy in front of PostHog |
+| `POSTHOG_UI_HOST` | unset | The PostHog app URL, needed for toolbar links when `POSTHOG_HOST` is a proxy |
+| `POSTHOG_SESSION_RECORDING` | `true` | Set `false` to turn off session replay |
 
 ## Logging
 
-The server emits structured JSON logs to stdout, one object per line, ready for any log shipper (Grafana Alloy, Promtail, Fluent Bit, Vector).
+The server writes structured JSON logs to stdout, one object per line, ready for any log shipper (Grafana Alloy, Promtail, Fluent Bit, Vector).
 
-| Variable | Default | Description | Example |
-|----------|---------|-------------|---------|
-| `LOG_LEVEL` | `info` in production, `debug` otherwise | Verbosity: `trace` \| `debug` \| `info` \| `warn` \| `error` \| `fatal` \| `silent` | `info` |
+| Variable | Default | Description |
+|----------|---------|-------------|
+| `LOG_LEVEL` | `info` in production, `debug` otherwise | `trace`, `debug`, `info`, `warn`, `error`, `fatal`, or `silent` |
+| `OTEL_SERVICE_NAME` | `quackback` | The `service_name` field on every log line |
 
 ## Docker Startup
 
 <Note>
-Both variables below are read by the container's entrypoint script, not the Zod-validated app config. They apply to any Docker deployment (Compose or `docker run`).
+These are read by the container's entrypoint script. They apply to any Docker deployment (Compose or `docker run`).
 </Note>
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `SKIP_MIGRATIONS` | `false` | Set to `true` to skip the automatic startup migration, e.g. when a Kubernetes pre-upgrade hook runs migrations out-of-band. |
-| `SEED_DATABASE` | `false` | Set to `true` to populate demo data on startup. Don't enable this in production. |
+| `SKIP_MIGRATIONS` | `false` | Set to `true` to skip the startup migration, for example with several replicas or a Kubernetes pre-upgrade hook. Run migrations with `docker run --entrypoint bun <image> /app/migrate.mjs`. |
+| `SEED_DATABASE` | `false` | Set to `true` to load demo data on startup. Don't enable this in production. |
 
 ## Docker Compose Variables
 
 <Note>
-These variables configure the **compose stack** (`docker-compose.prod.yml`) itself, not the application. The app never reads them directly. Compose uses them to name containers and to fill in values like `POSTGRES_PASSWORD` that the stack then wires into `DATABASE_URL` for you. See [Deploy with Docker](/self-hosting/docker).
+These configure the **Compose stack** (`docker-compose.prod.yml`), not the application. Compose uses them to name containers and to build values like `DATABASE_URL` from your secrets. See [Deploy with Docker](/self-hosting/docker).
 </Note>
 
 | Variable | Default | Description |
 |----------|---------|-------------|
-| `QUACKBACK_TAG` | `latest` | Image tag to run. Pin to a specific release in production. |
-| `APP_PORT` | `3000` | Host port the app is published on. The container always listens on 3000 internally. |
-| `COMPOSE_PROJECT_NAME` | `quackback` | Name Compose uses for the project's containers, network, and volumes. |
-| `POSTGRES_USER` | `quackback` | Bundled PostgreSQL username. |
-| `POSTGRES_PASSWORD` | required | Bundled PostgreSQL password. |
-| `POSTGRES_DB` | `quackback` | Bundled PostgreSQL database name. |
-| `MINIO_ROOT_USER` | `quackback` | Bundled MinIO root user. Doubles as the app's `S3_ACCESS_KEY_ID`. |
-| `MINIO_ROOT_PASSWORD` | required | Bundled MinIO root password. Doubles as the app's `S3_SECRET_ACCESS_KEY`. |
-| `MINIO_IMAGE_TAG` | `RELEASE.2025-04-22T22-12-26Z` | Pinned MinIO image tag. |
-| `MC_IMAGE_TAG` | `RELEASE.2025-04-16T18-13-26Z` | Pinned MinIO client (`mc`) image tag, used by the bucket-init step. |
+| `QUACKBACK_TAG` | `latest` | Image tag to run. Pin a release in production. |
+| `APP_PORT` | `3000` | Host port the app is published on. The container always listens on 3000. |
+| `COMPOSE_PROJECT_NAME` | `quackback` | Name Compose uses for containers, network, and volumes |
+| `POSTGRES_USER` | required | Bundled PostgreSQL username |
+| `POSTGRES_PASSWORD` | required | Bundled PostgreSQL password |
+| `POSTGRES_DB` | `quackback` | Bundled PostgreSQL database name |
+| `MINIO_ROOT_USER` | required | Bundled object storage root user. Doubles as the app's `S3_ACCESS_KEY_ID`. |
+| `MINIO_ROOT_PASSWORD` | required | Bundled object storage root password. Doubles as the app's `S3_SECRET_ACCESS_KEY`. |
+| `SILO_IMAGE` | digest-pinned `pgsty/silo` | Full image reference for the bundled storage server, for a mirror or another release |
+| `SILO_CLIENT_IMAGE` | digest-pinned `pgsty/mc` | Full image reference for the client that creates the bucket |
+
+<Note>
+`MINIO_IMAGE_TAG` and `MC_IMAGE_TAG` from 0.13 are ignored. Remove them from `.env`.
+</Note>
 
 ## Complete Example
 
 ```bash
-# ===================
 # Required
-# ===================
-DATABASE_URL="postgresql://postgres:password@localhost:5432/quackback"
-SECRET_KEY="your-32-character-minimum-secret-key-here"
-BASE_URL="https://feedback.yourcompany.com"
-REDIS_URL="redis://localhost:6379"
+DATABASE_URL=postgresql://quackback:password@localhost:5432/quackback
+SECRET_KEY=your-32-character-minimum-secret-key-here
+BASE_URL=https://feedback.yourcompany.com
 
-# ===================
-# Email (choose one)
-# ===================
-# SMTP
-EMAIL_SMTP_HOST="smtp.sendgrid.net"
-EMAIL_SMTP_PORT="587"
-EMAIL_SMTP_USER="apikey"
-EMAIL_SMTP_PASS="SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-EMAIL_FROM="Quackback <feedback@yourcompany.com>"
+# One reverse proxy in front of the app
+TRUSTED_PROXY_HOPS=1
 
-# Or Resend
-# EMAIL_RESEND_API_KEY="re_xxxxxxxxxxxx"
-# EMAIL_FROM="Quackback <feedback@yourcompany.com>"
+# Email: configure exactly one provider
+EMAIL_SMTP_HOST=smtp.sendgrid.net
+EMAIL_SMTP_PORT=587
+EMAIL_SMTP_USER=apikey
+EMAIL_SMTP_PASS=SG.xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx
+EMAIL_FROM=Quackback <feedback@yourcompany.com>
 
-# ===================
-# OAuth (optional)
-# ===================
-GITHUB_CLIENT_ID="your-github-client-id"
-GITHUB_CLIENT_SECRET="your-github-client-secret"
+# File storage
+S3_ENDPOINT=https://<account-id>.r2.cloudflarestorage.com
+S3_BUCKET=quackback
+S3_REGION=auto
+S3_ACCESS_KEY_ID=your-access-key
+S3_SECRET_ACCESS_KEY=your-secret-key
+S3_FORCE_PATH_STYLE=true
 
-GOOGLE_CLIENT_ID="your-google-client-id"
-GOOGLE_CLIENT_SECRET="your-google-client-secret"
+# AI (optional)
+# OPENAI_API_KEY=sk-...
+# OPENAI_BASE_URL=https://api.openai.com/v1
+# AI_CHAT_MODEL=gpt-4o-mini
+# AI_EMBEDDING_MODEL=text-embedding-3-small
 
-# ===================
 # Telemetry (optional)
-# ===================
-# DISABLE_TELEMETRY="true"
-
+# DISABLE_TELEMETRY=true
 ```
-
-## Validation
-
-<Note>
-Quackback validates required variables on startup. Missing variables will cause the application to fail with a clear error message indicating which variables are missing.
-</Note>
