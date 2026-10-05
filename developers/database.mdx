@@ -11,11 +11,11 @@ Master the data layer. This guide covers how Quackback uses PostgreSQL with Driz
 ## Overview
 
 Quackback uses:
-- **PostgreSQL 18+** as the database
+- **PostgreSQL 14+** as the database (also the job queue and realtime bus)
 - **Drizzle ORM** for type-safe queries
 - **TypeIDs** for branded identifiers
 - **pgvector** for semantic search
-- **pg_cron** for scheduled jobs
+- **pg_trgm** for text search
 
 ## Schema Location
 
