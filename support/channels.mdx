@@ -8,7 +8,7 @@ icon: "envelope"
 
 Not every customer wants to chat live. Email into conversations so a support inbox reply and an email reply are the same thread, no matter which side the customer answers from.
 
-Configure email at **Admin → Settings → Emails**.
+Configure email at **Admin → Settings → Channels → Email**.
 
 ## Inbound routing
 
@@ -34,6 +34,17 @@ Add both records at your DNS provider, then click **Verify**. Verification runs 
 <Tip>
 DNS changes can take time to propagate. If verification fails right after adding records, wait a few minutes and try again before assuming something's wrong.
 </Tip>
+
+## Spam filter
+
+Inbound mail passes sender checks that don't need AI, and any address or domain on your **Trusted senders** list skips spam checks entirely.
+
+With AI configured, the **AI spam filter** switch also sends new email and Messenger conversations to the model and moves obvious spam to **Spam**. Filed spam is deleted after 30 days.
+
+- New workspaces start with the AI spam filter **on**.
+- Workspaces upgraded from 0.13 start with it **off**. Turn it on here if you want it.
+
+Turning it off stops the model call. Trusted senders and the other sender checks keep working.
 
 ## How inbound trust works
 

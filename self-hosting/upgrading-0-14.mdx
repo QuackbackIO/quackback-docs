@@ -173,9 +173,7 @@ Conversations that were pending are now snoozed. Conversations are open, snoozed
 
 ### SSO and OIDC redirect URIs
 
-{/* TODO(0.14): confirm against the merged OIDC redirect-style PR. */}
-
-New sign-in providers use the redirect URI `/api/auth/callback/<id>`. Providers you added before 0.14 keep working with their original `/api/auth/oauth2/callback/<id>`. To switch one to the new URI, add the new URI at your identity provider first, then change it in the provider's **Edit** view in Quackback, and test the connection again.
+New sign-in providers use the redirect URI `/api/auth/callback/<id>`. Providers you added before 0.14, including the portal's custom OIDC provider, keep working with their original `/api/auth/oauth2/callback/<id>`, so nothing changes at your identity provider on upgrade. To move one to the new URI, register the new URI at your identity provider first, click **Switch to new URI** in the provider's **Edit** view in Quackback, then test the connection again. See [Set up single sign-on](/auth/sso).
 
 ### Slack
 
@@ -194,15 +192,39 @@ The importers for other feedback tools were removed. CSV import remains in **Adm
 
 ### AI spam filter
 
-{/* TODO(0.14): confirm against the merged privacy/API PR. Planned behaviour: the AI spam filter is off on upgraded installs (opt-in), on for new installs. Name the exact settings path once it lands. */}
+With AI configured, Quackback can send new email and Messenger conversations to the model to file obvious spam. Workspaces upgrading from 0.13 start with this switched **off**; new workspaces start with it on. Turn it on with **AI spam filter** in **Admin → Settings → Channels → Email**. Filed spam is deleted after 30 days. Trusted senders and the sender checks that don't use AI work either way. See [Set up the email channel](/support/channels#spam-filter).
 
-Upgraded installs start with the AI spam filter switched off. Turn it on in the inbox spam settings if you want AI to classify inbound conversations as spam.
+### Switched-off surfaces stay hidden
+
+0.14 replaces the separate Help Center and Messenger on/off switches with the module toggles in **Admin → Settings → General** and the widget's Messages tab. If your Help Center or Messenger was switched off in 0.13, the upgrade keeps it off: the Help Center module or the Messages tab is turned off, so nothing goes public. Your articles and conversations stay. Turn them back on when you're ready.
 
 ## What changed for developers
 
 - **Widget identify needs a signed token.** `identify` only accepts a signed `ssoToken` generated on your server. Unsigned `{ id, email, name }` payloads are rejected. See [Identify users](/widget/identify-users).
-- **Retired ID prefixes still work.** The API accepts IDs with prefixes retired in this release (such as `kb_article_...`) and returns the current prefix. {/* TODO(0.14): confirm the full alias list once the privacy/API PR merges. */}
-- **Roadmap `isPublic` is deprecated.** It's still accepted on roadmap requests as an alias of `visibility`. Use `visibility` (`public`, `team`, or `segment`) in new code. {/* TODO(0.14): confirm against the merged privacy/API PR. */}
+- **Retired ID prefixes still work.** Several ID prefixes were renamed. The API still accepts IDs you stored from 0.13 and returns them with the current prefix:
+
+  | Old prefix | Current prefix |
+  |------------|----------------|
+  | `status_` | `post_status_` |
+  | `tag_` | `post_tag_` |
+  | `comment_` | `post_comment_` |
+  | `vote_` | `post_vote_` |
+  | `reaction_` | `post_comment_reaction_` |
+  | `comment_edit_` | `post_comment_edit_` |
+  | `note_` | `post_note_` |
+  | `activity_` | `post_activity_` |
+  | `merge_sug_` | `post_merge_sug_` |
+  | `linked_entity_` | `post_external_link_` |
+  | `chat_msg_` | `conversation_msg_` |
+  | `chat_tag_` | `conversation_tag_` |
+  | `chat_msg_mention_` | `conversation_msg_mention_` |
+  | `category_` | `kb_category_` |
+  | `kb_article_` | `article_` |
+  | `article_feedback_` | `kb_article_feedback_` |
+
+  Store the current form when you next write IDs back.
+- **Roadmap `isPublic` is deprecated.** `POST` and `PATCH /api/v1/roadmaps` still accept it as an alias of `visibility`: `true` means `public` and `false` means `team`. If you send both, `visibility` wins. Use `visibility` (`public`, `team`, or `segment`) in new code.
+- **Permission checks follow roles.** `/api/v1/apps/link` and `/api/v1/apps/unlink` need the `post.vote_on_behalf` permission (Owner, Admin, Manager, and Contributor have it), so sidebar apps installed with a Manager's key keep working. `/api/export` (posts CSV) needs `post.export` (Owner, Admin, and Manager). See [Roles and permissions](/admin/roles-permissions#permissions-used-by-the-api).
 - **Webhooks and events** cover more of the product. See [Webhooks](/integrations/webhooks) for the full catalogue.
 
 ## If something goes wrong

@@ -46,8 +46,7 @@ The redirect URI must match exactly, including `https`, no trailing slash, and t
 </Warning>
 
 <Note>
-{/* TODO(0.14): confirm against the merged OIDC redirect-style PR (fix(auth): keep existing OIDC providers on the redirect URI their IdP has). */}
-Upgrading from 0.13: providers set up before 0.14 keep their original redirect URI, `/api/auth/oauth2/callback/<registration-id>`, so sign-in keeps working without changes at your IdP. New providers use `/api/auth/callback/<registration-id>`. To move an existing provider to the new URI, add it at your IdP first, switch it in the provider's **Edit** view, then run **Test sign-in** again.
+Upgrading from 0.13: providers set up before 0.14 keep their original redirect URI, `/api/auth/oauth2/callback/<registration-id>`, so sign-in keeps working without changes at your IdP. New providers use `/api/auth/callback/<registration-id>`. The provider's page shows the URI it currently sends. To move an existing provider to the new URI, register the new URI at your IdP first, click **Switch to new URI** in the provider's **Edit** view and confirm, then run **Test sign-in** again.
 </Note>
 
 ## Step 2: Add the connection
