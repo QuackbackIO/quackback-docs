@@ -37,6 +37,21 @@ Quackback rate-limits requests per client IP. Behind a proxy, every request arri
 
 If you leave it at `0` behind a proxy, every visitor shares the proxy's IP and one rate-limit bucket, and the app logs a warning.
 
+### Or name a client-IP header
+
+If your proxy sets one authoritative client-IP header, you can point Quackback at that header instead of counting hops. This is the better choice when requests pass through several proxies whose number you don't control. `TRUSTED_CLIENT_IP_HEADER` takes precedence over `TRUSTED_PROXY_HOPS`.
+
+| Proxy | Proxy setting | Quackback setting |
+|-------|---------------|-------------------|
+| Nginx | `proxy_set_header X-Real-IP $remote_addr;` (in the config below) | `TRUSTED_CLIENT_IP_HEADER=x-real-ip` |
+| Cloudflare | Sets `CF-Connecting-IP` on every request | `TRUSTED_CLIENT_IP_HEADER=cf-connecting-ip` |
+
+The header is used only when it holds exactly one valid IP address. Otherwise the app falls back to `TRUSTED_PROXY_HOPS` and logs a warning. `X-Forwarded-For` can't be used here; count hops with `TRUSTED_PROXY_HOPS` for it.
+
+<Warning>
+Only name a header your proxy always sets or overwrites. If the proxy passes a client's own copy of the header through, or clients can reach the app port directly, anyone can choose the IP the app sees.
+</Warning>
+
 <Warning>
 Never set `TRUSTED_PROXY_HOPS` above `0` if clients can also reach the app port directly. Anyone could then send their own `X-Forwarded-For` header and pick the IP the app sees. Bind the app to `127.0.0.1` or a private network when a proxy sits in front of it.
 </Warning>

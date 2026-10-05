@@ -72,7 +72,7 @@ Finish every `.env` change before you start 0.14. Some settings, such as the one
 - **If `.env` has a `REDIS_URL` line, delete it.** Redis and Dragonfly are no longer used. The 0.13 compose file set it for you, so most installs don't have one.
 - **If you set `MINIO_IMAGE_TAG` or `MC_IMAGE_TAG`, remove them.** They're ignored now.
 - **Set `SECRET_KEY`** to the value your 0.13 install used. The compose file refuses to start without it.
-- **Set `TRUSTED_PROXY_HOPS`.** Behind Nginx, Caddy, Traefik, or a Cloudflare Tunnel, set `1`. Behind a CDN plus a proxy, set `2`. If clients connect straight to the app port, keep `0`. See [Trusted proxy hops](#trusted-proxy-hops).
+- **Set `TRUSTED_PROXY_HOPS`.** Behind Nginx, Caddy, Traefik, or a Cloudflare Tunnel, set `1`. Behind a CDN plus a proxy, set `2`. If clients connect straight to the app port, keep `0`. If your proxy sets a single client-IP header such as `X-Real-IP`, you can set `TRUSTED_CLIENT_IP_HEADER` instead. See [Trusted proxy hops](#trusted-proxy-hops).
 - **Keep only one email provider**: `EMAIL_SMTP_HOST`, the `EMAIL_SES_*` keys, or `EMAIL_RESEND_API_KEY`. Check this now, because the app stops after migrations if more than one is set. See [Email](#configure-one-email-provider).
 
 ### 3. Pull the new image
@@ -139,7 +139,7 @@ If you use an external S3 provider, nothing changes here. `S3_PUBLIC_URL` no lon
 
 ### Trusted proxy hops
 
-Rate limits are per client IP. Behind a proxy, the app only sees the real IP if you tell it how many proxies to skip. Left at `0` behind a proxy, every visitor shares one rate-limit bucket and the app logs a warning. Never set it above `0` if clients can reach the app port directly, because anyone could then pick the IP the app sees. See [Set the trusted proxy hops](/self-hosting/reverse-proxy#set-the-trusted-proxy-hops).
+Rate limits are per client IP. Behind a proxy, the app only sees the real IP if you tell it how many proxies to skip. Left at `0` behind a proxy, every visitor shares one rate-limit bucket and the app logs a warning. Never set it above `0` if clients can reach the app port directly, because anyone could then pick the IP the app sees. If your proxy sets one client-IP header (`X-Real-IP` from Nginx, `CF-Connecting-IP` from Cloudflare), you can set `TRUSTED_CLIENT_IP_HEADER` to its name instead. See [Set the trusted proxy hops](/self-hosting/reverse-proxy#set-the-trusted-proxy-hops).
 
 ### Configure one email provider
 
