@@ -13,7 +13,7 @@ The fastest way to get Quackback into production. Docker handles dependencies, d
 - Docker Engine 20.10+
 - Docker Compose v2+
 - 1 GB RAM minimum (2 GB recommended)
-- PostgreSQL 18+ (included in the compose stack, or bring your own)
+- PostgreSQL 14+ with pgvector 0.5.0+ (included in the compose stack, or bring your own)
 
 <Note>
 The published image is multi-arch (`linux/amd64` + `linux/arm64`), so it runs natively on Apple Silicon and ARM servers (AWS Graviton, Ampere, Raspberry Pi).
@@ -23,10 +23,10 @@ The published image is multi-arch (`linux/amd64` + `linux/arm64`), so it runs na
 
 ### Use Docker Compose (recommended)
 
-`docker-compose.prod.yml` is a self-contained, single-host stack: the Quackback app plus PostgreSQL, Dragonfly (Redis), and MinIO (S3-compatible storage). The app is the only service with a published port; the datastores stay on the internal network and the upload bucket is private.
+`docker-compose.prod.yml` is a self-contained, single-host stack: the Quackback app plus PostgreSQL and PGSTY Silo, a maintained fork of MinIO that provides S3-compatible storage. The app is the only service with a published port. The datastores stay on the internal network and the upload bucket is private.
 
 ```bash
-# Clone the repository (the Postgres image is built locally for pg_cron + pgvector)
+# Clone the repository (the Postgres image is built locally with pgvector)
 git clone https://github.com/QuackbackIO/quackback.git
 cd quackback
 
@@ -41,19 +41,18 @@ docker compose -f docker-compose.prod.yml up -d
 Open `http://localhost:3000` (or your `BASE_URL` behind a reverse proxy).
 
 <Warning>
-The repository's root `docker-compose.yml` is for **local development only** — it starts the datastores (with insecure defaults and a world-readable bucket) but **no app service**. Use `docker-compose.prod.yml` for self-hosting.
+The repository's root `docker-compose.yml` is for **local development only**. It starts the datastores (with insecure defaults and a world-readable bucket) but **no app service**. Use `docker-compose.prod.yml` for self-hosting.
 </Warning>
 
 ### Use Docker Run (bring your own datastores)
 
-If you already run managed PostgreSQL, Redis, and S3, run the app container on its own:
+If you already run managed PostgreSQL and S3, run the app container on its own:
 
 ```bash
 docker run -d \
   --name quackback \
   -p 3000:3000 \
   -e DATABASE_URL="postgresql://user:pass@host:5432/quackback" \
-  -e REDIS_URL="redis://your-redis-host:6379" \
   -e SECRET_KEY="your-32-char-secret" \
   -e BASE_URL="https://feedback.yourcompany.com" \
   ghcr.io/quackbackio/quackback:latest
@@ -71,15 +70,15 @@ The Quackback Docker image uses a multi-stage build:
 - **Production stage** runs as a non-root `quackback` user for security
 - **Entrypoint** (`docker-entrypoint.sh`) runs database migrations automatically on every startup, then starts the server
 - **Optional seeding** with `SEED_DATABASE=true` to populate demo data
-- **Health endpoints** at [`/api/health/live`](/api/health) (process up) and [`/api/health/ready`](/api/health) (database, Redis, migrations, and worker checks)
+- **Health endpoints** at [`/api/health/live`](/api/health) (process up) and [`/api/health/ready`](/api/health) (database, migrations, and worker checks)
 
 <Tip>
-Because migrations run on every startup, upgrading is as simple as pulling the latest image and restarting. No manual migration step needed. (Set `SKIP_MIGRATIONS=true` if you run migrations out-of-band, e.g. a Kubernetes pre-upgrade hook.)
+Because migrations run on every startup, a routine upgrade is pulling the new image and restarting. Set `SKIP_MIGRATIONS=true` if you run migrations out-of-band, for example in a Kubernetes pre-upgrade hook.
 </Tip>
 
 ## Configuration
 
-With the compose stack you set everything in `.env` (copied from `.env.prod.example`). The compose file derives the internal connection strings (`DATABASE_URL`, `REDIS_URL`, `S3_*`) from your secrets and wires them to the bundled services automatically — so you only provide the secrets, not the URLs.
+With the compose stack you set everything in `.env` (copied from `.env.prod.example`). The compose file derives the internal connection strings (`DATABASE_URL`, `S3_*`) from your secrets and wires them to the bundled services automatically. You provide the secrets, not the URLs.
 
 ### Required
 
@@ -87,15 +86,19 @@ With the compose stack you set everything in `.env` (copied from `.env.prod.exam
 # Public URL (must match your domain)
 BASE_URL=https://feedback.yourcompany.com
 
-# Auth/encryption key — generate with: openssl rand -base64 32
+# Auth/encryption key (32+ characters). The stack refuses to start without it.
+# Generate with: openssl rand -base64 32
 SECRET_KEY=
+
+# Reverse proxies in front of the app: 0 = none, 1 = one proxy, 2 = CDN plus proxy
+TRUSTED_PROXY_HOPS=0
 
 # Bundled PostgreSQL
 POSTGRES_USER=quackback
 POSTGRES_PASSWORD=
 POSTGRES_DB=quackback
 
-# Bundled MinIO (also used as the S3 access key / secret)
+# Bundled object storage (also used as the S3 access key / secret)
 MINIO_ROOT_USER=quackback
 MINIO_ROOT_PASSWORD=
 S3_BUCKET=quackback
@@ -111,12 +114,22 @@ QUACKBACK_TAG=latest
 Without email configuration, OTP login codes are printed to the container logs. For production, configure one of the providers below.
 </Note>
 
-**SMTP (recommended)**
+Configure exactly one sending provider. If more than one is set, the app refuses to start and names the conflicting variables. See [Email](/integrations/email) for details.
+
+**SMTP**
 ```bash
 EMAIL_SMTP_HOST=smtp.example.com
 EMAIL_SMTP_PORT=587
 EMAIL_SMTP_USER=your-username
 EMAIL_SMTP_PASS=your-password
+EMAIL_FROM=Quackback <feedback@yourcompany.com>
+```
+
+**Amazon SES** (all three keys are required)
+```bash
+EMAIL_SES_ACCESS_KEY_ID=AKIA...
+EMAIL_SES_SECRET_ACCESS_KEY=...
+EMAIL_SES_REGION=us-east-1
 EMAIL_FROM=Quackback <feedback@yourcompany.com>
 ```
 
@@ -126,45 +139,52 @@ EMAIL_RESEND_API_KEY=re_xxxxxxxxxxxx
 EMAIL_FROM=Quackback <feedback@yourcompany.com>
 ```
 
-### OAuth providers & integrations (optional)
+### Sign-in providers and integrations (optional)
 
-OAuth providers (GitHub, Google, Discord, etc.) and integrations (Slack, etc.) are configured in the admin UI under **Settings → Authentication / Integrations**. See the [Environment Variables Reference](/reference/environment-variables) for the full list.
+OAuth providers (GitHub, Google, Discord, etc.) and integrations (Slack, etc.) are configured in the admin UI, not with environment variables. See the [Environment Variables Reference](/reference/environment-variables) for the full list.
 
 ## Object Storage
 
-The bundled MinIO has no public port, so uploads are served through the app's `/api/storage` proxy (`S3_PROXY=true` is set for you in the compose file). To use an external S3 provider (AWS S3, Cloudflare R2, Backblaze B2) instead, point `S3_*` at your provider and remove the `minio` and `minio-init` services from the compose file.
+The bundled storage is PGSTY Silo, a maintained fork of MinIO. It keeps the `minio` service name, the `minio_data` volume, and the `MINIO_ROOT_USER` / `MINIO_ROOT_PASSWORD` variables. Both Silo images are pinned by digest. To use a mirror or another release, set `SILO_IMAGE` and `SILO_CLIENT_IMAGE` to full image references.
+
+The bucket has no public port, so files are served through the app's `/api/storage` route (`S3_PROXY=true` is set for you in the compose file). To use an external S3 provider (AWS S3, Cloudflare R2, Backblaze B2) instead, point `S3_*` at your provider and remove the `minio` and `minio-init` services from the compose file.
 
 ## Database
 
 ### Use the bundled PostgreSQL
 
-The compose stack builds a PostgreSQL 18 image with the required extensions (`pgvector`, `pg_cron`) and runs migrations automatically on startup.
+The compose stack builds a PostgreSQL 18 image with pgvector, and the app runs migrations automatically on startup.
 
 ### Use an external database
 
-For managed databases (AWS RDS, Supabase, etc.):
+For a managed database such as AWS RDS or Google Cloud SQL:
 
-1. Create a PostgreSQL 18+ database
-2. Enable the `pgvector` extension (and `pg_cron` if you want scheduled analytics refreshes)
+1. Create a PostgreSQL 14+ database with pgvector 0.5.0+ and `pg_trgm` available
+2. Use a direct or session-mode connection string, not a transaction-mode pooler (realtime uses `LISTEN`/`NOTIFY`)
 3. Point `DATABASE_URL` at it (via the Docker Run path, or by editing the compose file)
+
+See [System Requirements](/self-hosting/requirements#postgresql) for the full list.
 
 Migrations run automatically when the container starts. To run them manually:
 
 ```bash
 docker run --rm \
   -e DATABASE_URL="your-external-db-url" \
+  --entrypoint bun \
   ghcr.io/quackbackio/quackback:latest \
-  bun /app/migrate.mjs
+  /app/migrate.mjs
 ```
 
 ## Reverse Proxy
 
 In production, place a reverse proxy in front of Quackback for HTTPS. See the [Reverse Proxy Configuration](/self-hosting/reverse-proxy) guide for Caddy, Nginx, and Traefik examples.
 
+Behind a proxy, set `TRUSTED_PROXY_HOPS=1` (or `2` for a CDN plus a proxy) so rate limits apply per visitor. See [Set the trusted proxy hops](/self-hosting/reverse-proxy#set-the-trusted-proxy-hops).
+
 ## Upgrade
 
 <Warning>
-Always back up your database before upgrading.
+Always back up your database and object storage before upgrading. Upgrading from 0.13? Follow [Upgrade from 0.13 to 0.14](/self-hosting/upgrading-0-14) instead of the steps below.
 </Warning>
 
 ```bash
@@ -180,9 +200,11 @@ docker compose -f docker-compose.prod.yml pull
 docker compose -f docker-compose.prod.yml up -d
 ```
 
-Drizzle migrations are sequential and safe to re-run, so the container handles schema updates on startup without any manual steps.
+Migrations run in order on startup and are safe to re-run, so the container handles schema updates without manual steps.
 
 ### Rollback
+
+Migrations can't be reversed, so rolling back means restoring the backup you took before the upgrade and running the previous image. Never point an older image at a database a newer version has migrated.
 
 ```bash
 # Stop containers
@@ -203,7 +225,7 @@ docker compose -f docker-compose.prod.yml up -d
 # Liveness: is the process up?
 curl http://localhost:3000/api/health/live
 
-# Readiness: are the database, Redis, migrations, and workers all okay?
+# Readiness: are the database, migrations, and workers all okay?
 curl http://localhost:3000/api/health/ready
 ```
 
@@ -226,7 +248,7 @@ docker compose -f docker-compose.prod.yml logs app
 
 ### `ERR_INVALID_URL` on startup
 
-A quoted value in an `--env-file` `.env` (e.g. `DATABASE_URL="postgres://..."`). Remove the quotes — Docker keeps them literally. See the Tip under [Use Docker Run](#use-docker-run-bring-your-own-datastores).
+A quoted value in an `--env-file` `.env` (e.g. `DATABASE_URL="postgres://..."`). Remove the quotes: Docker keeps them literally. See the Tip under [Use Docker Run](#use-docker-run-bring-your-own-datastores).
 
 ### Database connection failed
 
@@ -253,15 +275,17 @@ APP_PORT=8080
 Follow these practices for production deployments.
 </Warning>
 
-1. **Use strong secrets** — generate with `openssl rand -base64 32`
-2. **Enable HTTPS** — always use TLS in production (via a reverse proxy)
-3. **Don't expose datastores** — the prod compose keeps Postgres/Dragonfly/MinIO off public ports; keep it that way
-4. **Pin the image** — set `QUACKBACK_TAG` to a specific version rather than `latest`
-5. **Back up regularly** — automate database (and object-storage) backups
-6. **Keep updated** — pull latest images regularly
+1. **Use strong secrets**: generate with `openssl rand -base64 32`
+2. **Enable HTTPS**: always use TLS in production (via a reverse proxy)
+3. **Don't expose datastores**: the prod compose keeps PostgreSQL and object storage off public ports; keep it that way
+4. **Set `TRUSTED_PROXY_HOPS` correctly**: match the number of proxies in front of the app, and keep it `0` if clients can reach the app port directly
+5. **Pin the image**: set `QUACKBACK_TAG` to a specific version rather than `latest`
+6. **Back up regularly**: automate database and object-storage backups
+7. **Keep updated**: pull new images regularly
 
 ## Next Steps
 
+- [Upgrade from 0.13 to 0.14](/self-hosting/upgrading-0-14) - One-time steps for the 0.14 upgrade
 - [Scale with multiple replicas](/self-hosting/scaling) - Split web and worker roles
 - [Configuration Reference](/reference/environment-variables) - All environment variables
 - [Reverse Proxy Setup](/self-hosting/reverse-proxy) - SSL/TLS and proxy configurations

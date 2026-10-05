@@ -25,6 +25,22 @@ Your reverse proxy must pass these headers to Quackback:
 | `Upgrade` | WebSocket support |
 | `Connection` | Keep-alive handling |
 
+## Set the trusted proxy hops
+
+Quackback rate-limits requests per client IP. Behind a proxy, every request arrives from the proxy's address, so the app needs to know how many proxies to look past in `X-Forwarded-For`. Set `TRUSTED_PROXY_HOPS` to the number of proxies in front of it:
+
+| Setup | `TRUSTED_PROXY_HOPS` |
+|-------|----------------------|
+| Clients connect to the app directly | `0` (default) |
+| One reverse proxy (Nginx, Caddy, Traefik, Cloudflare Tunnel) | `1` |
+| A CDN in front of a reverse proxy | `2` |
+
+If you leave it at `0` behind a proxy, every visitor shares the proxy's IP and one rate-limit bucket, and the app logs a warning.
+
+<Warning>
+Never set `TRUSTED_PROXY_HOPS` above `0` if clients can also reach the app port directly. Anyone could then send their own `X-Forwarded-For` header and pick the IP the app sees. Bind the app to `127.0.0.1` or a private network when a proxy sits in front of it.
+</Warning>
+
 ## Caddy
 
 <Tip>
@@ -73,6 +89,9 @@ server {
     gzip on;
     gzip_types text/plain text/css application/json application/javascript image/svg+xml;
 
+    # Feedback videos can be up to 100 MB. Leave room for multipart overhead.
+    client_max_body_size 110m;
+
     location / {
         proxy_pass http://127.0.0.1:3000;
         proxy_http_version 1.1;
@@ -85,6 +104,8 @@ server {
     }
 }
 ```
+
+Quackback accepts MP4 and WebM videos up to 100 MB and images up to 5 MB. If another proxy, load balancer, or platform sits in front of Quackback, raise its request body limit above 100 MB too.
 
 Enable the site and obtain a certificate:
 
@@ -128,6 +149,14 @@ Make sure your proxy passes WebSocket upgrade headers:
 proxy_set_header Upgrade $http_upgrade;
 proxy_set_header Connection "upgrade";
 ```
+
+### Live chat updates arrive late or not at all
+
+Live chat streams over a long-lived HTTP connection (server-sent events). If your proxy buffers responses, turn buffering off for Quackback (`proxy_buffering off;` in Nginx). If you can't, set `CHAT_TRANSPORT_MODE=poll` to switch the widget and portal to polling.
+
+### Every visitor hits the rate limit at once
+
+`TRUSTED_PROXY_HOPS` is `0` behind a proxy, so all visitors share one IP. Set it as described in [Set the trusted proxy hops](#set-the-trusted-proxy-hops).
 
 ### Mixed Content Warnings
 
