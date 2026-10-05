@@ -1,12 +1,12 @@
 ---
 title: "Internationalize your widget"
-description: "Configure language and locale settings for the widget and portal across nine supported languages."
+description: "Configure language and locale settings for the widget and portal across eleven supported languages."
 icon: "language"
 ---
 
 # Internationalize your widget
 
-Reach users in their language without rebuilding anything. The widget and portal detect locale automatically and render all UI text — buttons, labels, placeholders — in the right language.
+Reach users in their language without rebuilding anything. The widget and portal detect locale automatically and render all UI text (buttons, labels, placeholders) in the right language.
 
 ## Supported locales
 
@@ -21,17 +21,17 @@ Reach users in their language without rebuilding anything. The widget and portal
 | `pt-br` | Portuguese (Brazil) | LTR |
 | `zh-cn` | Chinese, Simplified | LTR |
 | `zh-tw` | Chinese, Traditional | LTR |
-
-RTL layout is also enabled automatically for Hebrew (`he`), Farsi (`fa`), and Urdu (`ur`) if you pass those locale codes explicitly.
+| `nl` | Dutch | LTR |
+| `pl` | Polish | LTR |
 
 ## How locale is detected
 
 The widget and portal resolve locale in this order:
 
-1. **URL parameter** — `?locale=fr` overrides everything else
-2. **Widget SDK config** — `locale` set during `init` (see below)
-3. **Browser `Accept-Language` header** — used by the portal automatically
-4. **English** — the fallback if nothing matches
+1. **URL parameter**: `?locale=fr` overrides everything else
+2. **Widget SDK config**: `locale` set during `init` (see below)
+3. **Browser `Accept-Language` header**: used by the portal automatically
+4. **English**: the fallback if nothing matches
 
 Region subtags are stripped automatically. A browser sending `fr-FR` resolves to `fr`.
 
@@ -57,7 +57,7 @@ If your app lets users choose their language, pass their preference here. That w
 
 ## Portal locale
 
-The portal reads the browser's `Accept-Language` header and switches language automatically. There's no admin setting to configure — it works for all supported locales out of the box.
+The portal reads the browser's `Accept-Language` header and switches language automatically. There's no admin setting to configure. It works for all supported locales out of the box.
 
 Users who set their browser to French see the portal in French. Users on Arabic get Arabic with RTL layout. No extra setup needed.
 
@@ -77,5 +77,5 @@ The `?rtl=1` parameter is a debug tool only. In production, RTL activates automa
 
 ## Next steps
 
-- [Install the widget](/widget/installation) — Add the widget snippet to your app
-- [Identify users](/widget/identify-users) — Pass user identity to the widget for personalized experiences
+- [Install the widget](/widget/installation): Add the widget snippet to your app
+- [Identify users](/widget/identify-users): Pass user identity to the widget for personalized experiences

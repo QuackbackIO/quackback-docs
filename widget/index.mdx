@@ -12,7 +12,7 @@ Collect feedback without pulling users out of your product. The widget adds a fl
 
 The widget is a lightweight JavaScript SDK (~10 KB) that loads an iframe from your Quackback instance. It handles all rendering, authentication, and communication with your feedback portal.
 
-The widget appears as soon as `Quackback("init")` runs — visible to every visitor, anonymous by default. Identify is optional. Signed-in attribution uses a backend-signed `ssoToken` only. Unsigned `{ id, email }` is rejected.
+The widget appears as soon as `Quackback("init")` runs. It is visible to every visitor and anonymous by default. Identify is optional. Signed-in attribution uses a backend-signed `ssoToken` only. Unsigned `{ id, email }` is rejected.
 
 **On desktop**, the widget opens as a 400 x 600px popover panel anchored to the bottom corner of the screen. The launcher button stays visible and toggles between open and close states.
 
@@ -49,11 +49,11 @@ The SDK goes beyond embedding - you can hook into what happens inside the widget
 - **Events** - Subscribe to `post:created`, `vote`, `comment:created`, and other events to trigger analytics, show confirmations, or sync state. See [Listen to widget events](/widget/events).
 - **Metadata** - Attach session context (page URL, app version, user plan) that gets stored with every post submitted through the widget. See [Attach session metadata](/widget/metadata).
 - **Programmatic control** - Open the widget to a specific view with a pre-filled title, or hide the default launcher button and use your own UI. See the [`open` command](/widget/installation#open) and [`launcher` option](/widget/installation#configure-with-init-options).
-- **Help tab** — If the [help center](/help-center/setup) is enabled, users can search and browse help articles directly in the widget.
+- **Help tab**: If the [help center](/help-center/setup) is enabled, users can search and browse help articles directly in the widget.
 
 ## Localization
 
-The widget supports **English, French, German, Spanish, Arabic, Russian, Portuguese (Brazil), and Chinese (Simplified and Traditional)** (including full RTL layout for Arabic). By default, the widget auto-detects the user's language from their browser. You can override this with the `locale` init option or the `?locale=` URL parameter.
+The widget supports **English, French, German, Spanish, Arabic, Russian, Portuguese (Brazil), Chinese (Simplified and Traditional), Dutch, and Polish** (including full RTL layout for Arabic). By default, the widget auto-detects the user's language from their browser. You can override this with the `locale` init option or the `?locale=` URL parameter.
 
 ```js
 Quackback("init", { locale: "fr" });
