@@ -6,1207 +6,382 @@ icon: "database"
 
 # Database Schema
 
-This document provides a comprehensive reference for the Quackback database schema. All tables use PostgreSQL with Drizzle ORM for type-safe database access.
+A guide to the tables you're most likely to query when writing SQL reports against a self-hosted Quackback database. It lists key columns only. The source of truth is the Drizzle schema in `packages/db/src/schema/` in the Quackback repository.
+
+<Warning>
+Read from the database, but make changes through the app, the [REST API](/api/overview), or [MCP](/mcp). Writing to tables directly can skip validation, events, webhooks, and search indexing.
+</Warning>
 
 ## Overview
 
-Quackback uses a PostgreSQL database with the following characteristics:
+- **IDs**: primary and foreign keys are stored as PostgreSQL `uuid`. The app and API show them as TypeIDs with a type prefix, such as `post_01h455vb4pex5vsknk084sn02q`. The prefix is not stored.
+- **Timestamps**: every timestamp column is `timestamp with time zone`.
+- **Soft deletes**: most content tables have a `deleted_at` column. Filter on `deleted_at IS NULL` to match what the app shows.
+- **Search**: posts, conversation messages, and help center articles have a generated `search_vector` column for full-text search. Posts, changelog entries, and articles also store an `embedding` (pgvector) when AI is configured.
+- **People are principals**: authors, voters, agents, and customers are all referenced by `principal_id`, not `user_id`. Join `principal` to `user` for names and emails.
 
-- **TypeIDs**: All primary keys use TypeID format (UUID storage with type-prefixed strings in the application layer, e.g., `post_01h455vb4pex5vsknk084sn02q`)
-- **Timestamps**: All timestamp columns use `timestamp with time zone`
-- **Soft deletes**: Most entity tables support soft deletion via `deleted_at` columns
-- **Full-text search**: Posts have a generated `search_vector` column for PostgreSQL full-text search
-- **Relational queries**: Drizzle relations enable type-safe joins and nested queries
+## Renamed in 0.14
 
-<Tip>
-When working with the database, always import from `@/lib/db` rather than `@quackback/db` directly. This ensures proper connection handling.
-</Tip>
+Upgrading from 0.13 renames several tables. Update any saved SQL.
+
+| 0.13 name | 0.14 name |
+|-----------|-----------|
+| `votes` | `post_votes` |
+| `comments` | `post_comments` |
+| `tags` | `post_tags` (the tag catalogue) |
+| `post_tags` (post-to-tag join) | `post_tag_assignments` |
+| `comment_reactions` | `post_comment_reactions` |
+| `comment_edit_history` | `post_comment_edit_history` |
+| `merge_suggestions` | `post_merge_suggestions` |
+| `chat_messages` | `conversation_messages` |
+| `chat_message_mentions`, `chat_message_reactions`, `chat_message_flags` | `conversation_message_mentions`, `conversation_message_reactions`, `conversation_message_flags` |
+| `chat_tags` | `conversation_tags` (the tag catalogue) |
+| `conversation_tags` (conversation-to-tag join) | `conversation_tag_assignments` |
+
+Roadmaps are now built from post statuses, and the `post_roadmaps` table is gone. On installs upgraded from 0.13, the old curated placements are kept in `post_roadmaps_archived` for reference until a later release. Nothing reads or writes it.
 
 ## Table Categories
 
 | Category | Tables |
 |----------|--------|
-| [Authentication](#authentication-tables) | user, session, account, verification, one_time_token, member, invitation, settings |
-| [Content](#content-tables) | boards, posts, comments, votes, tags, post_tags, roadmaps, post_roadmaps |
-| [Status & Workflow](#status--workflow-tables) | post_statuses |
-| [History & Notes](#history--notes-tables) | post_edit_history, comment_edit_history, post_notes, comment_reactions |
-| [Integrations](#integration-tables) | integrations, integration_platform_credentials, integration_event_mappings, post_external_links |
-| [Notifications](#notification-tables) | in_app_notifications, post_subscriptions, notification_preferences, unsubscribe_tokens |
-| [Changelog](#changelog-tables) | changelog_entries, changelog_entry_posts |
-| [AI Features](#ai-feature-tables) | post_sentiment, merge_suggestions |
-| [Feedback Pipeline](#feedback-pipeline-tables) | feedback_sources, raw_feedback_items, feedback_signals, feedback_suggestions, feedback_signal_corrections, external_user_mappings |
-| [Segments](#segment-tables) | segments, user_segments, user_attribute_definitions |
-| [API](#api-tables) | api_keys, webhooks |
+| [People and access](#people-and-access) | `user`, `principal`, `session`, `account`, `invitation`, `roles`, `permissions`, `role_permissions`, `principal_role_assignments`, `teams`, `team_members` |
+| [Feedback](#feedback) | `boards`, `posts`, `post_statuses`, `post_votes`, `post_comments`, `post_comment_reactions`, `post_tags`, `post_tag_assignments`, `post_notes`, `post_edit_history`, `post_comment_edit_history` |
+| [Roadmaps](#roadmaps) | `roadmaps`, `roadmap_columns` |
+| [Changelog](#changelog) | `changelog_entries`, `changelog_entry_posts` |
+| [Support](#support) | `conversations`, `conversation_messages`, `conversation_tags`, `conversation_tag_assignments`, `conversation_participants`, `tickets`, `ticket_statuses`, `ticket_conversations`, `ticket_links` |
+| [Help center](#help-center) | `kb_categories`, `kb_articles`, `kb_article_translations`, `kb_search_queries` |
+| [Customers](#customers) | `companies`, `segments`, `user_segments` |
+| [AI](#ai) | `post_merge_suggestions`, `post_sentiment` |
+| [Notifications](#notifications) | `post_subscriptions`, `notification_preferences`, `in_app_notifications` |
+| [Integrations and API](#integrations-and-api) | `integrations`, `post_external_links`, `ticket_external_links`, `webhooks`, `api_keys` |
+| [Events and jobs](#events-and-jobs) | `events`, `job_queue` |
+| [Workspace](#workspace) | `settings` |
 
 ---
 
-## Authentication Tables
+## People and Access
 
 ### user
 
-User identities for the application. Managed by Better Auth with custom extensions.
+One row per person who has signed in or been identified.
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (user) | PRIMARY KEY | Unique user identifier |
-| `name` | text | NOT NULL | Display name |
-| `email` | text | NOT NULL, UNIQUE | Email address |
-| `email_verified` | boolean | NOT NULL, DEFAULT false | Email verification status |
-| `image` | text | | Profile image URL |
-| `image_key` | text | | S3 storage key for profile image |
-| `metadata` | text | | General user metadata (JSON) |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
+| Column | Description |
+|--------|-------------|
+| `id` | User ID |
+| `name` | Display name |
+| `email` | Email address. Anonymous visitors have a placeholder address. |
+| `email_verified` | Whether the email is verified |
+| `external_id` | ID from your own system, set by widget identify |
+| `locale`, `country` | Detected locale and country |
+| `created_at` | When the user was created |
 
-**Indexes:**
-- `user_email_idx` (unique) on `email`
+### principal
 
-**Relations:**
-- Has many: sessions, accounts, members, invitations
+The identity that owns content and activity. A principal usually points to a `user`, but service principals (API keys, integrations) don't.
 
----
+| Column | Description |
+|--------|-------------|
+| `id` | Principal ID |
+| `user_id` | The linked `user`, if any |
+| `type` | `user`, `anonymous`, `service`, or `support` |
+| `role` | Access tier: `admin` or `member` for team members, `user` for portal users. Fine-grained roles are in `principal_role_assignments`. |
+| `display_name` | Name shown for service principals |
+| `company_id` | The customer's `companies` row, if any |
+| `blocked_at` | When the principal was blocked |
+| `created_at` | Creation time |
 
-### session
+To list your team with their roles:
 
-User authentication sessions.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | text | PRIMARY KEY | Session identifier (Better Auth generated) |
-| `expires_at` | timestamptz | NOT NULL | Session expiration time |
-| `token` | text | NOT NULL, UNIQUE | Session token |
-| `ip_address` | text | | Client IP address |
-| `user_agent` | text | | Client user agent |
-| `user_id` | TypeID (user) | NOT NULL, FK -> user.id ON DELETE CASCADE | Associated user |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-| `updated_at` | timestamptz | NOT NULL | Last update timestamp |
-
-**Indexes:**
-- `session_userId_idx` on `user_id`
-
-**Relations:**
-- Belongs to: user
-
----
-
-### account
-
-OAuth and authentication provider accounts.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (account) | PRIMARY KEY | Account identifier |
-| `account_id` | text | NOT NULL | External account ID |
-| `provider_id` | text | NOT NULL | Auth provider (google, github, etc.) |
-| `user_id` | TypeID (user) | NOT NULL, FK -> user.id ON DELETE CASCADE | Associated user |
-| `access_token` | text | | OAuth access token |
-| `refresh_token` | text | | OAuth refresh token |
-| `id_token` | text | | OAuth ID token |
-| `access_token_expires_at` | timestamptz | | Access token expiration |
-| `refresh_token_expires_at` | timestamptz | | Refresh token expiration |
-| `scope` | text | | OAuth scopes |
-| `password` | text | | Hashed password (for password auth) |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-| `updated_at` | timestamptz | NOT NULL | Last update timestamp |
-
-**Indexes:**
-- `account_userId_idx` on `user_id`
-
-**Relations:**
-- Belongs to: user
-
----
-
-### verification
-
-Email and other verification tokens.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | text | PRIMARY KEY | Verification identifier |
-| `identifier` | text | NOT NULL | Target identifier (email, etc.) |
-| `value` | text | NOT NULL | Verification code/token |
-| `expires_at` | timestamptz | NOT NULL | Expiration time |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
-
-**Indexes:**
-- `verification_identifier_idx` on `identifier`
-
----
-
-### one_time_token
-
-Secure cross-domain session transfer tokens (used during workspace provisioning).
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | text | PRIMARY KEY | Token identifier |
-| `token` | text | NOT NULL | One-time token value |
-| `user_id` | TypeID (user) | NOT NULL, FK -> user.id ON DELETE CASCADE | Associated user |
-| `expires_at` | timestamptz | NOT NULL | Expiration time |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-
-**Relations:**
-- Belongs to: user
-
----
-
-### member
-
-Unified membership records linking users to workspace roles.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (member) | PRIMARY KEY | Member identifier |
-| `user_id` | TypeID (user) | NOT NULL, FK -> user.id ON DELETE CASCADE, UNIQUE | Associated user |
-| `role` | text | NOT NULL, DEFAULT 'member' | Role: 'admin', 'member', or 'user' |
-| `created_at` | timestamptz | NOT NULL | Creation timestamp |
-
-**Role Descriptions:**
-- `admin`: Full administrative access, can manage settings and team
-- `member`: Team member access, can manage feedback
-- `user`: Portal user access only, can vote/comment on public portal
-
-**Indexes:**
-- `member_user_idx` (unique) on `user_id`
-- `member_role_idx` on `role`
-
-**Relations:**
-- Belongs to: user
-- Has many: posts (as author), posts (as owner), comments, votes, post_subscriptions
-
----
-
-### invitation
-
-Team member invitations.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (invite) | PRIMARY KEY | Invitation identifier |
-| `email` | text | NOT NULL | Invitee email address |
-| `name` | text | | Invitee name |
-| `role` | text | | Assigned role on acceptance |
-| `status` | text | NOT NULL, DEFAULT 'pending' | Status: pending, accepted, expired |
-| `expires_at` | timestamptz | NOT NULL | Expiration time |
-| `last_sent_at` | timestamptz | | Last email sent timestamp |
-| `inviter_id` | TypeID (user) | NOT NULL, FK -> user.id ON DELETE CASCADE | User who sent invitation |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-
-**Indexes:**
-- `invitation_email_idx` on `email`
-- `invitation_email_status_idx` on `(email, status)`
-
-**Relations:**
-- Belongs to: user (inviter)
-
----
-
-### settings
-
-Application settings and branding configuration. Single row in self-hosted deployments.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (workspace) | PRIMARY KEY | Settings identifier |
-| `name` | text | NOT NULL | Workspace/application name |
-| `slug` | text | NOT NULL, UNIQUE | URL-safe identifier |
-| `logo_key` | text | | S3 storage key for logo image |
-| `favicon_key` | text | | S3 storage key for favicon |
-| `header_logo_key` | text | | S3 storage key for header logo (horizontal wordmark) |
-| `header_display_mode` | text | DEFAULT 'logo_and_name' | Header style: 'logo_and_name', 'logo_only', 'custom_logo' |
-| `header_display_name` | text | | Custom header display name |
-| `auth_config` | text | | Team auth settings (JSON) |
-| `portal_config` | text | | Portal feature settings (JSON) |
-| `branding_config` | text | | Theme/branding settings (JSON) |
-| `custom_css` | text | | Custom CSS for portal |
-| `developer_config` | text | | Developer settings (JSON), e.g. MCP config |
-| `setup_state` | text | | Onboarding state tracking (JSON) |
-| `metadata` | text | | Additional metadata (JSON) |
-| `created_at` | timestamptz | NOT NULL | Creation timestamp |
-
-**JSON Column Schemas:**
-
-`auth_config`:
-```json
-{
-  "oauth": { "google": boolean, "github": boolean, "microsoft": boolean },
-  "ssoRequired": boolean,
-  "openSignup": boolean
-}
+```sql
+SELECT u.name, u.email, r.name AS role
+FROM principal p
+JOIN "user" u ON u.id = p.user_id
+JOIN principal_role_assignments pra ON pra.principal_id = p.id
+JOIN roles r ON r.id = pra.role_id
+WHERE p.type = 'user' AND p.role IN ('admin', 'member');
 ```
 
-`portal_config`:
-```json
-{
-  "oauth": { "password": boolean, "email": boolean, "google": boolean, "github": boolean },
-  "features": { "publicView": boolean, "submissions": boolean, "comments": boolean, "voting": boolean }
-}
-```
+### roles, permissions, role_permissions, principal_role_assignments
 
-`branding_config`:
-```json
-{
-  "preset": string,
-  "light": { /* ThemeColors */ },
-  "dark": { /* ThemeColors */ }
-}
-```
+Role-based access control. `roles` holds the built-in roles (Owner, Admin, Manager, Contributor) and any custom roles. `role_permissions` maps roles to `permissions`. `principal_role_assignments` gives a principal a role, optionally scoped to a team.
 
-`setup_state`:
-```json
-{
-  "version": number,
-  "steps": { "core": boolean, "workspace": boolean, "boards": boolean },
-  "completedAt": "ISO timestamp",
-  "source": "cloud" | "self-hosted",
-  "useCase": "saas" | "consumer" | "marketplace" | "internal"
-}
-```
+| Table | Key columns |
+|-------|-------------|
+| `roles` | `id`, `key`, `name`, `is_system` |
+| `permissions` | `id`, `key`, `category` |
+| `role_permissions` | `role_id`, `permission_id` |
+| `principal_role_assignments` | `principal_id`, `role_id`, `team_id`, `granted_by_principal_id`, `created_at` |
+
+### session, account, invitation
+
+| Table | Key columns |
+|-------|-------------|
+| `session` | `user_id`, `expires_at`, `ip_address`, `user_agent`, `scope` (`dashboard`, `widget`, or `portal`) |
+| `account` | `user_id`, `provider_id` (sign-in method, such as `credential`, `github`, or an OIDC provider), `account_id` |
+| `invitation` | `email`, `role_id`, `status`, `kind` (`team` or `portal`), `expires_at`, `inviter_id` |
+
+### teams, team_members
+
+| Table | Key columns |
+|-------|-------------|
+| `teams` | `id`, `name`, `is_default`, `assignment_method`, `deleted_at` |
+| `team_members` | `team_id`, `principal_id` |
 
 ---
 
-## Content Tables
+## Feedback
 
 ### boards
 
-Feedback boards for organizing posts by topic or product area.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (board) | PRIMARY KEY | Board identifier |
-| `slug` | text | NOT NULL, UNIQUE | URL-safe identifier |
-| `name` | text | NOT NULL | Display name |
-| `description` | text | | Board description |
-| `is_public` | boolean | NOT NULL, DEFAULT true | Public visibility |
-| `settings` | jsonb | NOT NULL, DEFAULT \{\} | Board-specific settings |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
-| `deleted_at` | timestamptz | | Soft delete timestamp |
-
-**Indexes:**
-- Unique constraint on `slug`
-- `boards_is_public_idx` on `is_public`
-- `boards_deleted_at_idx` on `deleted_at`
-
-**Settings Schema:**
-```json
-{
-  "roadmapStatusIds": ["status_xxx", "status_yyy"]
-}
-```
-
-**Relations:**
-- Has many: posts
-
----
+| Column | Description |
+|--------|-------------|
+| `id` | Board ID |
+| `slug`, `name`, `description` | Board identity |
+| `access` | JSON. Who can see and post on the board. |
+| `deleted_at` | Soft delete |
 
 ### posts
 
-Feedback posts submitted by users or team members.
+| Column | Description |
+|--------|-------------|
+| `id` | Post ID |
+| `board_id` | The board |
+| `title`, `content` | Title and plain-text body. `content_json` holds the rich-text document. |
+| `principal_id` | Author |
+| `status_id` | The `post_statuses` row |
+| `owner_principal_id` | Assigned teammate |
+| `vote_count`, `comment_count` | Denormalised counts |
+| `moderation_state` | `published`, `pending`, `spam`, `archived`, `closed`, or `deleted` |
+| `canonical_post_id`, `merged_at` | Set when the post was merged into another |
+| `eta` | Planned date, used by date roadmaps |
+| `created_at`, `updated_at`, `deleted_at` | Timestamps |
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (post) | PRIMARY KEY | Post identifier |
-| `board_id` | TypeID (board) | NOT NULL, FK -> boards.id ON DELETE CASCADE | Parent board |
-| `title` | text | NOT NULL | Post title |
-| `content` | text | NOT NULL | Plain text content |
-| `content_json` | jsonb | | Rich content (TipTap JSON) |
-| `member_id` | TypeID (member) | NOT NULL, FK -> member.id ON DELETE RESTRICT | Author member |
-| `status_id` | TypeID (status) | FK -> post_statuses.id ON DELETE SET NULL | Current status |
-| `owner_member_id` | TypeID (member) | FK -> member.id ON DELETE SET NULL | Assigned team member |
-| `vote_count` | integer | NOT NULL, DEFAULT 0, CHECK >= 0 | Cached vote count |
-| `comment_count` | integer | NOT NULL, DEFAULT 0, CHECK >= 0 | Cached comment count |
-| `official_response` | text | | Team response text |
-| `official_response_member_id` | TypeID (member) | FK -> member.id ON DELETE SET NULL | Response author |
-| `official_response_at` | timestamptz | | Response timestamp |
-| `pinned_comment_id` | TypeID (comment) | | Pinned comment as official response |
-| `is_comments_locked` | boolean | NOT NULL, DEFAULT false | Prevent portal users from commenting (team members bypass) |
-| `moderation_state` | text | NOT NULL, DEFAULT 'published' | State: published, pending, spam, archived, closed, deleted |
-| `canonical_post_id` | TypeID (post) | | Canonical post this was merged into |
-| `merged_at` | timestamptz | | When this post was merged |
-| `merged_by_member_id` | TypeID (member) | FK -> member.id ON DELETE SET NULL | Who performed the merge |
-| `search_vector` | tsvector | GENERATED | Full-text search vector |
-| `embedding` | vector(1536) | | Semantic embedding (AI) |
-| `embedding_model` | text | | Model used for embedding |
-| `embedding_updated_at` | timestamptz | | Embedding generation time |
-| `summary_json` | jsonb | | AI-generated summary (structured) |
-| `summary_model` | text | | Model used for summary generation |
-| `summary_updated_at` | timestamptz | | Summary generation timestamp |
-| `summary_comment_count` | integer | | Comment count when summary was last generated |
-| `merge_checked_at` | timestamptz | | Last merge suggestion check timestamp |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
-| `deleted_at` | timestamptz | | Soft delete timestamp |
-| `deleted_by_member_id` | TypeID (member) | FK -> member.id ON DELETE SET NULL | Who deleted |
-
-**Indexes:**
-- `posts_board_id_idx` on `board_id`
-- `posts_status_id_idx` on `status_id`
-- `posts_member_id_idx` on `member_id`
-- `posts_owner_member_id_idx` on `owner_member_id`
-- `posts_created_at_idx` on `created_at`
-- `posts_vote_count_idx` on `vote_count`
-- `posts_board_vote_idx` on `(board_id, vote_count)`
-- `posts_board_created_at_idx` on `(board_id, created_at)`
-- `posts_board_status_idx` on `(board_id, status_id)`
-- `posts_member_created_at_idx` on `(member_id, created_at)`
-- `posts_with_status_idx` partial on `(status_id, vote_count)` WHERE `status_id IS NOT NULL`
-- `posts_search_vector_idx` (GIN) on `search_vector`
-- `posts_deleted_at_idx` on `deleted_at`
-- `posts_board_deleted_at_idx` on `(board_id, deleted_at)`
-- `posts_moderation_state_idx` on `moderation_state`
-- `posts_pinned_comment_id_idx` on `pinned_comment_id`
-- `posts_canonical_post_id_idx` on `canonical_post_id`
-
-**Relations:**
-- Belongs to: board, post_status, member (author), member (owner), post (canonical, for merges)
-- Has many: votes, comments, post_tags, post_roadmaps, post_notes, post_external_links, merged posts
-
----
-
-### comments
-
-Comments on feedback posts, supporting nested replies.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (comment) | PRIMARY KEY | Comment identifier |
-| `post_id` | TypeID (post) | NOT NULL, FK -> posts.id ON DELETE CASCADE | Parent post |
-| `parent_id` | TypeID (comment) | | Parent comment (for replies) |
-| `member_id` | TypeID (member) | NOT NULL, FK -> member.id ON DELETE RESTRICT | Author member |
-| `content` | text | NOT NULL | Comment text |
-| `is_team_member` | boolean | NOT NULL, DEFAULT false | Team member flag |
-| `is_private` | boolean | NOT NULL, DEFAULT false | Private internal note (visible only to team) |
-| `status_change_from_id` | TypeID (status) | FK -> post_statuses.id ON DELETE SET NULL | Previous status (for status changes recorded with comments) |
-| `status_change_to_id` | TypeID (status) | FK -> post_statuses.id ON DELETE SET NULL | New status (for status changes recorded with comments) |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-| `deleted_at` | timestamptz | | Soft delete timestamp |
-
-**Indexes:**
-- `comments_post_id_idx` on `post_id`
-- `comments_parent_id_idx` on `parent_id`
-- `comments_member_id_idx` on `member_id`
-- `comments_created_at_idx` on `created_at`
-- `comments_post_created_at_idx` on `(post_id, created_at)`
-
-**Relations:**
-- Belongs to: post, member (author), comment (parent), post_status (statusChangeFrom), post_status (statusChangeTo)
-- Has many: comments (replies), comment_reactions
-
----
-
-### votes
-
-User votes on posts. Each member can vote once per post.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (vote) | PRIMARY KEY | Vote identifier |
-| `post_id` | TypeID (post) | NOT NULL, FK -> posts.id ON DELETE CASCADE | Voted post |
-| `member_id` | TypeID (member) | NOT NULL, FK -> member.id ON DELETE CASCADE | Voting member |
-| `source_type` | text | | Integration source that created the vote |
-| `source_external_url` | text | | URL to the source ticket/conversation |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Vote timestamp |
-| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
-
-**Indexes:**
-- `votes_post_id_idx` on `post_id`
-- `votes_member_post_idx` (unique) on `(post_id, member_id)`
-- `votes_member_id_idx` on `member_id`
-- `votes_member_created_at_idx` on `(member_id, created_at)`
-
-**Relations:**
-- Belongs to: post, member
-
----
-
-### tags
-
-Labels for categorizing posts.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (tag) | PRIMARY KEY | Tag identifier |
-| `name` | text | NOT NULL, UNIQUE | Tag name |
-| `color` | text | NOT NULL, DEFAULT '#6b7280' | Hex color code |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-| `deleted_at` | timestamptz | | Soft delete timestamp |
-
-**Indexes:**
-- Unique constraint on `name`
-- `tags_deleted_at_idx` on `deleted_at`
-
-**Relations:**
-- Has many: post_tags
-
----
-
-### post_tags
-
-Junction table linking posts to tags (many-to-many).
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `post_id` | TypeID (post) | NOT NULL, FK -> posts.id ON DELETE CASCADE | Post reference |
-| `tag_id` | TypeID (tag) | NOT NULL, FK -> tags.id ON DELETE CASCADE | Tag reference |
-
-**Indexes:**
-- `post_tags_pk` (unique) on `(post_id, tag_id)` - composite primary key
-- `post_tags_post_id_idx` on `post_id`
-- `post_tags_tag_id_idx` on `tag_id`
-
-**Relations:**
-- Belongs to: post, tag
-
----
-
-### roadmaps
-
-Public roadmap views for displaying planned work.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (roadmap) | PRIMARY KEY | Roadmap identifier |
-| `slug` | text | NOT NULL, UNIQUE | URL-safe identifier |
-| `name` | text | NOT NULL | Display name |
-| `description` | text | | Roadmap description |
-| `is_public` | boolean | NOT NULL, DEFAULT true | Public visibility |
-| `position` | integer | NOT NULL, DEFAULT 0 | Display order |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
-| `deleted_at` | timestamptz | | Soft delete timestamp |
-
-**Indexes:**
-- Unique constraint on `slug`
-- `roadmaps_position_idx` on `position`
-- `roadmaps_is_public_idx` on `is_public`
-- `roadmaps_deleted_at_idx` on `deleted_at`
-
-**Relations:**
-- Has many: post_roadmaps
-
----
-
-### post_roadmaps
-
-Junction table linking posts to roadmaps (many-to-many).
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `post_id` | TypeID (post) | NOT NULL, FK -> posts.id ON DELETE CASCADE | Post reference |
-| `roadmap_id` | TypeID (roadmap) | NOT NULL, FK -> roadmaps.id ON DELETE CASCADE | Roadmap reference |
-| `position` | integer | NOT NULL, DEFAULT 0 | Position within roadmap |
-
-**Indexes:**
-- `post_roadmaps_pk` (unique) on `(post_id, roadmap_id)` - composite primary key
-- `post_roadmaps_post_id_idx` on `post_id`
-- `post_roadmaps_roadmap_id_idx` on `roadmap_id`
-- `post_roadmaps_position_idx` on `(roadmap_id, position)`
-
-**Relations:**
-- Belongs to: post, roadmap
-
----
-
-## Status & Workflow Tables
+Merged posts keep their row. Filter on `canonical_post_id IS NULL` to count only canonical posts.
 
 ### post_statuses
 
-Customizable status definitions for tracking post lifecycle.
+| Column | Description |
+|--------|-------------|
+| `id`, `name`, `slug`, `color` | Status identity |
+| `category` | `active`, `complete`, or `closed` |
+| `show_on_roadmap` | Whether posts with this status appear on roadmaps |
+| `is_default` | Status given to new posts |
+| `position` | Display order |
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (status) | PRIMARY KEY | Status identifier |
-| `name` | text | NOT NULL | Display name |
-| `slug` | text | NOT NULL, UNIQUE | URL-safe identifier |
-| `color` | text | NOT NULL, DEFAULT '#6b7280' | Hex color code |
-| `category` | text | NOT NULL, DEFAULT 'active' | Category: 'active', 'complete', 'closed' |
-| `position` | integer | NOT NULL, DEFAULT 0 | Display order within category |
-| `show_on_roadmap` | boolean | NOT NULL, DEFAULT false | Show on public roadmap |
-| `is_default` | boolean | NOT NULL, DEFAULT false | Default for new posts |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-| `deleted_at` | timestamptz | | Soft delete timestamp |
+### post_votes
 
-**Status Categories:**
-- `active`: Posts currently being worked on (Open, Under Review, Planned, In Progress)
-- `complete`: Successfully delivered posts (Complete)
-- `closed`: Posts that won't be implemented (Closed)
+| Column | Description |
+|--------|-------------|
+| `post_id` | The post |
+| `principal_id` | The voter |
+| `added_by_principal_id` | Teammate who added the vote on someone's behalf, if any |
+| `source_type`, `source_external_url` | Where a proxy vote came from |
+| `created_at` | When the vote was cast |
 
-**Indexes:**
-- Unique constraint on `slug`
-- `post_statuses_position_idx` on `(category, position)`
-- `post_statuses_deleted_at_idx` on `deleted_at`
+### post_comments
 
-**Relations:**
-- Has many: posts
+| Column | Description |
+|--------|-------------|
+| `post_id` | The post |
+| `parent_id` | Parent comment for replies |
+| `principal_id` | Author |
+| `content` | Plain-text body |
+| `is_team_member` | Written by a team member |
+| `is_private` | Internal comment, hidden from the portal |
+| `status_change_from_id`, `status_change_to_id` | Set when the comment records a status change |
+| `moderation_state` | Same values as posts |
+| `created_at`, `deleted_at` | Timestamps |
 
-**Default Statuses:**
-| Name | Slug | Color | Category | Show on Roadmap |
-|------|------|-------|----------|-----------------|
-| Open | open | #3b82f6 | active | No |
-| Under Review | under_review | #eab308 | active | No |
-| Planned | planned | #a855f7 | active | Yes |
-| In Progress | in_progress | #f97316 | active | Yes |
-| Complete | complete | #22c55e | complete | Yes |
-| Closed | closed | #6b7280 | closed | No |
+### post_tags, post_tag_assignments
 
----
+`post_tags` is the tag catalogue. `post_tag_assignments` links tags to posts.
 
-## History & Notes Tables
+| Table | Key columns |
+|-------|-------------|
+| `post_tags` | `id`, `name`, `color`, `is_public`, `deleted_at` |
+| `post_tag_assignments` | `post_id`, `tag_id`, `auto_tagged` |
 
-### post_edit_history
-
-Audit trail for post edits.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (post_edit) | PRIMARY KEY | Edit record identifier |
-| `post_id` | TypeID (post) | NOT NULL, FK -> posts.id ON DELETE CASCADE | Edited post |
-| `editor_member_id` | TypeID (member) | NOT NULL, FK -> member.id ON DELETE SET NULL | Editor |
-| `previous_title` | text | NOT NULL | Title before edit |
-| `previous_content` | text | NOT NULL | Content before edit |
-| `previous_content_json` | jsonb | | Rich content before edit |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Edit timestamp |
-
-**Indexes:**
-- `post_edit_history_post_id_idx` on `post_id`
-- `post_edit_history_created_at_idx` on `created_at`
-
-**Relations:**
-- Belongs to: post, member (editor)
-
----
-
-### comment_edit_history
-
-Audit trail for comment edits.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (comment_edit) | PRIMARY KEY | Edit record identifier |
-| `comment_id` | TypeID (comment) | NOT NULL, FK -> comments.id ON DELETE CASCADE | Edited comment |
-| `editor_member_id` | TypeID (member) | NOT NULL, FK -> member.id ON DELETE SET NULL | Editor |
-| `previous_content` | text | NOT NULL | Content before edit |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Edit timestamp |
-
-**Indexes:**
-- `comment_edit_history_comment_id_idx` on `comment_id`
-- `comment_edit_history_created_at_idx` on `created_at`
-
-**Relations:**
-- Belongs to: comment, member (editor)
-
----
-
-### post_notes
-
-Internal staff notes on posts (not visible to public users).
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (note) | PRIMARY KEY | Note identifier |
-| `post_id` | TypeID (post) | NOT NULL, FK -> posts.id ON DELETE CASCADE | Associated post |
-| `member_id` | TypeID (member) | NOT NULL, FK -> member.id ON DELETE RESTRICT | Note author |
-| `content` | text | NOT NULL | Note content |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-
-**Indexes:**
-- `post_notes_post_id_idx` on `post_id`
-- `post_notes_member_id_idx` on `member_id`
-- `post_notes_created_at_idx` on `created_at`
-
-**Relations:**
-- Belongs to: post, member (author)
-
----
-
-### comment_reactions
-
-Emoji reactions on comments.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (reaction) | PRIMARY KEY | Reaction identifier |
-| `comment_id` | TypeID (comment) | NOT NULL, FK -> comments.id ON DELETE CASCADE | Reacted comment |
-| `member_id` | TypeID (member) | NOT NULL, FK -> member.id ON DELETE CASCADE | Reacting member |
-| `emoji` | text | NOT NULL | Emoji character |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Reaction timestamp |
-
-**Supported Emojis:**
-- Thumbs up, Heart, Party, Smile, Thinking, Eyes
-
-**Indexes:**
-- `comment_reactions_comment_id_idx` on `comment_id`
-- `comment_reactions_member_id_idx` on `member_id`
-- `comment_reactions_unique_idx` (unique) on `(comment_id, member_id, emoji)`
-
-**Relations:**
-- Belongs to: comment, member
-
----
-
-## Integration Tables
-
-### integrations
-
-Third-party integration configurations (Slack, Discord, etc.).
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (integration) | PRIMARY KEY | Integration identifier |
-| `integration_type` | varchar(50) | NOT NULL, UNIQUE | Type: slack, discord, linear, etc. |
-| `status` | varchar(20) | NOT NULL, DEFAULT 'pending' | Status: pending, active, error |
-| `secrets` | text | | Encrypted secrets blob (AES-256-GCM JSON) |
-| `config` | jsonb | NOT NULL, DEFAULT \{\} | Integration-specific config |
-| `connected_by_member_id` | TypeID (member) | FK -> member.id | Who connected |
-| `connected_at` | timestamptz | | Connection timestamp |
-| `last_sync_at` | timestamptz | | Last sync timestamp |
-| `last_error` | text | | Last error message |
-| `last_error_at` | timestamptz | | Last error timestamp |
-| `error_count` | integer | NOT NULL, DEFAULT 0, CHECK >= 0 | Consecutive error count |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
-
-**Indexes:**
-- `integration_type_unique` (unique) on `integration_type`
-- `idx_integrations_type_status` on `(integration_type, status)`
-
-**Relations:**
-- Belongs to: member (connected_by)
-- Has many: integration_event_mappings, post_external_links
-
----
-
-### integration_event_mappings
-
-Event-to-action mappings for integrations.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (event_mapping) | PRIMARY KEY | Mapping identifier |
-| `integration_id` | TypeID (integration) | NOT NULL, FK -> integrations.id ON DELETE CASCADE | Parent integration |
-| `event_type` | varchar(100) | NOT NULL | Event: post.created, status.changed, etc. |
-| `action_type` | varchar(50) | NOT NULL | Action: send_message, create_issue, etc. |
-| `action_config` | jsonb | NOT NULL, DEFAULT \{\} | Action configuration |
-| `filters` | jsonb | | Event filters |
-| `enabled` | boolean | NOT NULL, DEFAULT true | Mapping enabled |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
-
-**Action Config Schema:**
-```json
-{
-  "templateId": "tpl_xxx",
-  "message": "New feedback: {{title}}"
-}
+```sql
+SELECT t.name, count(*) AS posts
+FROM post_tag_assignments a
+JOIN post_tags t ON t.id = a.tag_id
+JOIN posts p ON p.id = a.post_id
+WHERE p.deleted_at IS NULL AND t.deleted_at IS NULL
+GROUP BY t.name
+ORDER BY posts DESC;
 ```
 
-**Filters Schema:**
-```json
-{
-  "boardIds": ["board_xxx", "board_yyy"],
-  "statusIds": ["status_xxx"]
-}
+### Other post tables
+
+| Table | Key columns |
+|-------|-------------|
+| `post_comment_reactions` | `comment_id`, `principal_id`, `emoji` |
+| `post_notes` | `post_id`, `principal_id`, `content` (internal notes) |
+| `post_edit_history` | `post_id`, `editor_principal_id`, `previous_title`, `previous_content` |
+| `post_comment_edit_history` | `comment_id`, `editor_principal_id`, `previous_content` |
+
+---
+
+## Roadmaps
+
+Roadmaps are views over posts. A post appears on a roadmap because of its status (column roadmaps) or its `eta` (date roadmaps), not because it was placed there.
+
+| Table | Key columns |
+|-------|-------------|
+| `roadmaps` | `id`, `slug`, `name`, `type` (`column` or `date`), `base_filter` (JSON), `date_source`, `frequency`, `visibility` (`public`, `team`, or `segment`), `visible_segment_ids`, `deleted_at` |
+| `roadmap_columns` | `roadmap_id`, `status_id`, `name`, `position` |
+
+---
+
+## Changelog
+
+| Table | Key columns |
+|-------|-------------|
+| `changelog_entries` | `id`, `title`, `content`, `principal_id`, `published_at` (null while a draft), `view_count`, `deleted_at` |
+| `changelog_entry_posts` | `changelog_entry_id`, `post_id` (posts the entry shipped) |
+
+---
+
+## Support
+
+### conversations
+
+| Column | Description |
+|--------|-------------|
+| `id` | Conversation ID |
+| `visitor_principal_id` | The customer |
+| `assigned_agent_principal_id`, `assigned_team_id` | Assignment |
+| `status` | `open`, `snoozed`, or `closed` |
+| `snoozed_until` | When a snoozed conversation reopens |
+| `channel` | `messenger`, `email`, or `github` |
+| `priority` | Triage priority (`none` when unset) |
+| `subject`, `last_message_at` | Summary fields |
+| `csat_rating`, `csat_comment` | Satisfaction rating |
+| `resolved_at`, `end_reason` | When and why it was closed |
+| `created_at` | When it started |
+
+### conversation_messages
+
+| Column | Description |
+|--------|-------------|
+| `conversation_id` | The conversation |
+| `ticket_id` | Set when the message belongs to a ticket thread |
+| `principal_id` | Sender |
+| `sender_type` | `visitor`, `agent`, or `system` |
+| `content` | Message body |
+| `is_internal` | Internal note, not shown to the customer |
+| `created_at`, `deleted_at` | Timestamps |
+
+### conversation_tags, conversation_tag_assignments
+
+`conversation_tags` is the tag catalogue (`id`, `name`, `color`, `deleted_at`). `conversation_tag_assignments` links tags to conversations (`conversation_id`, `conversation_tag_id`). `conversation_participants` lists extra teammates on a conversation.
+
+### tickets
+
+| Column | Description |
+|--------|-------------|
+| `id`, `number` | Ticket ID and human-readable number |
+| `type` | `customer`, `back_office`, or `tracker` |
+| `ticket_type_id` | The configured ticket type |
+| `title` | Title |
+| `status_id` | The `ticket_statuses` row |
+| `priority` | Priority |
+| `requester_principal_id`, `assignee_principal_id`, `assignee_team_id` | People |
+| `company_id` | Customer company |
+| `first_response_at`, `due_at`, `resolved_at` | SLA timestamps |
+| `created_at`, `deleted_at` | Timestamps |
+
+| Table | Key columns |
+|-------|-------------|
+| `ticket_statuses` | `id`, `name`, `category` (`open`, `pending`, or `closed`), `public_stage` |
+| `ticket_conversations` | `ticket_id`, `conversation_id` |
+| `ticket_links` | `tracker_ticket_id`, `linked_ticket_id`, `relation` |
+
+---
+
+## Help Center
+
+| Table | Key columns |
+|-------|-------------|
+| `kb_categories` | `id`, `parent_id`, `slug`, `name`, `is_public`, `position`, `deleted_at` |
+| `kb_articles` | `id`, `category_id`, `slug`, `title`, `content`, `principal_id`, `published_at` (null while a draft), `view_count`, `helpful_count`, `not_helpful_count`, `deleted_at` |
+| `kb_article_translations` | `article_id`, `locale`, `title`, `content`, `status` |
+| `kb_search_queries` | `query`, `locale`, `results_count`, `created_at` |
+
+---
+
+## Customers
+
+| Table | Key columns |
+|-------|-------------|
+| `companies` | `id`, `name`, `external_id`, `plan`, `mrr_cents`, `size`, `industry`, `custom_attributes` |
+| `segments` | `id`, `name`, `slug`, `type` (`manual` or `dynamic`), `rules`, `deleted_at` |
+| `user_segments` | `principal_id`, `segment_id`, `added_by`, `added_at` |
+
+---
+
+## AI
+
+| Table | Key columns |
+|-------|-------------|
+| `post_merge_suggestions` | `source_post_id`, `target_post_id`, `status`, `llm_confidence`, `resolved_at` |
+| `post_sentiment` | `post_id`, `sentiment` (`positive`, `neutral`, or `negative`), `confidence`, `processed_at` |
+
+---
+
+## Notifications
+
+| Table | Key columns |
+|-------|-------------|
+| `post_subscriptions` | `post_id`, `principal_id`, `reason`, `notify_comments`, `notify_status_changes` |
+| `notification_preferences` | `principal_id`, `email_status_change`, `email_new_comment`, `email_muted` |
+| `in_app_notifications` | `principal_id`, `type`, `title`, `post_id` |
+
+---
+
+## Integrations and API
+
+| Table | Key columns |
+|-------|-------------|
+| `integrations` | `id`, `integration_type`, `status`, `connected_by_principal_id`. Credentials are encrypted. |
+| `post_external_links` | `post_id`, `integration_type`, `external_id`, `external_url`, `status` |
+| `ticket_external_links` | `ticket_id`, `integration_type`, `external_id`, `external_url`, `status` |
+| `webhooks` | `id`, `url`, `events`, `board_ids`, `status`, `failure_count`, `last_triggered_at`, `deleted_at` |
+| `api_keys` | `id`, `name`, `key_prefix`, `scopes`, `created_by_id`, `last_used_at`, `expires_at`, `revoked_at`. Only a hash of the key is stored. |
+
+---
+
+## Events and Jobs
+
+Background work runs on PostgreSQL. There is no separate queue service.
+
+| Table | Key columns |
+|-------|-------------|
+| `events` | `id`, `type` (such as `post.created`), `entity_type`, `entity_id`, `actor_type`, `actor_id`, `payload`, `occurred_at`, `published_at` |
+| `job_queue` | `id`, `queue`, `status` (`pending`, `running`, `succeeded`, or `failed`), `run_at`, `attempts`, `max_attempts`, `last_error`, `created_at`, `finished_at` |
+
+Domain events are written to `events` in the same transaction as the change that raised them, then fanned out to webhooks, notifications, and workflows through `job_queue`. Finished jobs are deleted after the retention period (`JOB_RETENTION_MS`, 7 days by default).
+
+To see recent failed jobs:
+
+```sql
+SELECT queue, last_error, attempts, finished_at
+FROM job_queue
+WHERE status = 'failed'
+ORDER BY finished_at DESC
+LIMIT 20;
 ```
 
-**Indexes:**
-- `mapping_unique` (unique) on `(integration_id, event_type, action_type)`
-- `idx_event_mappings_lookup` on `(integration_id, event_type, enabled)`
-
-**Relations:**
-- Belongs to: integration
-
 ---
 
-### integration_platform_credentials
+## Workspace
 
-Platform-level OAuth app credentials for integrations. One row per provider. Secrets are AES-256-GCM encrypted.
+### settings
 
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (platform_cred) | PRIMARY KEY | Credential identifier |
-| `integration_type` | varchar(50) | NOT NULL, UNIQUE | Provider type: slack, teams, linear, etc. |
-| `secrets` | text | NOT NULL | Encrypted platform credentials (AES-256-GCM) |
-| `configured_by_member_id` | TypeID (member) | FK -> member.id ON DELETE SET NULL | Who configured |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
+A single row holding workspace configuration: `name`, `slug`, logos, and JSON (stored as text) for authentication, portal, branding, widget, help center, and feature flags. Change these through **Admin → Settings** or the [config file](/self-hosting/config-file), not with SQL.
 
-**Indexes:**
-- `platform_cred_type_unique` (unique) on `integration_type`
+## Next steps
 
-**Relations:**
-- Belongs to: member (configured_by)
-
----
-
-### post_external_links
-
-External links between posts and external platform issues (e.g., Linear issues, GitHub issues).
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (linked_entity) | PRIMARY KEY | Link identifier |
-| `post_id` | TypeID (post) | NOT NULL, FK -> posts.id ON DELETE CASCADE | Associated post |
-| `integration_id` | TypeID (integration) | NOT NULL, FK -> integrations.id ON DELETE CASCADE | Associated integration |
-| `integration_type` | varchar(50) | NOT NULL | Integration type |
-| `external_id` | text | NOT NULL | External issue/item ID |
-| `external_url` | text | | URL to external item |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-
-**Indexes:**
-- `post_external_links_type_external_id` (unique) on `(integration_type, external_id)`
-- `post_external_links_post_id_idx` on `post_id`
-- `post_external_links_type_external_id_idx` on `(integration_type, external_id)`
-
-**Relations:**
-- Belongs to: post, integration
-
----
-
-## Notification Tables
-
-### in_app_notifications
-
-In-app notifications displayed in the UI.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (notification) | PRIMARY KEY | Notification identifier |
-| `member_id` | TypeID (member) | NOT NULL, FK -> member.id ON DELETE CASCADE | Recipient member |
-| `type` | varchar(50) | NOT NULL | Type: post_status_changed, comment_created |
-| `title` | varchar(255) | NOT NULL | Notification title |
-| `body` | text | | Notification body |
-| `post_id` | TypeID (post) | FK -> posts.id ON DELETE CASCADE | Related post |
-| `comment_id` | TypeID (comment) | FK -> comments.id ON DELETE CASCADE | Related comment |
-| `metadata` | jsonb | | Additional data |
-| `read_at` | timestamptz | | When marked as read |
-| `archived_at` | timestamptz | | When archived |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-
-**Indexes:**
-- `in_app_notifications_member_created_idx` on `(member_id, created_at)`
-- `in_app_notifications_member_unread_idx` partial on `member_id` WHERE `read_at IS NULL AND archived_at IS NULL`
-- `in_app_notifications_post_idx` on `post_id`
-
-**Relations:**
-- Belongs to: member, post, comment
-
----
-
-### post_subscriptions
-
-Tracks which members are subscribed to which posts for notifications.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (post_sub) | PRIMARY KEY | Subscription identifier |
-| `post_id` | TypeID (post) | NOT NULL, FK -> posts.id ON DELETE CASCADE | Subscribed post |
-| `member_id` | TypeID (member) | NOT NULL, FK -> member.id ON DELETE CASCADE | Subscribed member |
-| `reason` | varchar(20) | NOT NULL | Reason: author, vote, comment, manual |
-| `notify_comments` | boolean | NOT NULL, DEFAULT true | Receive comment notifications |
-| `notify_status_changes` | boolean | NOT NULL, DEFAULT true | Receive status change notifications |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
-
-**Notification Levels:**
-- All activity: `notify_comments=true`, `notify_status_changes=true`
-- Status changes only: `notify_comments=false`, `notify_status_changes=true`
-- Unsubscribed: Row deleted
-
-**Indexes:**
-- `post_subscriptions_unique` (unique) on `(post_id, member_id)`
-- `post_subscriptions_member_idx` on `member_id`
-- `post_subscriptions_post_idx` on `post_id`
-- `post_subscriptions_post_comments_idx` partial on `post_id` WHERE `notify_comments = true`
-- `post_subscriptions_post_status_idx` partial on `post_id` WHERE `notify_status_changes = true`
-
-**Relations:**
-- Belongs to: post, member
-
----
-
-### notification_preferences
-
-Per-member email notification settings.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (notif_pref) | PRIMARY KEY | Preference identifier |
-| `member_id` | TypeID (member) | NOT NULL, UNIQUE, FK -> member.id ON DELETE CASCADE | Member |
-| `email_status_change` | boolean | NOT NULL, DEFAULT true | Email on status changes |
-| `email_new_comment` | boolean | NOT NULL, DEFAULT true | Email on new comments |
-| `email_muted` | boolean | NOT NULL, DEFAULT false | Mute all emails |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
-
-**Indexes:**
-- Unique constraint on `member_id`
-
-**Relations:**
-- Belongs to: member
-
----
-
-### unsubscribe_tokens
-
-One-time tokens for email unsubscribe links.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (unsub_token) | PRIMARY KEY | Token identifier |
-| `token` | text | NOT NULL, UNIQUE | Token value |
-| `member_id` | TypeID (member) | NOT NULL, FK -> member.id ON DELETE CASCADE | Member |
-| `post_id` | TypeID (post) | FK -> posts.id ON DELETE CASCADE | Related post (null = global) |
-| `action` | varchar(30) | NOT NULL | Action: unsubscribe_post, unsubscribe_all, mute_post |
-| `expires_at` | timestamptz | NOT NULL | Expiration time |
-| `used_at` | timestamptz | | When token was used |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-
-**Indexes:**
-- Unique constraint on `token`
-- `unsubscribe_tokens_member_idx` on `member_id`
-
-**Relations:**
-- Belongs to: member, post
-
----
-
-## Changelog Tables
-
-### changelog_entries
-
-Public changelog/release notes entries.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (changelog) | PRIMARY KEY | Entry identifier |
-| `title` | text | NOT NULL | Entry title |
-| `content` | text | NOT NULL | Plain text content |
-| `content_json` | jsonb | | Rich content (TipTap JSON) |
-| `member_id` | TypeID (member) | FK -> member.id ON DELETE SET NULL | Author member |
-| `published_at` | timestamptz | | Publication timestamp |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
-| `deleted_at` | timestamptz | | Soft delete timestamp |
-
-**Indexes:**
-- `changelog_published_at_idx` on `published_at`
-- `changelog_member_id_idx` on `member_id`
-- `changelog_deleted_at_idx` on `deleted_at`
-
-**Relations:**
-- Belongs to: member (author)
-- Has many: changelog_entry_posts
-
----
-
-### changelog_entry_posts
-
-Junction table linking changelog entries to shipped posts (many-to-many).
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `changelog_entry_id` | TypeID (changelog) | NOT NULL, FK -> changelog_entries.id ON DELETE CASCADE | Changelog entry |
-| `post_id` | TypeID (post) | NOT NULL, FK -> posts.id ON DELETE CASCADE | Linked post |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-
-**Indexes:**
-- `changelog_entry_posts_pk` (unique) on `(changelog_entry_id, post_id)` - composite primary key
-- `changelog_entry_posts_changelog_id_idx` on `changelog_entry_id`
-- `changelog_entry_posts_post_id_idx` on `post_id`
-
-**Relations:**
-- Belongs to: changelog_entry, post
-
----
-
-## AI Feature Tables
-
-### post_sentiment
-
-AI-generated sentiment analysis results for posts (one-to-one with posts).
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (sentiment) | PRIMARY KEY | Sentiment record identifier |
-| `post_id` | TypeID (post) | NOT NULL, UNIQUE, FK -> posts.id ON DELETE CASCADE | Analyzed post |
-| `sentiment` | text | NOT NULL | Result: positive, neutral, negative |
-| `confidence` | real | NOT NULL | Confidence score (0-1) |
-| `model` | text | NOT NULL | AI model used |
-| `processed_at` | timestamptz | NOT NULL, DEFAULT now() | Analysis timestamp |
-| `input_tokens` | integer | | Input token count |
-| `output_tokens` | integer | | Output token count |
-
-**Indexes:**
-- `post_sentiment_processed_at_idx` on `processed_at`
-- `post_sentiment_sentiment_idx` on `sentiment`
-
-**Relations:**
-- Belongs to: post
-
----
-
-## API Tables
-
-### api_keys
-
-API keys for public REST API authentication.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (api_key) | PRIMARY KEY | API key identifier |
-| `name` | varchar(255) | NOT NULL | Human-readable key name |
-| `key_hash` | varchar(64) | NOT NULL, UNIQUE | SHA-256 hash of the API key |
-| `key_prefix` | varchar(12) | NOT NULL | First 12 chars for identification |
-| `created_by_id` | TypeID (member) | NOT NULL, FK -> member.id ON DELETE CASCADE | Member who created the key |
-| `last_used_at` | timestamptz | | Last authentication timestamp |
-| `expires_at` | timestamptz | | Optional expiration date |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-| `revoked_at` | timestamptz | | Soft delete / revocation timestamp |
-
-**Indexes:**
-- Unique constraint on `key_hash`
-- `api_keys_created_by_id_idx` on `created_by_id`
-- `api_keys_revoked_at_idx` on `revoked_at`
-
-**Relations:**
-- Belongs to: member (created_by)
-
----
-
-### webhooks
-
-Webhook configurations for external event notifications.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (webhook) | PRIMARY KEY | Webhook identifier |
-| `created_by_id` | TypeID (member) | NOT NULL, FK -> member.id ON DELETE CASCADE | Member who created the webhook |
-| `url` | text | NOT NULL | HTTPS endpoint URL |
-| `secret` | text | NOT NULL | Encrypted HMAC-SHA256 signing secret |
-| `events` | text[] | NOT NULL | Event types to trigger |
-| `board_ids` | text[] | | Optional board filter |
-| `status` | text | NOT NULL, DEFAULT 'active' | Status: active, disabled |
-| `failure_count` | integer | NOT NULL, DEFAULT 0 | Consecutive delivery failures |
-| `last_error` | text | | Last error message |
-| `last_triggered_at` | timestamptz | | Last trigger timestamp |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
-| `deleted_at` | timestamptz | | Soft delete timestamp |
-
-**Indexes:**
-- `webhooks_status_idx` on `status`
-- `webhooks_created_by_id_idx` on `created_by_id`
-- `webhooks_deleted_at_idx` on `deleted_at`
-
-**Relations:**
-- Belongs to: member (created_by)
-
----
-
-### merge_suggestions
-
-AI-generated merge suggestions for duplicate posts.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (merge_sug) | PRIMARY KEY | Suggestion identifier |
-| `source_post_id` | TypeID (post) | NOT NULL, FK -> posts.id ON DELETE CASCADE | Post suggested as duplicate |
-| `target_post_id` | TypeID (post) | NOT NULL, FK -> posts.id ON DELETE CASCADE | Canonical post to merge into |
-| `status` | text | NOT NULL, DEFAULT 'pending' | Status: pending, accepted, dismissed |
-| `vector_score` | real | | Vector similarity score |
-| `fts_score` | real | | Full-text search score |
-| `hybrid_score` | real | | Combined hybrid score |
-| `llm_confidence` | real | | LLM verification confidence |
-| `llm_reasoning` | text | | LLM explanation for the match |
-| `llm_model` | text | | LLM model used for verification |
-| `resolved_at` | timestamptz | | When accepted or dismissed |
-| `resolved_by_principal_id` | TypeID (member) | FK -> member.id ON DELETE SET NULL | Who resolved |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
-
-**Relations:**
-- Belongs to: post (source), post (target), member (resolved_by)
-
----
-
-## Feedback Pipeline Tables
-
-### feedback_sources
-
-External feedback source configurations for the ingest pipeline.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (fb_source) | PRIMARY KEY | Source identifier |
-| `source_type` | text | NOT NULL | Source type (e.g. integration name) |
-| `delivery_mode` | text | NOT NULL | How feedback is delivered |
-| `name` | text | NOT NULL | Display name |
-| `integration_id` | TypeID (integration) | FK -> integrations.id | Linked integration |
-| `enabled` | boolean | NOT NULL, DEFAULT true | Active flag |
-| `config` | jsonb | NOT NULL, DEFAULT \{\} | Source configuration |
-| `secrets` | text | | Encrypted secrets |
-| `cursor` | text | | Pagination cursor for polling |
-| `last_synced_at` | timestamptz | | Last sync timestamp |
-| `last_success_at` | timestamptz | | Last successful sync |
-| `last_error` | text | | Most recent error |
-| `error_count` | integer | NOT NULL, DEFAULT 0 | Consecutive errors |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
-
----
-
-### raw_feedback_items
-
-Unprocessed feedback items from external sources, queued for AI extraction.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (raw_fb) | PRIMARY KEY | Item identifier |
-| `source_id` | TypeID (fb_source) | NOT NULL, FK -> feedback_sources.id | Parent source |
-| `source_type` | text | NOT NULL | Source type |
-| `external_id` | text | | External item ID |
-| `dedupe_key` | text | | Deduplication key |
-| `external_url` | text | | Link back to source |
-| `source_created_at` | timestamptz | | When created in source system |
-| `author` | jsonb | | Author information |
-| `content` | text | NOT NULL | Raw feedback content |
-| `context_envelope` | jsonb | | Additional context metadata |
-| `processing_state` | text | NOT NULL, DEFAULT 'pending' | State: pending, processing, done, failed |
-| `attempt_count` | integer | NOT NULL, DEFAULT 0 | Processing attempts |
-| `last_error` | text | | Last processing error |
-| `processed_at` | timestamptz | | When processing completed |
-| `principal_id` | TypeID (member) | | Matched user principal |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
-
----
-
-### feedback_signals
-
-AI-extracted signals from raw feedback items.
-
----
-
-### feedback_suggestions
-
-Suggestions generated from AI analysis of feedback signals (e.g. create a new post, merge with existing).
-
----
-
-### feedback_signal_corrections
-
-User corrections and feedback on AI signal extraction accuracy.
-
----
-
-### external_user_mappings
-
-Maps external user identifiers to internal Quackback principals for cross-system identity resolution.
-
----
-
-## Segment Tables
-
-### segments
-
-User segments for filtering and analytics. Supports manual and dynamic (rule-based) membership.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (segment) | PRIMARY KEY | Segment identifier |
-| `name` | text | NOT NULL | Display name |
-| `description` | text | | Segment description |
-| `type` | text | NOT NULL | Type: manual, dynamic |
-| `color` | text | | Display color |
-| `rules` | jsonb | | Dynamic segment rules |
-| `evaluation_schedule` | text | | Cron schedule for re-evaluation |
-| `weight_config` | jsonb | | Weighting configuration |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
-| `deleted_at` | timestamptz | | Soft delete timestamp |
-
----
-
-### user_segments
-
-Junction table for user-to-segment membership.
-
----
-
-### user_attribute_definitions
-
-Admin-defined custom user attributes for enrichment.
-
-| Column | Type | Constraints | Description |
-|--------|------|-------------|-------------|
-| `id` | TypeID (user_attr) | PRIMARY KEY | Attribute identifier |
-| `key` | text | NOT NULL, UNIQUE | Attribute key |
-| `label` | text | NOT NULL | Display label |
-| `description` | text | | Attribute description |
-| `type` | text | NOT NULL | Data type: text, number, boolean, date, currency |
-| `currency_code` | text | | Currency code (for currency type) |
-| `external_key` | text | | Mapping key for integration sync |
-| `created_at` | timestamptz | NOT NULL, DEFAULT now() | Creation timestamp |
-| `updated_at` | timestamptz | NOT NULL, DEFAULT now() | Last update timestamp |
-
----
-
-## Database Triggers
-
-### comment_count
-
-The `comment_count` column on posts is maintained in application code (not a database trigger). It's updated whenever comments are created or deleted.
-
----
-
-## TypeID Format
-
-All entity IDs use the TypeID format, which combines a type prefix with a UUID:
-
-```
-{type}_{uuid_base32}
-```
-
-Examples:
-- `post_01h455vb4pex5vsknk084sn02q`
-- `board_01h455vb4pex5vsknk084sn03r`
-- `member_01h455vb4pex5vsknk084sn04s`
-
-Type prefixes used:
-- `user`, `session`, `account`, `member`, `invite`, `workspace`, `verification`, `domain`, `transfer_token`
-- `board`, `post`, `comment`, `vote`, `tag`, `status`, `roadmap`
-- `integration`, `platform_cred`, `event_mapping`, `linked_entity`, `sync_log`
-- `notification`, `post_sub`, `notif_pref`, `unsub_token`
-- `changelog`, `sentiment`, `note`, `reaction`
-- `post_edit`, `comment_edit`
-- `api_key`, `webhook`
-- `subscription`, `invoice` (billing)
-
----
-
-## Schema Files
-
-The schema is defined in Drizzle ORM format in these files:
-
-| File | Tables |
-|------|--------|
-| `packages/db/src/schema/auth.ts` | user, session, account, verification, one_time_token, settings, member, invitation, jwks, oauth_client, oauth_access_token, oauth_refresh_token, oauth_consent |
-| `packages/db/src/schema/boards.ts` | boards, roadmaps, tags |
-| `packages/db/src/schema/posts.ts` | posts, post_tags, post_roadmaps, votes, comments, comment_reactions, post_edit_history, comment_edit_history, post_notes |
-| `packages/db/src/schema/statuses.ts` | post_statuses |
-| `packages/db/src/schema/integrations.ts` | integrations, integration_platform_credentials, integration_event_mappings |
-| `packages/db/src/schema/notifications.ts` | in_app_notifications, post_subscriptions, notification_preferences, unsubscribe_tokens |
-| `packages/db/src/schema/changelog.ts` | changelog_entries, changelog_entry_posts |
-| `packages/db/src/schema/sentiment.ts` | post_sentiment |
-| `packages/db/src/schema/merge-suggestions.ts` | merge_suggestions |
-| `packages/db/src/schema/feedback.ts` | feedback_sources, raw_feedback_items, feedback_signals, feedback_suggestions, feedback_signal_corrections, external_user_mappings |
-| `packages/db/src/schema/segments.ts` | segments, user_segments |
-| `packages/db/src/schema/user-attributes.ts` | user_attribute_definitions |
-| `packages/db/src/schema/api-keys.ts` | api_keys |
-| `packages/db/src/schema/webhooks.ts` | webhooks |
-| `packages/db/src/schema/external-links.ts` | post_external_links |
-
-Migrations are located in `packages/db/drizzle/`.
+- [Database (developer guide)](/developers/database): Drizzle queries, migrations, and TypeIDs
+- [Upgrade from 0.13 to 0.14](/self-hosting/upgrading-0-14): What changes on upgrade
+- [Environment Variables](/reference/environment-variables): Database connection settings
