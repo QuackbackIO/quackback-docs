@@ -1,12 +1,12 @@
 ---
 title: "Email Notifications"
-description: "Notify users and teams by email when feedback is submitted, statuses change, or comments are posted. Configure SMTP or Resend."
+description: "Notify users and teams by email when feedback is submitted, statuses change, or comments are posted. Configure SMTP, Amazon SES, or Resend."
 icon: "email"
 ---
 
 # Email Notifications
 
-Quackback sends email notifications to keep users and admins informed. Voters are notified when their requested features ship. Admins get alerts when new feedback arrives. No third-party notification service required — configure SMTP or Resend and emails send automatically.
+Quackback sends email notifications to keep users and admins informed. Voters are notified when their requested features ship. Admins get alerts when new feedback arrives. Configure one sending provider (SMTP, Amazon SES, or Resend) and emails send automatically.
 
 ## Overview
 
@@ -19,28 +19,34 @@ Email notifications cover two audiences:
 
 **For admins and team members:**
 - New feedback alerts when a post is submitted
-- Daily or weekly digest of new feedback activity
 - Mentions when tagged in a comment
 
 ## Prerequisites
 
 - Admin access to your Quackback workspace
-- An SMTP server or Resend API key
+- Credentials for one sending provider: an SMTP server, Amazon SES, or Resend
 
 ## Setup
 
-### Option 1: SMTP (Recommended)
+Configure exactly one sending provider with environment variables, then restart Quackback. If more than one provider is configured, the app refuses to start and the log names the conflicting variables. Remove all but one.
 
-SMTP works with any email provider: Gmail, SendGrid, Postmark, Mailgun, Amazon SES, or your own mail server.
-
-Set these environment variables:
+Every provider also needs a sender address:
 
 ```bash
-EMAIL_SMTP_HOST="smtp.example.com"
-EMAIL_SMTP_PORT="587"
-EMAIL_SMTP_USER="your-username"
-EMAIL_SMTP_PASS="your-password"
-EMAIL_FROM="feedback@yourcompany.com"
+EMAIL_FROM=Quackback <feedback@yourcompany.com>
+```
+
+### Option 1: SMTP
+
+SMTP works with any email provider: SendGrid, Postmark, Mailgun, Gmail, or your own mail server.
+
+```bash
+EMAIL_SMTP_HOST=smtp.example.com
+EMAIL_SMTP_PORT=587
+EMAIL_SMTP_USER=your-username
+EMAIL_SMTP_PASS=your-password
+# For port 465 (implicit TLS):
+# EMAIL_SMTP_SECURE=true
 ```
 
 Common provider settings:
@@ -50,20 +56,34 @@ Common provider settings:
 | SendGrid | `smtp.sendgrid.net` | 587 |
 | Postmark | `smtp.postmarkapp.com` | 587 |
 | Mailgun | `smtp.mailgun.org` | 587 |
-| Amazon SES | `email-smtp.{region}.amazonaws.com` | 587 |
 | Gmail | `smtp.gmail.com` | 587 |
 
-### Option 2: Resend
+### Option 2: Amazon SES
 
-[Resend](https://resend.com) provides a developer-focused email API. Set one environment variable:
+Send through the SES API. All three variables are required. An IAM user with `ses:SendEmail` is enough.
 
 ```bash
-EMAIL_RESEND_API_KEY="re_xxxxxxxxxxxx"
-EMAIL_FROM="feedback@yourcompany.com"
+EMAIL_SES_ACCESS_KEY_ID=AKIA...
+EMAIL_SES_SECRET_ACCESS_KEY=...
+EMAIL_SES_REGION=us-east-1
 ```
 
+Set `EMAIL_SES_REGION` to the region your sending identity is verified in. Identities are regional, so there is no default, and the wrong region rejects every send.
+
+### Option 3: Resend
+
+```bash
+EMAIL_RESEND_API_KEY=re_xxxxxxxxxxxx
+```
+
+`RESEND_API_KEY` is accepted as an alias.
+
 <Note>
-If neither SMTP nor Resend is configured, OTP codes are printed to the server console instead of emailed. All other email notifications are skipped.
+**Receiving through Resend while another provider sends.** Resend's inbound webhook carries no message body, so Quackback fetches it with your Resend key. To keep a Resend key for receiving only while SMTP or SES sends, set `EMAIL_INBOUND_PROVIDER=resend`. The key is then used for inbound mail only and doesn't count as a second sending provider. See [Inbound email](/reference/environment-variables#inbound-email).
+</Note>
+
+<Note>
+If no provider is configured, OTP codes are printed to the server log instead of emailed. All other email notifications are skipped.
 </Note>
 
 ## How Notifications Work
@@ -74,7 +94,7 @@ Users receive email when events occur on posts they're connected to:
 
 | Event | Who gets notified |
 |-------|-------------------|
-| Status change (e.g., "Planned" → "Shipped") | All voters and the post author |
+| Status change (for example, "Planned" to "Shipped") | All voters and the post author |
 | New comment on a post | Post author and users watching the post |
 | Admin reply to a post | Post author |
 
@@ -87,7 +107,6 @@ Admins receive email for workspace-level events:
 | Event | Who gets notified |
 |-------|-------------------|
 | New post submitted | Admins with new-post alerts enabled |
-| Daily/weekly digest | Admins who opted into digest emails |
 | @mention in a comment | The mentioned admin |
 
 Configure admin notification preferences in **Admin → Settings → Notifications**.
@@ -96,8 +115,8 @@ Configure admin notification preferences in **Admin → Settings → Notificatio
 
 Quackback uses email for passwordless authentication:
 
-- **OTP codes** — six-digit codes sent when a user signs in with email
-- **Magic links** — one-click sign-in links (when enabled)
+- **OTP codes**: six-digit codes sent when a user signs in with email
+- **Magic links**: one-click sign-in links (when enabled)
 
 These are sent regardless of notification preferences.
 
@@ -115,55 +134,33 @@ Use a subdomain like `feedback@mail.yourcompany.com` to separate feedback notifi
 
 Emails automatically use your workspace branding:
 
-- **Logo** — displayed in the email header
-- **Workspace name** — used in email subjects and footers
-- **Accent color** — applied to buttons and links
+- **Logo**: displayed in the email header
+- **Workspace name**: used in email subjects and footers
+- **Accent color**: applied to buttons and links
 
 Configure branding in **Admin → Settings → Branding**.
-
-### Digest Emails
-
-Digest emails summarize feedback activity over a period:
-
-1. Go to **Admin → Settings → Notifications**
-2. Enable **Digest emails**
-3. Choose frequency: **Daily** or **Weekly**
-4. Select which boards to include
-
-Digests include:
-- New posts submitted since the last digest
-- Top posts by vote count
-- Status changes
-
-## Testing
-
-After configuring email, verify it works:
-
-1. Go to **Admin → Settings → Email**
-2. Click **Send Test Email**
-3. Check your inbox for the test message
-
-If the test email doesn't arrive:
-- Check the server logs for SMTP errors
-- Verify your SMTP credentials
-- Ensure the `EMAIL_FROM` domain has valid DNS records
 
 ## Deliverability
 
 To ensure emails reach inboxes:
 
-1. **Set up SPF** — add your email provider to your domain's SPF record
-2. **Enable DKIM** — sign outgoing emails with your domain's DKIM key
-3. **Configure DMARC** — set a DMARC policy for your sending domain
-4. **Use a dedicated sending domain** — avoid sharing reputation with marketing emails
+1. **Set up SPF**: add your email provider to your domain's SPF record
+2. **Enable DKIM**: sign outgoing emails with your domain's DKIM key
+3. **Configure DMARC**: set a DMARC policy for your sending domain
+4. **Use a dedicated sending domain**: avoid sharing reputation with marketing emails
 
 ## Troubleshooting
 
 ### Emails Not Sending
 
-1. Check that `EMAIL_SMTP_HOST` or `EMAIL_RESEND_API_KEY` is set
-2. Review server logs for connection errors
+1. Check that one provider is configured: `EMAIL_SMTP_HOST`, the three `EMAIL_SES_*` variables, or `EMAIL_RESEND_API_KEY`, plus `EMAIL_FROM`
+2. Review server logs for connection or authentication errors
 3. Verify the SMTP port is not blocked by your hosting provider
+4. For SES, confirm `EMAIL_SES_REGION` matches the region your sending identity is verified in
+
+### App refuses to start: more than one email provider
+
+The log lists each configured provider and its variables. Remove all but one. If the extra one is a Resend key kept for inbound mail, set `EMAIL_INBOUND_PROVIDER=resend`.
 
 ### Emails Going to Spam
 
