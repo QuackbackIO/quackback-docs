@@ -14,7 +14,7 @@ The prompt includes a short-lived pairing code. The agent redeems `POST /api/wid
 
 The agent wires identify only when the host already has a session or login. On a static or logged-out-only site it stops after `init` and leaves the secret in env.
 
-Humans who are not using an agent can open **Install without an agent** on that page for the snippet. The signing secret is not an install step — open it only for hand wiring or rotation. After the widget connects, the same page becomes a manage screen (status, visibility, add to another site, secret).
+Humans who are not using an agent can open **Install without an agent** on that page for the snippet. The signing secret is not an install step. Open it only for hand wiring or rotation. After the widget connects, the same page becomes a manage screen (status, visibility, add to another site, secret).
 
 Tabs, colors, and launcher copy come from **Admin → Settings → Widget**.
 
@@ -46,7 +46,7 @@ The snippet looks like this (your instance URL is pre-filled in admin):
 
 Replace `https://feedback.example.com` with your Quackback instance URL.
 
-The snippet creates a command queue, then loads the SDK. Calls you make before the script loads replay automatically. Script-tag installs can omit `instanceUrl` — the SDK reads it from `sdk.js`.
+The snippet creates a command queue, then loads the SDK. Calls you make before the script loads replay automatically. Script-tag installs can omit `instanceUrl` because the SDK reads it from `sdk.js`.
 
 <Note>
 Turn on **Show on your website** in **Admin → Settings → Widget → Install** (or Widget settings) or the launcher stays hidden even after the snippet loads.
@@ -94,7 +94,7 @@ function FeedbackButton() {
 No provider is required. The hooks wrap the singleton SDK.
 
 <Tip>
-Identify is optional and is not required for the launcher. If you later want signed-in attribution, fetch a backend-signed `ssoToken` — never raw id or email. See [Identify users](/widget/identify-users).
+Identify is optional and is not required for the launcher. If you later want signed-in attribution, fetch a backend-signed `ssoToken`, never a raw id or email. See [Identify users](/widget/identify-users).
 </Tip>
 
 ## Configure with init options
@@ -126,7 +126,7 @@ Quackback.init({
 | `placement` | `"left"` \| `"right"` | `"right"` | Corner for the launcher and panel until admin config loads |
 | `defaultBoard` | string | - | Board slug to filter the widget. Omit to show all boards |
 | `launcher` | boolean | `true` | Set `false` to hide the default floating button |
-| `locale` | string | Auto-detected | `"en"`, `"fr"`, `"de"`, `"es"`, `"ar"`, `"ru"`, `"pt-BR"`, `"zh-CN"`, or `"zh-TW"` |
+| `locale` | string | Auto-detected | `"en"`, `"de"`, `"fr"`, `"es"`, `"ar"`, `"ru"`, `"pt-BR"`, `"zh-CN"`, `"zh-TW"`, `"nl"`, or `"pl"` |
 | `identity` | object | - | Bundle identify into init. Production shape is `{ ssoToken }`. Omit for anonymous |
 
 <Note>
@@ -249,6 +249,6 @@ The SDK queues `identify` until the iframe is ready. You do not need to wait for
 
 ## Next steps
 
-- [Identify users](/widget/identify-users) — Sign `ssoToken` on your server
-- [Listen to widget events](/widget/events) — React to posts, votes, and comments
-- [Widget overview](/widget) — Surfaces, admin editor, and locales
+- [Identify users](/widget/identify-users): Sign `ssoToken` on your server
+- [Listen to widget events](/widget/events): React to posts, votes, and comments
+- [Widget overview](/widget): Surfaces, admin editor, and locales

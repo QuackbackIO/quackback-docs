@@ -52,19 +52,20 @@ You can [create custom statuses](/admin/statuses) like "In Design", "In Beta", o
 
 ## Users & Roles
 
-Quackback has two types of accounts with three roles:
+Quackback has two types of accounts: **portal users** (your customers) and **team members**. Every team member has a role. Four presets ship built in, and you can create [custom roles](/admin/roles-permissions#custom-roles):
 
-| Capability | Portal User | Member | Admin |
-|------------|:-----------:|:------:|:-----:|
-| Submit feedback, vote, comment | ✓ | ✓ | ✓ |
-| View admin dashboard | | ✓ | ✓ |
-| Manage feedback & statuses | | ✓ | ✓ |
-| Workspace settings & integrations | | | ✓ |
+| Capability | Portal User | Contributor | Manager | Admin | Owner |
+|------------|:-----------:|:-----------:|:-------:|:-----:|:-----:|
+| Submit feedback, vote, comment | ✓ | ✓ | ✓ | ✓ | ✓ |
+| Work feedback and support queues | | ✓ | ✓ | ✓ | ✓ |
+| Configure boards, statuses, and product structure | | | ✓ | ✓ | ✓ |
+| Workspace settings, members, and integrations | | | | ✓ | ✓ |
+| Billing | | | | | ✓ |
 
-**Portal users** are your customers. They sign up through the public portal. **Team members** are invited by admins and access the admin dashboard.
+**Portal users** are your customers. They sign up through the public portal. **Team members** are invited by an Owner or Admin and use the admin dashboard. See [roles and permissions](/admin/roles-permissions).
 
 <Note>
-Team members can browse the public portal while signed into Quackback. The widget will not treat a team email as a customer account — see [Session types](/auth/overview#session-types).
+Team members can browse the public portal while signed into Quackback. The widget will not treat a team email as a customer account. See [Session types](/auth/overview#session-types).
 </Note>
 
 ## More to Explore

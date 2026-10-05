@@ -1,6 +1,6 @@
 ---
 title: "Migrate from another tool"
-description: "Move from Canny, UserVoice, or a spreadsheet without losing data or momentum."
+description: "Move from another feedback tool or a spreadsheet without losing data or momentum."
 icon: "package-open"
 ---
 
@@ -23,53 +23,31 @@ Don't import into a half-configured workspace. You'll end up reconfiguring thing
 
 ## Export from your old tool
 
-Every tool has different export formats. Here's what to expect for common migrations.
+Every tool exports differently, but most can export posts as CSV. Quackback imports one CSV template, so the work is mapping your export's columns onto it.
 
-### From Canny
+### From another feedback tool
 
-Quackback ships a dedicated Canny importer — a command-line tool that connects to the Canny API and migrates posts, votes, comments, users, statuses, tags, and changelog entries automatically. No CSV wrangling needed.
+1. Export your posts from the old tool as CSV.
+2. In **Admin → Settings → Imports & exports**, click **Download template**.
+3. Map your export's columns onto the template:
 
-1. Create a Quackback API key in **Admin → Settings → API Keys**, and create your target boards first (the importer matches Canny boards by name).
-2. Validate with a dry run, then run it for real:
+| Your old tool | Quackback column |
+|---------------|------------------|
+| Title | `title` |
+| Description or body | `content` |
+| Status | `status` |
+| Category or tags | `tags` |
+| Board or forum | `board` |
+| Author name and email | `author_name`, `author_email` |
+| Vote count | `vote_count` |
+| Created date | `created_at` |
+| Original ID | `source_id` |
 
-   ```bash
-   bun scripts/import/cli.ts canny \
-     --api-key YOUR_CANNY_API_KEY \
-     --quackback-url https://feedback.yourapp.com \
-     --quackback-key qb_xxx \
-     --dry-run --verbose   # drop --dry-run to import for real
-   ```
+Statuses, boards, and tags that don't exist yet are created on import, and a filled `source_id` lets you re-run the import without duplicates. To bring over comments, votes, and internal notes as well, use the command-line importer in the Quackback repository (`scripts/import`). See [Import and export your workspace](/admin/imports).
 
-See [Import and export data](/admin/import-export#migrate-from-canny) for full details.
-
-If you'd rather use a CSV export, you can still map the fields manually:
-
-| Canny field | Quackback field |
-|-------------|----------------|
-| `title` | `title` |
-| `details` | `content` |
-| `status` | Map to your Quackback status slugs |
-| `score` (vote count) | `vote_count` |
-| `category` | Board (or tag, depending on your structure) |
-| `tags` | Tags |
-| `created` | `created_at` |
-
-Export each Canny board separately and import into the corresponding Quackback board.
-
-### From UserVoice
-
-UserVoice exports as CSV through their admin panel. Map the fields:
-
-| UserVoice field | Quackback field |
-|-----------------|----------------|
-| `suggestion_title` | `title` |
-| `suggestion_text` | `content` |
-| `status_name` | Map to your Quackback status slugs |
-| `vote_count` | `vote_count` |
-| `category` | Board or tag |
-| `created_at` | `created_at` |
-
-UserVoice categories map well to Quackback boards. If you had 5+ categories in UserVoice, consider consolidating into 2-3 Quackback boards and using tags for the rest.
+<Tip>
+Categories in your old tool often map well to Quackback boards. If you had 5+ categories, consider consolidating into 2-3 boards and using tags for the rest.
+</Tip>
 
 ### From a spreadsheet
 
@@ -77,7 +55,7 @@ If you've been tracking feedback in a spreadsheet, Google Form, or Airtable, you
 
 1. **Add standard headers.** At minimum: `title`, `content`, `status`, `vote_count`, `created_at`.
 2. **Clean dates.** Convert all dates to ISO 8601 format (`2026-01-15T00:00:00Z`).
-3. **Normalize statuses.** Map your custom statuses to Quackback status slugs (`open`, `under-review`, `planned`, `in-progress`, `complete`, `closed`).
+3. **Normalize statuses.** Map your custom statuses to Quackback status slugs (`open`, `under_review`, `planned`, `in_progress`, `complete`, `closed`).
 4. **Remove empty rows and duplicates.** Clean before import, not after.
 
 Export as CSV.
@@ -107,7 +85,7 @@ Do a test import first. Import into a single board, verify that vote counts, dat
 Import board-by-board, starting with your most important board.
 
 1. **Prepare your CSV** with the correct field mappings.
-2. **Import into Quackback.** Use the [Import & Export](/admin/import-export) feature.
+2. **Import into Quackback.** Use [Imports & exports](/admin/imports) for a preview of every row before you commit.
 3. **Verify the import:**
    - Check that post count matches your export (minus any you intentionally excluded).
    - Spot-check 5-10 posts: are titles, content, and statuses correct?
