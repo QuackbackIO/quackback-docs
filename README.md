@@ -177,10 +177,12 @@ A structured course for building a feedback program that ships the right feature
 - [Deploy with Docker](self-hosting/docker.mdx): Recommended deployment
 - [Deploy on Railway](self-hosting/railway.mdx): One-click template
 - [Install without Docker](self-hosting/manual.mdx): Manual installation
+- [Upgrade from 0.13 to 0.14](self-hosting/upgrading-0-14.mdx): Back up, upgrade, and what changes
 - [Scale with multiple replicas](self-hosting/scaling.mdx): Web and worker roles
 - [Receive email over IMAP](self-hosting/email-imap.mdx): Inbound email without webhooks
 - [Set up a reverse proxy](self-hosting/reverse-proxy.mdx): Nginx, Caddy, Traefik
 - [Config file](self-hosting/config-file.mdx): Declarative workspace configuration
+- [Telemetry](self-hosting/telemetry.mdx): What the anonymous daily snapshot contains
 - [Troubleshooting](self-hosting/troubleshooting.mdx): Common issues
 
 ## Developer Guide

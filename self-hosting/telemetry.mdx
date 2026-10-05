@@ -1,0 +1,60 @@
+---
+title: "Telemetry"
+description: "See what the anonymous daily snapshot contains and how to turn it off."
+icon: "chart-bar"
+---
+
+# Telemetry
+
+Self-hosted Quackback sends one anonymous snapshot a day so the project can see which versions, setups, and features are in use. It helps decide which platforms to test, which features to invest in, and whether a release breaks background work.
+
+## Turn it off
+
+Set this environment variable and restart:
+
+```bash
+DISABLE_TELEMETRY=true
+```
+
+Nothing is sent while it is set.
+
+## What it never contains
+
+Names, emails, URLs, hostnames, workspace names, content of any kind, or exact counts. The server's IP address is not stored and is not turned into a location.
+
+Every snapshot passes a check before it is sent. A value that looks like an email or a URL, or a field named like `email`, `url`, `hostname`, or `token`, stops the send.
+
+Counts are reported in bands: `0`, `1-10`, `11-50`, `51-200`, `201-1000`, `1001-10000`, `10000+`.
+
+## What it contains
+
+| Field | Example | Why |
+|-------|---------|-----|
+| `instanceId` | A random UUID | Counts installs without identifying them |
+| `version`, `runtime`, `runtimeVersion`, `os`, `arch`, `deployMethod` | `0.14.0`, `bun`, `docker` | Which platforms to support and test |
+| `platform` | PostgreSQL major version, process role, whether a config file is in use | Which database versions and topologies matter |
+| `installAge` | `31-90d` | Whether installs stick |
+| `products`, `experimentalFeatures` | Feedback on, status off | Which modules are switched on |
+| `features` | SMTP, S3, AI, widget, MCP configured | Which capabilities are set up |
+| `emailProvider`, `aiProvider` | `smtp`, `openrouter` | A fixed label. The endpoint itself is never sent. |
+| `auth` | `password`, `google`, `oidc`, open signup | Which sign-in methods to prioritise. Custom identity providers report only as `oidc`. |
+| `integrations` | `slack`, `linear` | Connected integrations, from the built-in catalogue only |
+| `locales` | `de`, `pt-BR` | Which translations people use |
+| `activation`, `firstWin`, `widgetInstalled` | Setup goal, first value reached | Where onboarding works and where it stalls |
+| `seats7d`, `activeUsers30d` | Team and portal users signed in, banded | Real use, not just installs |
+| `scale` | Banded totals per module | Size of installs |
+| `activity30d` | Banded posts, votes, comments, conversations, replies, tickets, articles, changelog entries, searches, incidents, workflow runs | Which features are used, not just enabled |
+| `channels30d` | Banded new conversations per channel | Which channels matter |
+| `ai30d` | Banded AI calls per feature | Which AI features earn their cost |
+| `health.failedJobs24h` | Banded | Whether a release breaks background work |
+
+The snapshot goes to the Quackback project's PostHog analytics (EU region). The code that builds it is in `apps/web/src/lib/server/telemetry/payload.ts` in the Quackback repository.
+
+## Product analytics is separate
+
+Telemetry is not product analytics. If you want to see how your own team uses the admin app, you can send pageviews, clicks, and masked session replay to **your own** PostHog project by setting `POSTHOG_KEY`. It's off unless you set it, and portal, widget, and help center visitors are never tracked. See [Product analytics](/reference/environment-variables#product-analytics).
+
+## Next steps
+
+- [Privacy and data](/admin/privacy): What Quackback stores and how to delete it
+- [Environment Variables](/reference/environment-variables): Every configuration option
