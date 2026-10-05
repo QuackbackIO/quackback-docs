@@ -8,27 +8,25 @@ icon: "message-circle"
 
 Not every customer message needs a human. Quinn's Agent answers questions and resolves issues right inside [Messenger](/widget), your customer-facing chat widget, and hands off to your team the moment it's out of its depth.
 
-Find it at **Admin → AI & Automation → Agent**.
+Find it at **Admin → Settings → Agent**, under AI & Automation.
 
 ## Turn it on
 
-The Agent tab opens with a deployment card that controls whether Quinn responds automatically in Messenger. Click **Enable automatic replies** to go live, or **Pause automatic replies** to take Quinn offline without losing your configuration.
+The Agent page opens with a card that shows whether Quinn is replying in Messenger. Click **Pause Agent** to take Quinn offline without losing your configuration, and **Resume** to bring it back.
 
 <Note>
-The Agent works out of the box wherever [support](/support/overview) is enabled. There's no separate Labs flag to find, unlike Copilot and Quinn's actions.
+Messenger replies need the [support inbox](/support/overview). If it's off, the card offers **Turn on inbox**. Quinn also needs an [AI model configured](/admin/ai-features).
 </Note>
 
-## Five tabs, one agent
+## Three tabs, one agent
 
-Everything about the Agent's behavior is organized into five tabs, shared with Copilot's layout so the two stay easy to compare.
+Everything about the Agent's behavior is organized into three tabs.
 
 | Tab | What you configure |
 |-----|---------------------|
 | **Basics** | Quinn's name and avatar, tone, response length, and any additional instructions |
 | **Knowledge** | Which content Quinn can draw on when it answers |
 | **Guidance** | Rules that steer Quinn's behavior in specific situations |
-| **Actions** | What Quinn is allowed to do, not just say |
-| **History** | A change log of every edit to Quinn's configuration |
 
 ### Basics
 
@@ -54,13 +52,9 @@ Keep guidance specific. "Offer a 10% discount if the customer threatens to cance
 
 Rules share a combined character budget per agent, so a handful of focused rules works better than many long ones.
 
-### Actions
+## Actions
 
-Actions let Quinn do things, not just say things. See [Give Quinn actions](/automation/actions) for the full list of what's available and how approvals work.
-
-### History
-
-Every change to Quinn's configuration, by any teammate, shows up here with who made it and when. It's shared between the Agent and Copilot tabs, so you can see the full picture of how Quinn's setup evolved.
+Actions let Quinn do things, not just say things. Set what the Agent may do in **Admin → Settings → Connectors**. See [Give Quinn actions](/automation/actions) for the full list and how approvals work.
 
 ## Handing off to a human
 
@@ -72,6 +66,6 @@ Build a workflow on the "Quinn handed off" trigger to route escalations to a spe
 
 ## Next steps
 
-- [Knowledge sources](/automation/knowledge-sources) -- The full source catalogue and what each one contributes
-- [Give Quinn actions](/automation/actions) -- Let the Agent close conversations or create tickets
-- [Test and monitor Quinn](/automation/test-and-monitor) -- Try the Agent in the sandbox before it talks to real customers
+- [Knowledge sources](/automation/knowledge-sources): the full source catalogue and what each one contributes
+- [Give Quinn actions](/automation/actions): let the Agent close conversations or create tickets
+- [Monitor Quinn](/automation/test-and-monitor): see how the Agent performs
