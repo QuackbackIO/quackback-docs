@@ -33,6 +33,7 @@ PostgreSQL is the only service Quackback needs. The background job queue, caches
 | `PORT` | `3000` | Port the server listens on |
 | `NODE_ENV` | `production` in the Docker image | `production`, `development`, or `test` |
 | `TRUSTED_PROXY_HOPS` | `0` | Number of reverse proxies in front of the app. See [Reverse proxy](#reverse-proxy). |
+| `TRUSTED_CLIENT_IP_HEADER` | unset | Name of a header your proxy sets to the client IP, such as `x-real-ip` or `cf-connecting-ip`. Takes precedence over `TRUSTED_PROXY_HOPS`. See [Reverse proxy](#reverse-proxy). |
 | `TRUSTED_ORIGINS` | none | Extra origins allowed to make authenticated requests, comma-separated. `BASE_URL` is always trusted. |
 | `QUACKBACK_COMPRESSION` | on | Set to `off` to stop the app compressing responses, for example when your proxy already compresses them |
 | `CHAT_TRANSPORT_MODE` | `live` | `live` streams chat over server-sent events. Set to `poll` to force the widget and portal onto polling if a proxy buffers or drops long-lived streams. |
@@ -48,7 +49,9 @@ PostgreSQL is the only service Quackback needs. The background job queue, caches
 | One reverse proxy (Nginx, Caddy, Traefik, Cloudflare Tunnel, Railway) | `1` |
 | A CDN in front of a reverse proxy | `2` |
 
-Left at `0` behind a proxy, every visitor shares one rate-limit bucket and the app logs a warning. Never set it above `0` if clients can reach the app port directly: they could then choose the IP the app sees. See [Set the trusted proxy hops](/self-hosting/reverse-proxy#set-the-trusted-proxy-hops).
+Left at `0` behind a proxy, every visitor shares one rate-limit bucket and the app logs a warning. Never set it above `0` if clients can reach the app port directly: they could then choose the IP the app sees.
+
+If your proxy sets one authoritative client-IP header, set `TRUSTED_CLIENT_IP_HEADER` to its name instead of counting hops, for example `x-real-ip` with Nginx's `proxy_set_header X-Real-IP $remote_addr;`, or `cf-connecting-ip` behind Cloudflare. It's the better choice when requests pass through a number of proxies you don't control. The header is used only when it holds exactly one valid IP address; otherwise the app falls back to `TRUSTED_PROXY_HOPS` and logs a warning. `X-Forwarded-For` isn't accepted here. Only name a header your proxy always sets or overwrites, and keep the app port unreachable except through the proxy, or clients can spoof their IP. See [Set the trusted proxy hops](/self-hosting/reverse-proxy#set-the-trusted-proxy-hops).
 
 ## Database
 
