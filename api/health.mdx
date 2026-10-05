@@ -15,7 +15,7 @@ Point your orchestrator's health checks here. Both endpoints are unauthenticated
 GET /api/health/live
 ```
 
-Confirms the process is up and serving HTTP. Does no I/O, so it can never report false negatives from a slow database or Redis.
+Confirms the process is up and serving HTTP. Does no I/O, so a slow database can never make it fail.
 
 ```bash
 curl https://your-domain/api/health/live
@@ -37,7 +37,7 @@ Always returns `200` if the process can respond at all. Use this for a container
 GET /api/health/ready
 ```
 
-Confirms the instance can actually serve traffic: database, Redis, migrations, and (on worker roles) background workers all pass.
+Confirms the instance can actually serve traffic: the database answers, migrations are up to date, and (on `worker` and `all` roles) the background job worker is running.
 
 ```bash
 curl https://your-domain/api/health/ready
@@ -46,17 +46,24 @@ curl https://your-domain/api/health/ready
 ```json
 {
   "status": "ok",
-  "role": "web",
+  "role": "all",
   "checks": {
     "db": { "ok": true },
-    "redis": { "ok": true },
     "migrations": { "ok": true },
-    "workers": { "ok": true, "failed": 0 }
+    "workers": {
+      "ok": true,
+      "expected": true,
+      "running": true,
+      "loops": 1,
+      "inFlight": 0,
+      "schemaMissing": 0,
+      "refused": 0
+    }
   }
 }
 ```
 
-Returns `200` when every check passes, `503` with the same shape otherwise. Each failed check carries a short `error` code, one of `"failed"`, `"timeout"`, or `"behind"` (migrations not yet caught up), never raw error detail. `role` reports whether the replying process is a `web` or `worker` role (see `QUACKBACK_ROLE`); on web-role replicas the workers check passes trivially since no workers boot there.
+Returns `200` when every check passes, `503` with the same shape otherwise. Each failed check carries a short `error` code, one of `"failed"`, `"timeout"`, or `"behind"` (migrations not yet caught up), never raw error detail. Each check has a 3-second budget, so a hung dependency reports `timeout` instead of hanging the probe. `role` reports the replying process's `QUACKBACK_ROLE` (`all`, `web`, or `worker`). On a `web` replica, `workers.expected` is `false` and the check passes, since no workers run there.
 
 <Tip>
 Use `/api/health/ready` for your load balancer's traffic-admission check and Kubernetes' `readinessProbe`. Use `/api/health/live` for `livenessProbe`. Readiness can legitimately flip to `503` during a deploy or migration without meaning the process should be restarted.
