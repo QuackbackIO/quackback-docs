@@ -9,7 +9,7 @@ icon: "shield-check"
 Control how your team signs in to the admin dashboard. Pick sign-in methods, require two-factor authentication, and review a tamper-evident log of every security-sensitive change.
 
 <Note>
-The Security page controls **team member** sign-in (admins and members). For **portal user** sign-in (customers submitting feedback), see [Portal Authentication](/admin/portal-auth).
+The Security page controls **team member** sign-in. For **portal user** sign-in (customers submitting feedback), see [Portal Authentication](/admin/portal-auth).
 </Note>
 
 Everything here lives under **Admin → Settings → Security**, which has a **Team** tab and a **Portal** tab. This page covers the Team tab plus the [Audit log](#audit-log).
@@ -33,7 +33,7 @@ Magic link is always used for team invitations and recovery-code sign-in, even w
 
 ## Two-factor authentication
 
-Two-factor authentication (2FA) adds a 6-digit code from an authenticator app on top of a password. It has no effect on SSO sign-ins — SSO MFA is handled by your identity provider.
+Two-factor authentication (2FA) adds a 6-digit code from an authenticator app on top of a password. It has no effect on SSO sign-ins. SSO MFA is handled by your identity provider.
 
 ### Enroll in 2FA
 
@@ -43,7 +43,7 @@ Each team member enrolls themselves from their **account settings**:
 2. Click **Set up authenticator** and confirm your password.
 3. Scan the QR code with Google Authenticator, 1Password, Authy, or any TOTP app.
 4. Enter the 6-digit code to verify.
-5. Save the backup codes shown — each works once if you lose your authenticator.
+5. Save the backup codes shown: each works once if you lose your authenticator.
 
 To turn it off, click **Disable two-factor** and confirm your password.
 
@@ -52,7 +52,7 @@ To turn it off, click **Disable two-factor** and confirm your password.
 Turn on **Require 2FA for team members** on the Team tab to enforce it workspace-wide:
 
 - Every admin and member must complete a TOTP challenge on each password sign-in.
-- Magic-link sign-in is refused for anyone who has enrolled — they must use the password + TOTP flow.
+- Magic-link sign-in is refused for anyone who has enrolled: they must use the password + TOTP flow.
 - Members who haven't enrolled yet are sent to set up 2FA before they can continue.
 
 <Note>
@@ -61,7 +61,7 @@ Require 2FA needs **Password** sign-in enabled, because enrolling a TOTP authent
 
 ### Reset a member's 2FA
 
-If a team member loses their authenticator and their backup codes, an admin can clear their enrollment from **Admin → Settings → Members** — open the member's actions and choose **Reset 2FA**. The member re-enrolls on their next sign-in. The reset is recorded in the [audit log](#audit-log).
+If a team member loses their authenticator and their backup codes, an admin can clear their enrollment from **Admin → Settings → Members**. Open the member's actions and choose **Reset 2FA**. The member re-enrolls on their next sign-in. The reset is recorded in the [audit log](#audit-log).
 
 ## Recovery codes
 
@@ -77,30 +77,30 @@ On [Quackback Cloud](/cloud), the audit log is included on Enterprise.
 
 It captures:
 
-- **Authentication** — sign-in success and failure, new-device sign-ins, rate-limited attempts, sign-in method toggles (password, magic link).
-- **SSO** — connection changes, per-domain enforcement, recovery-code generation and use.
-- **Team** — role changes (including those from SSO attribute mapping), 2FA admin resets, bulk session revocations.
-- **Portal access** — visibility flips, allowed-domain edits, allowed-segment edits, widget sign-in toggle, and authenticated-but-unauthorized denials at the portal gate.
-- **Portal invites** — sends, resends, accepts, revokes, link copies (`portal.invite.link_minted`), and expirations from the daily sweep.
-- **Boards** — per-board access matrix changes (View / Vote / Comment / Submit tiers and segment allowlists).
-- **Moderation** — workspace moderation default changes, plus approve, reject, and hold actions on individual posts and comments.
-- **Widget handshake** — OTT exchanges that succeeded or were rejected. Grouped as **Widget activity** in the filter and hidden by default to keep noise down; turn it on when you're debugging a handoff issue.
+- **Authentication**: sign-in success and failure, new-device sign-ins, rate-limited attempts, sign-in method toggles (password, magic link).
+- **SSO**: connection changes, per-domain enforcement, recovery-code generation and use.
+- **Team**: role changes (including those from SSO attribute mapping), 2FA admin resets, bulk session revocations.
+- **Portal access**: visibility flips, allowed-domain edits, allowed-segment edits, widget sign-in toggle, and authenticated-but-unauthorized denials at the portal gate.
+- **Portal invites**: sends, resends, accepts, revokes, link copies (`portal.invite.link_minted`), and expirations from the daily sweep.
+- **Boards**: per-board access matrix changes (View / Vote / Comment / Submit tiers and segment allowlists).
+- **Moderation**: workspace moderation default changes, plus approve, reject, and hold actions on individual posts and comments.
+- **Widget handshake**: OTT exchanges that succeeded or were rejected. Grouped as **Widget activity** in the filter and hidden by default to keep noise down; turn it on when you're debugging a handoff issue.
 
 Each entry records the actor, their IP, user agent, request id, actor type (user / service / api key / anonymous / system), and the auth method used (`password`, `sso`, `magic_link`, `ott`, `api_key`, `session`). Filter by actor, event type, or time range to investigate a specific change. Export the filtered view as CSV for forensics or compliance.
 
 <Tip>
-Review the audit log after any access change — a new admin, a removed member, an SSO reconfiguration, or a portal-access edit. It's the fastest way to confirm who did what.
+Review the audit log after any access change: a new admin, a removed member, an SSO reconfiguration, or a portal-access edit. It's the fastest way to confirm who did what.
 </Tip>
 
 ## Sign-in hardening
 
 Quackback rate-limits password and magic-link sign-in attempts per IP and email address, and tracks devices so it can email the account owner the first time a new device signs in. The new-device email is on by default and can be turned off on the Team tab.
 
-Signing in through the widget or from widget→portal never unlocks admin tools — even after you invite that person to your team. See [Session types](/auth/overview#session-types).
+Signing in through the widget or from widget→portal never unlocks admin tools, even after you invite that person to your team. See [Session types](/auth/overview#session-types).
 
 ## Next steps
 
-- [Set up single sign-on](/auth/sso) — connect your IdP and require SSO
-- [Portal Authentication](/admin/portal-auth) — configure sign-in for customers
-- [Team Members](/admin/team) — invite and manage your team
-- [Session types](/auth/overview#session-types) — keep widget and admin access separate
+- [Set up single sign-on](/auth/sso): connect your IdP and require SSO
+- [Portal Authentication](/admin/portal-auth): configure sign-in for customers
+- [Team Members](/admin/team): invite and manage your team
+- [Session types](/auth/overview#session-types): keep widget and admin access separate

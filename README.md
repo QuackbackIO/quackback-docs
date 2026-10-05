@@ -90,7 +90,7 @@ A structured course for building a feedback program that ships the right feature
 - [Set up portal sign-in](admin/portal-auth.mdx): User authentication options
 - [Customize your portal](admin/branding.mdx): Branding, navigation, and welcome card
 - [Finish setup with the launch checklist](admin/getting-started.mdx): Goal-based setup tasks
-- [Import from other tools](admin/imports.mdx): In-app import adapters
+- [Import and export your workspace](admin/imports.mdx): CSV template import and ZIP export
 - [Import and export data](admin/import-export.mdx): CSV import and export
 - [Search](admin/search.mdx): Find posts fast
 - [Privacy and data](admin/privacy.mdx): Data handling, retention, and GDPR

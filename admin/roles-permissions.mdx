@@ -36,6 +36,10 @@ Quackback ships four role presets, from broadest to narrowest access:
 Every workspace needs at least one Owner. You cannot remove or demote the last one.
 </Warning>
 
+<Note>
+Upgrading from an earlier release maps the old roles onto the presets: admins become **Owner** and members become **Manager**, so nobody loses access. Review assignments afterwards and move people to narrower roles where it fits.
+</Note>
+
 ### See exactly what each role can do
 
 The **Roles** tab in [Members & Teams](/admin/team) shows the permission catalogue behind every role: roughly 90 individual permissions grouped by area, including workspace settings, people, companies, feedback, conversations, changelog, help center, and integrations. Expand a role there to see precisely which permissions it grants.
@@ -46,7 +50,7 @@ When none of the presets is quite right, create your own role from the **Roles**
 
 **Create one:**
 
-1. Go to **Admin -> Settings -> Members & Teams -> Roles**
+1. Go to **Admin → Settings → Members & Teams → Roles**
 2. Click **New role**, or **Duplicate** on any existing role to start from its permissions
 3. Name it and pick permissions in the editor - the 15 catalogue categories each have a select-all, and you can filter by key
 
@@ -65,7 +69,7 @@ Custom roles hold the **Member** tier for seat and access purposes; the Owner ti
 
 ### Assign a custom role
 
-- **Existing member**: Members & Teams -> the **...** menu on their row -> **Change role** -> pick the role under Custom
+- **Existing member**: Members & Teams → the **...** menu on their row → **Change role** → pick the role under Custom
 - **New teammate**: choose the role in the invite dialog; they hold it from the moment they accept
 - **API**: `PATCH /api/v1/principals/:id` with a `roleId`
 
@@ -95,7 +99,7 @@ Team members are your teammates. They have everything Portal Users have, plus ac
 **What they can typically do beyond Portal Users**, depending on role:
 - Access the admin dashboard and [feedback inbox](/admin/inbox)
 - Change post [statuses](/admin/statuses), merge duplicates, and assign owners
-- Add [tags](/admin/tags) and manage [roadmap](/admin/roadmap) items
+- Add [tags](/admin/tags) and move posts through the statuses that drive the [roadmap](/admin/roadmap)
 - Post private internal comments and handle support conversations
 - Create [changelog](/admin/changelog) entries
 - Manage [boards](/admin/boards), statuses, and tags

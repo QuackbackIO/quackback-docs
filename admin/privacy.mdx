@@ -82,7 +82,7 @@ Quinn, the AI assistant that answers customers and helps teammates, only sees th
 
 ## Telemetry
 
-Quackback collects minimal anonymous telemetry to improve the product: instance ID, version number, and feature usage counts. No user data or feedback content is included.
+Self-hosted Quackback sends one anonymous snapshot a day: a random instance ID, the version and platform, which modules and integrations are switched on, and usage counts reported only in bands (such as `11-50`). It never contains names, emails, URLs, hostnames, or content, and the server's IP address is not stored. See [Telemetry](/self-hosting/telemetry) for the full field list.
 
 Disable telemetry with:
 
@@ -92,11 +92,7 @@ DISABLE_TELEMETRY=true
 
 ## Visitor analytics
 
-<Note>
-Visitor analytics is off by default. Turn it on in **Admin → Settings → Labs**.
-</Note>
-
-When enabled, the portal tracker honors **Do Not Track** and **Global Privacy Control** browser signals, it stops collecting for any visitor who has either one set. See [Visitor analytics](/admin/visitors) for what's tracked and how to configure it.
+Visitor analytics is always on. The tracker honors **Do Not Track** and **Global Privacy Control** browser signals and stops collecting for any visitor who has either one set. See [Visitor analytics](/admin/visitors) for what's tracked and how to configure it.
 
 ## User data deletion
 
@@ -145,16 +141,16 @@ For GDPR subject access requests, export board data as CSV and filter by the use
 
 Protect your instance and your users' data:
 
-- **Use TLS** — Run Quackback behind a reverse proxy (Nginx, Caddy) with HTTPS enabled
-- **Rotate secrets** — Change your `SECRET_KEY` periodically
-- **Back up regularly** — Schedule automated database backups
-- **Restrict access** — Limit dashboard access to trusted team members
-- **Keep updated** — Pull the latest Docker image for security patches
+- **Use TLS**: Run Quackback behind a reverse proxy (Nginx, Caddy) with HTTPS enabled
+- **Rotate secrets**: Change your `SECRET_KEY` periodically
+- **Back up regularly**: Schedule automated database backups
+- **Restrict access**: Limit dashboard access to trusted team members
+- **Keep updated**: Pull the latest Docker image for security patches
 
 See [Configure team security](/admin/security) for authentication and sign-in settings.
 
 ## Next steps
 
-- [Configure team security](/admin/security) — Set up team authentication and sign-in methods
-- [Deploy with Docker](/self-hosting/docker) — Run Quackback on your own infrastructure
-- [Import and export data](/admin/import-export) — Back up or migrate your feedback data
+- [Configure team security](/admin/security): Set up team authentication and sign-in methods
+- [Deploy with Docker](/self-hosting/docker): Run Quackback on your own infrastructure
+- [Import and export data](/admin/import-export): Back up or migrate your feedback data

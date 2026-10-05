@@ -6,7 +6,7 @@ icon: "arrow-right-left"
 
 # Import and export data
 
-Bring your existing feedback with you. Whether you're migrating from Canny, UserVoice, or a spreadsheet, import preserves your vote counts, dates, and history. Export anytime for backups or analysis.
+Bring your existing feedback with you. Whether you're moving from another tool or a spreadsheet, import preserves your vote counts, dates, and history. Export anytime for backups or analysis.
 
 ## CSV Import
 
@@ -46,8 +46,10 @@ Import posts into any board:
 | `board` | Board slug | Must match existing board |
 | `author_name` | Author display name | Text |
 | `author_email` | Author email | Valid email |
+| `email_verified` | Whether the author's email is verified | `true` or `false` |
 | `vote_count` | Number of votes | Integer |
 | `created_at` | Creation date | ISO 8601 |
+| `source_id` | The item's ID in your old tool. Re-importing the same `source_id` updates instead of duplicating | Text |
 
 ### Example CSV
 
@@ -126,70 +128,17 @@ Export is per-board. Select the board you want to export from the board dropdown
 - **Migration** - Move to another system
 - **Reporting** - Share with stakeholders
 
-## Migrate from Canny
+## Migrate from another tool
 
-Quackback ships a dedicated Canny importer — a command-line tool that connects to the Canny API and migrates everything automatically. No manual CSV export needed.
+Export your data from your current tool as CSV, then map its columns onto the columns above. Typical mappings:
 
-### What gets imported
+- The idea or suggestion title → `title`
+- The description or body → `content`
+- The status → `status`
+- The vote count → `vote_count`
+- The original ID → `source_id`
 
-- **Posts** — titles, descriptions, statuses, images, and creation dates
-- **Votes** — individual voter attribution preserved (proxy voting per email)
-- **Comments** — threaded, with internal comments routed to private notes
-- **Tags & categories** — Canny categories imported as tags
-- **Changelog entries** — with linked post relationships preserved
-- **Merge relationships** — resolved and replayed
-- **Users** — collected from all entities, identified by email
-
-### Run the import
-
-The Canny importer is a command-line tool that reads from the Canny API and writes through your Quackback REST API.
-
-1. Create a Quackback API key in **Admin → Settings → API Keys**
-2. Create your target boards in the admin UI first — the importer matches Canny boards by name
-3. Grab your Canny API key from your Canny settings
-4. Validate with a dry run, then run the import:
-
-```bash
-# Validate only — no data written
-bun scripts/import/cli.ts canny \
-  --api-key YOUR_CANNY_API_KEY \
-  --quackback-url https://feedback.yourapp.com \
-  --quackback-key qb_xxx \
-  --dry-run --verbose
-
-# Run it for real
-bun scripts/import/cli.ts canny \
-  --api-key YOUR_CANNY_API_KEY \
-  --quackback-url https://feedback.yourapp.com \
-  --quackback-key qb_xxx \
-  --verbose
-```
-
-The import is additive — existing posts are not deleted, and duplicate votes (same user and post) are skipped.
-
-<Tip>
-Set up your Quackback boards and statuses before importing so the mapping step goes smoothly. See [Organize feedback with boards](/admin/boards) if you haven't created boards yet.
-</Tip>
-
-### CSV import from Canny
-
-If you prefer to use a CSV export instead, you can still import manually. Export from Canny and map the columns:
-
-- `title` → `title`
-- `details` → `content`
-- `status` → `status`
-- `votes` → `vote_count`
-
-## Migrate from other platforms
-
-### From UserVoice
-
-1. Export from UserVoice (CSV format)
-2. Map columns:
-   - `suggestion_title` → `title`
-   - `suggestion_text` → `content`
-   - `status` → `status`
-   - `vote_count` → `vote_count`
+For a guided preview, and to create missing boards, statuses, and tags automatically, use [Imports & exports](/admin/imports) instead of the per-board import.
 
 ### From Spreadsheet
 
