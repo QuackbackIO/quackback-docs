@@ -12,9 +12,9 @@ Turn feedback into tasks. Automatically create Asana tasks when feedback is subm
 
 The Asana integration enables:
 
-- **Create Asana tasks from feedback posts** -- automatically create a task when new feedback is submitted
-- **Link posts to tasks** -- link feedback posts to Asana tasks for traceability
-- **Status sync** -- keep feedback status in sync with Asana task sections via inbound webhooks
+- **Create Asana tasks from feedback posts**: automatically create a task when new feedback is submitted
+- **Link posts to tasks**: link feedback posts to Asana tasks for traceability
+- **Status sync**: keep feedback status in sync with Asana task sections via inbound webhooks
 
 ## Prerequisites
 
@@ -96,7 +96,7 @@ When status sync is configured, Quackback registers a webhook with Asana to rece
 2. Quackback fetches the task details via the Asana API to determine the current section
 3. If a status mapping exists for that section name, the linked feedback post's status is updated
 
-The webhook uses Asana's handshake protocol -- the initial setup request includes an `X-Hook-Secret` header that Quackback echoes back. Subsequent events are verified using HMAC-SHA256 via the `X-Hook-Signature` header.
+The webhook uses Asana's handshake protocol: the initial setup request includes an `X-Hook-Secret` header that Quackback echoes back. Subsequent events are verified using HMAC-SHA256 via the `X-Hook-Signature` header.
 
 The webhook is filtered to only receive task change events related to section membership, keeping traffic minimal.
 
@@ -140,16 +140,16 @@ Disconnecting revokes the OAuth token with Asana and removes the registered webh
 
 ### Tasks Not Being Created
 
-1. **Check integration status** -- look for errors in settings
-2. **Verify project selection** -- ensure an Asana project is selected
-3. **Check event mappings** -- confirm `post.created` is mapped
-4. **Workspace access** -- the connected Asana account must have access to the selected project
+1. **Check integration status**: look for errors in settings
+2. **Verify project selection**: ensure an Asana project is selected
+3. **Check event mappings**: confirm `post.created` is mapped
+4. **Workspace access**: the connected Asana account must have access to the selected project
 
 ### Status Sync Not Working
 
-1. **Check status mappings** -- ensure Asana section names are mapped to Quackback statuses
-2. **Verify webhook** -- the Asana webhook may need to be re-registered
-3. **Section-based status** -- Asana uses sections (not custom fields) as the status indicator for sync
+1. **Check status mappings**: ensure Asana section names are mapped to Quackback statuses
+2. **Verify webhook**: the Asana webhook may need to be re-registered
+3. **Section-based status**: Asana uses sections (not custom fields) as the status indicator for sync
 
 ### "Authentication Failed" Error
 

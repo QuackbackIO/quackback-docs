@@ -12,9 +12,9 @@ Route feedback into your Azure DevOps boards. Automatically create work items wh
 
 The Azure DevOps integration enables:
 
-- **Create work items from feedback posts** -- automatically create an Azure DevOps work item when new feedback is submitted
-- **Link posts to work items** -- link feedback posts to Azure DevOps work items for traceability
-- **Status sync** -- update feedback status when work item state changes via inbound webhooks
+- **Create work items from feedback posts**: automatically create an Azure DevOps work item when new feedback is submitted
+- **Link posts to work items**: link feedback posts to Azure DevOps work items for traceability
+- **Status sync**: update feedback status when work item state changes via inbound webhooks
 
 ## Prerequisites
 
@@ -41,7 +41,7 @@ Azure DevOps uses Personal Access Tokens instead of OAuth. No OAuth application 
 5. Copy the generated token
 
 <Tip>
-Store the PAT securely -- Azure DevOps only shows it once. If you lose it, you will need to create a new one.
+Store the PAT securely: Azure DevOps only shows it once. If you lose it, you will need to create a new one.
 </Tip>
 
 ### 2. Connect Azure DevOps
@@ -60,7 +60,7 @@ Quackback validates the connection by listing your projects. If the credentials 
 After connecting:
 
 1. Choose the Azure DevOps project where work items should be created
-2. Select the work item type (e.g., User Story, Bug, Task, Feature) -- the list is fetched from the selected project
+2. Select the work item type (e.g., User Story, Bug, Task, Feature): the list is fetched from the selected project
 
 The target is stored as a combination of project name and work item type.
 
@@ -70,7 +70,7 @@ Map Azure DevOps work item states to Quackback statuses:
 
 1. Go to the Azure DevOps integration settings
 2. Configure status mappings between work item states and Quackback statuses
-3. Azure DevOps states are project-specific (e.g., New, Active, Resolved, Closed) -- map each to the corresponding Quackback status, or set it to ignore
+3. Azure DevOps states are project-specific (e.g., New, Active, Resolved, Closed): map each to the corresponding Quackback status, or set it to ignore
 
 ### 5. Set Up the Service Hook
 
@@ -121,7 +121,7 @@ Support tickets link to Azure DevOps work items from the ticket detail panel in 
 When status sync is configured, Quackback receives inbound webhooks from Azure DevOps when work items are updated. When a linked work item's state changes:
 
 1. Azure DevOps sends a `workitem.updated` webhook to Quackback
-2. Quackback verifies the request using Basic Authentication -- the password must match the signing secret from your integration settings
+2. Quackback verifies the request using Basic Authentication: the password must match the signing secret from your integration settings
 3. Quackback checks for a `System.State` field change in the payload
 4. If a status mapping exists for the new state, the linked feedback post's status is updated
 
@@ -159,24 +159,24 @@ To fully remove the integration:
 3. Confirm the action
 
 <Note>
-Disconnecting removes the connection from Quackback. The Personal Access Token is not revoked automatically -- revoke it manually in Azure DevOps if no longer needed.
+Disconnecting removes the connection from Quackback. The Personal Access Token is not revoked automatically: revoke it manually in Azure DevOps if no longer needed.
 </Note>
 
 ## Troubleshooting
 
 ### Work Items Not Being Created
 
-1. **Check integration status** -- look for errors in settings
-2. **Verify project selection** -- ensure a project and work item type are selected
-3. **Check event mappings** -- confirm `post.created` is mapped
-4. **PAT permissions** -- the token must have Work Items Read & Write scope
-5. **PAT expiration** -- check that the token has not expired
+1. **Check integration status**: look for errors in settings
+2. **Verify project selection**: ensure a project and work item type are selected
+3. **Check event mappings**: confirm `post.created` is mapped
+4. **PAT permissions**: the token must have Work Items Read & Write scope
+5. **PAT expiration**: check that the token has not expired
 
 ### Status Sync Not Working
 
-1. **Check status mappings** -- ensure Azure DevOps states are mapped to Quackback statuses
-2. **Verify service hook** -- confirm the Azure DevOps service hook is configured and pointing to the correct callback URL
-3. **Check authentication** -- the Basic authentication password in the service hook must match the signing secret shown in Quackback
+1. **Check status mappings**: ensure Azure DevOps states are mapped to Quackback statuses
+2. **Verify service hook**: confirm the Azure DevOps service hook is configured and pointing to the correct callback URL
+3. **Check authentication**: the Basic authentication password in the service hook must match the signing secret shown in Quackback
 
 ### "Authentication Failed" or "Forbidden" Error
 

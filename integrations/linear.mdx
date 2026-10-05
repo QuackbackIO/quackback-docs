@@ -12,9 +12,9 @@ Turn feedback into action. Automatically create Linear issues when feedback is s
 
 The Linear integration enables:
 
-- **Create Linear issues from feedback posts** -- automatically create an issue when new feedback is submitted
-- **Link posts to issues** -- link feedback posts to Linear issues for traceability
-- **Status sync** -- keep feedback status in sync with Linear issue workflow states via inbound webhooks
+- **Create Linear issues from feedback posts**: automatically create an issue when new feedback is submitted
+- **Link posts to issues**: link feedback posts to Linear issues for traceability
+- **Status sync**: keep feedback status in sync with Linear issue workflow states via inbound webhooks
 
 ## Prerequisites
 
@@ -58,7 +58,7 @@ Map Linear workflow states to Quackback statuses:
 
 1. Go to the Linear integration settings
 2. Configure status mappings between Linear states and Quackback statuses
-3. Mappings are configurable per workspace -- map each Linear state name to the corresponding Quackback status, or set it to ignore
+3. Mappings are configurable per workspace: map each Linear state name to the corresponding Quackback status, or set it to ignore
 
 Status sync works bidirectionally via Linear webhooks. When a linked Linear issue changes state, the corresponding Quackback post status updates automatically.
 
@@ -146,16 +146,16 @@ Disconnecting revokes the OAuth token with Linear and removes the registered web
 
 ### Issues Not Being Created
 
-1. **Check integration status** -- look for errors in settings
-2. **Verify team selection** -- ensure a Linear team is selected
-3. **Check event mappings** -- confirm `post.created` is mapped
-4. **Admin permissions** -- the connected Linear account must have admin permissions to create webhooks
+1. **Check integration status**: look for errors in settings
+2. **Verify team selection**: ensure a Linear team is selected
+3. **Check event mappings**: confirm `post.created` is mapped
+4. **Admin permissions**: the connected Linear account must have admin permissions to create webhooks
 
 ### Status Sync Not Working
 
-1. **Check status mappings** -- ensure Linear states are mapped to Quackback statuses
-2. **Verify webhook** -- the Linear webhook may need to be re-registered
-3. **Check Linear permissions** -- the connected account needs admin access
+1. **Check status mappings**: ensure Linear states are mapped to Quackback statuses
+2. **Verify webhook**: the Linear webhook may need to be re-registered
+3. **Check Linear permissions**: the connected account needs admin access
 
 ### "Authentication Failed" Error
 

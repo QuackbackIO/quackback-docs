@@ -12,10 +12,10 @@ Turn feedback into trackable issues. Automatically create GitHub issues when fee
 
 The GitHub integration enables:
 
-- **Create issues from feedback posts** -- automatically create a GitHub issue when new feedback is submitted
-- **Link posts to issues** -- link feedback posts to GitHub issues for traceability
-- **Ticket linking** -- link support tickets to existing issues, or create a new issue straight from a ticket
-- **Status sync** -- update feedback and ticket statuses when GitHub issues are closed or reopened via inbound webhooks
+- **Create issues from feedback posts**: automatically create a GitHub issue when new feedback is submitted
+- **Link posts to issues**: link feedback posts to GitHub issues for traceability
+- **Ticket linking**: link support tickets to existing issues, or create a new issue straight from a ticket
+- **Status sync**: update feedback and ticket statuses when GitHub issues are closed or reopened via inbound webhooks
 
 ## Prerequisites
 
@@ -60,7 +60,7 @@ Map GitHub issue states to Quackback statuses:
 
 1. Go to the GitHub integration settings
 2. Configure status mappings between GitHub states and Quackback statuses
-3. GitHub uses two states: **Open** and **Closed** -- map each to the corresponding Quackback status, or set it to ignore
+3. GitHub uses two states: **Open** and **Closed**: map each to the corresponding Quackback status, or set it to ignore
 
 Status sync works via GitHub webhooks. When a linked GitHub issue is closed or reopened, the corresponding Quackback post status updates automatically.
 
@@ -154,16 +154,16 @@ Disconnecting revokes the OAuth token with GitHub and removes the registered web
 
 ### Issues Not Being Created
 
-1. **Check integration status** -- look for errors in settings
-2. **Verify repository** -- ensure a repository is selected and accessible
-3. **Check event mappings** -- confirm `post.created` is mapped
-4. **Repository permissions** -- the connected GitHub account must have write access to the repository
+1. **Check integration status**: look for errors in settings
+2. **Verify repository**: ensure a repository is selected and accessible
+3. **Check event mappings**: confirm `post.created` is mapped
+4. **Repository permissions**: the connected GitHub account must have write access to the repository
 
 ### Status Sync Not Working
 
-1. **Check status mappings** -- ensure GitHub states are mapped to Quackback statuses
-2. **Verify webhook** -- the GitHub webhook may need to be re-registered
-3. **Repository access** -- the connected account needs admin access to register webhooks
+1. **Check status mappings**: ensure GitHub states are mapped to Quackback statuses
+2. **Verify webhook**: the GitHub webhook may need to be re-registered
+3. **Repository access**: the connected account needs admin access to register webhooks
 
 ### "Authentication Failed" Error
 

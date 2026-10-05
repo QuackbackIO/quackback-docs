@@ -12,9 +12,9 @@ Turn feedback into stories. Automatically create Shortcut stories when feedback 
 
 The Shortcut integration enables:
 
-- **Create Shortcut stories from feedback posts** -- automatically create a story when new feedback is submitted
-- **Link posts to stories** -- link feedback posts to Shortcut stories for traceability
-- **Status sync** -- keep feedback post status and Shortcut story workflow state in sync via inbound webhooks
+- **Create Shortcut stories from feedback posts**: automatically create a story when new feedback is submitted
+- **Link posts to stories**: link feedback posts to Shortcut stories for traceability
+- **Status sync**: keep feedback post status and Shortcut story workflow state in sync via inbound webhooks
 
 ## Prerequisites
 
@@ -142,16 +142,16 @@ To fully remove the integration:
 
 ### Stories Not Being Created
 
-1. **Check integration status** -- look for errors in settings
-2. **Verify project selection** -- ensure a Shortcut project is selected
-3. **Check event mappings** -- confirm `post.created` is mapped
-4. **Validate API token** -- ensure the token has not been revoked in Shortcut
+1. **Check integration status**: look for errors in settings
+2. **Verify project selection**: ensure a Shortcut project is selected
+3. **Check event mappings**: confirm `post.created` is mapped
+4. **Validate API token**: ensure the token has not been revoked in Shortcut
 
 ### Status Sync Not Working
 
-1. **Check status mappings** -- ensure Shortcut workflow states are mapped to Quackback statuses
-2. **Check the webhook** -- confirm the webhook exists in Shortcut and its payload URL matches the webhook URL in your integration settings
-3. **Check the secret** -- the secret in Shortcut must match the signing secret shown in Quackback; deliveries with a wrong or missing signature are rejected
+1. **Check status mappings**: ensure Shortcut workflow states are mapped to Quackback statuses
+2. **Check the webhook**: confirm the webhook exists in Shortcut and its payload URL matches the webhook URL in your integration settings
+3. **Check the secret**: the secret in Shortcut must match the signing secret shown in Quackback; deliveries with a wrong or missing signature are rejected
 
 ### "Authentication Failed" Error
 

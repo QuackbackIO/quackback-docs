@@ -6,7 +6,7 @@ icon: "users"
 
 # Group users with segments
 
-Not all feedback is equal. Segments let you group users by plan, country, activity, or any attribute you track, so you can filter feedback by the customers who matter most — and use the same groups to scope which [boards](/admin/boards#access-tab) or [portals](/admin/portal-auth#allowed-segments) they can see.
+Not all feedback is equal. Segments let you group users by plan, country, activity, or any attribute you track, so you can filter feedback by the customers who matter most, and use the same groups to scope which [boards](/admin/boards#access-tab) or [portals](/admin/portal-auth#allowed-segments) they can see.
 
 ## Overview
 
@@ -97,7 +97,7 @@ Custom [company attributes](/admin/companies#custom-company-attributes), defined
 
 ## Operators
 
-Each attribute exposes the operators its data type supports. Numbers add `greater than`, `at least`, `less than`, `at most`. Strings add `contains`, `starts with`, `ends with`. Most attributes also support `is set` and `is not set` — handy for finding users with a missing locale or no `plan` value yet. Principal Type and Sign-up Source are the exceptions: they support only `equals` and `not equals` comparisons.
+Each attribute exposes the operators its data type supports. Numbers add `greater than`, `at least`, `less than`, `at most`. Strings add `contains`, `starts with`, `ends with`. Most attributes also support `is set` and `is not set`, handy for finding users with a missing locale or no `plan` value yet. Principal Type and Sign-up Source are the exceptions: they support only `equals` and `not equals` comparisons.
 
 The value field autosuggests existing values from your workspace as you type, so spelling stays consistent.
 
@@ -107,8 +107,8 @@ You can combine multiple conditions. Choose **all** to require every condition (
 
 Dynamic segments re-evaluate automatically on an hourly schedule. You can also trigger a manual re-evaluation:
 
-- **Re-evaluate all** — click the button at the top of the segments list to refresh every dynamic segment at once
-- **Re-evaluate one** — hover a segment row in the **Admin → Users** sidebar and click the refresh icon
+- **Re-evaluate all**: click the button at the top of the segments list to refresh every dynamic segment at once
+- **Re-evaluate one**: hover a segment row in the **Admin → Users** sidebar and click the refresh icon
 
 Manual segments aren't affected by re-evaluation.
 
@@ -126,15 +126,15 @@ You cannot convert a manual segment to a dynamic one (or vice versa). Create a n
 
 Once a segment exists you can reference it from other admin surfaces:
 
-- **Inbox** — filter posts by who submitted them. See [Inbox](/admin/inbox).
-- **Users list** — show only members of a segment via the sidebar on **Admin → Users**.
-- **Per-board access** — limit a board to one or more segments. See [Board access](/admin/boards#access-tab).
-- **Portal access** — let segment members into a private portal without an individual invite. See [Allowed segments](/admin/portal-auth#allowed-segments).
+- **Inbox**: filter posts by who submitted them. See [Inbox](/admin/inbox).
+- **Users list**: show only members of a segment via the sidebar on **Admin → Users**.
+- **Per-board access**: limit a board to one or more segments. See [Board access](/admin/boards#access-tab).
+- **Portal access**: let segment members into a private portal without an individual invite. See [Allowed segments](/admin/portal-auth#allowed-segments).
 
 ## Next steps
 
-- [Inbox](/admin/inbox) — filter feedback by segment
-- [Users](/admin/users) — view and manage portal users
+- [Inbox](/admin/inbox): filter feedback by segment
+- [Users](/admin/users): view and manage portal users
 - [Manage companies](/admin/companies) - set up company attributes to target in segments
-- [Boards](/admin/boards#access-tab) — scope a board to specific segments
-- [Portal access](/admin/portal-auth#allowed-segments) — let segment members into a private portal
+- [Boards](/admin/boards#access-tab): scope a board to specific segments
+- [Portal access](/admin/portal-auth#allowed-segments): let segment members into a private portal

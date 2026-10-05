@@ -36,8 +36,8 @@ Start with just 2-3 boards. You can always add more later, but too many boards c
 
 New boards default to the **Public** preset: anyone can view, and sign-in is required to vote, comment, and submit. The create dialog shows two preset tiles:
 
-- **Public** — "Anyone can view. Sign-in for vote, comment, submit."
-- **Private** — "Workspace members only. Hidden from the portal."
+- **Public**: "Anyone can view. Sign-in for vote, comment, submit."
+- **Private**: "Workspace members only. Hidden from the portal."
 
 Below the tiles, the **Customize access after create** checkbox ("open the Access tab to fine-tune.") controls where you land. Leave it unchecked to return to the board list. Check it to open the new board's [Access tab](#access-tab), where you can adjust per-action tiers and segments right away.
 
@@ -63,21 +63,21 @@ The Danger Zone at the bottom lets you delete the board.
 
 ### Access tab
 
-Who can do what on this board is set in a per-action permissions matrix. Changing board access is admin-only — the update is enforced on the server, and every change is recorded in the [audit log](/admin/security#audit-log).
+Who can do what on this board is set in a per-action permissions matrix. Changing board access is admin-only. The update is enforced on the server, and every change is recorded in the [audit log](/admin/security#audit-log).
 
 The matrix is a permanent 4×4 grid. The rows are four independent actions:
 
-- **View** — see posts and discussion
-- **Vote** — upvote posts to signal interest
-- **Comment** — reply on existing posts
-- **Submit posts** — create new feedback
+- **View**: see posts and discussion
+- **Vote**: upvote posts to signal interest
+- **Comment**: reply on existing posts
+- **Submit posts**: create new feedback
 
 The columns are four tiers, from most open to most restrictive:
 
-- **Anyone** — public, no sign-in
-- **Signed-in** — any logged-in user
-- **Segments** — specific audience groups
-- **Team only** — workspace members
+- **Anyone**: public, no sign-in
+- **Signed-in**: any logged-in user
+- **Segments**: specific audience groups
+- **Team only**: workspace members
 
 Each action gets its own tier, so access can be asymmetric. A board can let **Anyone** View while only **Signed-in** users Vote, Comment, and Submit posts.
 
@@ -85,10 +85,10 @@ Each action gets its own tier, so access can be asymmetric. A board can let **An
 
 Two presets summarize the common setups:
 
-- **Public** — View: **Anyone**; Vote, Comment, Submit posts: **Signed-in**.
-- **Private** — all four actions: **Team only** (hidden from the portal).
+- **Public**: View: **Anyone**; Vote, Comment, Submit posts: **Signed-in**.
+- **Private**: all four actions: **Team only** (hidden from the portal).
 
-Clicking a preset restores all tiers to it. Editing any cell switches the matrix to **Custom** — Custom is derived from the grid, not a button you pick.
+Clicking a preset restores all tiers to it. Editing any cell switches the matrix to **Custom**: Custom is derived from the grid, not a button you pick.
 
 <Note>
 Vote, Comment, and Submit posts can never be more open than View. Raising the View tier automatically bumps the other three up to keep this rule, and clears any segment lists on actions that get bumped off the **Segments** tier. Cells that would break the rule are locked, with a tooltip naming the minimum tier you can pick.
@@ -96,19 +96,19 @@ Vote, Comment, and Submit posts can never be more open than View. Raising the Vi
 
 #### Choose segments per action
 
-When you set an action to **Segments**, click the cell to open a picker and choose one or more [segments](/admin/segments) — up to 50 per action. Each action keeps its own allowlist. The cell previews the first segment name, a count badge for the rest, and an estimated reach.
+When you set an action to **Segments**, click the cell to open a picker and choose one or more [segments](/admin/segments): up to 50 per action. Each action keeps its own allowlist. The cell previews the first segment name, a count badge for the rest, and an estimated reach.
 
 If an action is set to **Segments** with no segments chosen, the cell shows a red "Pick segments" warning, and Save is disabled with the message "Some rules use Segments but no segments are selected." Switching an action away from **Segments** clears that action's list.
 
 <Tip>
-Combine the **Segments** tier with [dynamic segments](/admin/segments#dynamic-segments) so membership stays accurate automatically — beta testers, enterprise accounts, or a single domain.
+Combine the **Segments** tier with [dynamic segments](/admin/segments#dynamic-segments) so membership stays accurate automatically: beta testers, enterprise accounts, or a single domain.
 </Tip>
 
 <Note>
-A workspace-wide setting, **Allow anonymous interaction** (Admin → Settings → Moderation, see [Moderation](/admin/moderation)), acts as a ceiling. When it's off, the **Anyone** tier is disabled for Vote, Comment, and Submit posts on every board. View is never affected — anyone viewing a public board is the definition of public. The Access tab shows a banner: "Workspace policy disables the Anyone tier for: Vote, Comment, Submit posts." Existing **Anyone** cells for those actions are bumped up to **Signed-in**.
+A workspace-wide setting, **Allow anonymous interaction** (Admin → Settings → Moderation, see [Moderation](/admin/moderation)), acts as a ceiling. When it's off, the **Anyone** tier is disabled for Vote, Comment, and Submit posts on every board. View is never affected: anyone viewing a public board is the definition of public. The Access tab shows a banner: "Workspace policy disables the Anyone tier for: Vote, Comment, Submit posts." Existing **Anyone** cells for those actions are bumped up to **Signed-in**.
 </Note>
 
-The Access tab controls **who** can perform each action. Whether non-team posts and comments need approval before publishing is set separately on the Moderation tab — see [Moderation](/admin/moderation).
+The Access tab controls **who** can perform each action. Whether non-team posts and comments need approval before publishing is set separately on the Moderation tab. See [Moderation](/admin/moderation).
 
 ### Moderation tab
 
@@ -122,7 +122,7 @@ Each rule has three options: **Inherit**, **On**, and **Off**. **Inherit** defer
 
 A banner reads "Inheriting all workspace defaults" or "This board overrides some workspace defaults", with a link to workspace settings. Held items appear in the [moderation review queue](/admin/moderation#review-queue). Team members' own posts and comments always publish immediately and bypass moderation.
 
-For the full two-level model — workspace defaults plus per-board overrides — see [Moderation](/admin/moderation).
+For the full two-level model (workspace defaults plus per-board overrides), see [Moderation](/admin/moderation).
 
 <Note>
 Saving here only patches the board's moderation rules. It doesn't touch the Access matrix.

@@ -12,9 +12,9 @@ Turn feedback into tasks. Automatically create ClickUp tasks when feedback is su
 
 The ClickUp integration enables:
 
-- **Create ClickUp tasks from feedback posts** -- automatically create a task when new feedback is submitted
-- **Link posts to tasks** -- link feedback posts to ClickUp tasks for traceability
-- **Status sync** -- keep feedback post status and ClickUp task status in sync via inbound webhooks
+- **Create ClickUp tasks from feedback posts**: automatically create a task when new feedback is submitted
+- **Link posts to tasks**: link feedback posts to ClickUp tasks for traceability
+- **Status sync**: keep feedback post status and ClickUp task status in sync via inbound webhooks
 
 ## Prerequisites
 
@@ -142,16 +142,16 @@ ClickUp does not support token revocation, so disconnecting removes the integrat
 
 ### Tasks Not Being Created
 
-1. **Check integration status** -- look for errors in settings
-2. **Verify list selection** -- ensure a ClickUp space and list are selected
-3. **Check event mappings** -- confirm `post.created` is mapped
-4. **Workspace access** -- the connected ClickUp account must have access to the selected list
+1. **Check integration status**: look for errors in settings
+2. **Verify list selection**: ensure a ClickUp space and list are selected
+3. **Check event mappings**: confirm `post.created` is mapped
+4. **Workspace access**: the connected ClickUp account must have access to the selected list
 
 ### Status Sync Not Working
 
-1. **Check status mappings** -- ensure ClickUp statuses are mapped to Quackback statuses
-2. **Verify webhook** -- the ClickUp webhook may need to be re-registered
-3. **Check permissions** -- the connected account needs access to manage webhooks
+1. **Check status mappings**: ensure ClickUp statuses are mapped to Quackback statuses
+2. **Verify webhook**: the ClickUp webhook may need to be re-registered
+3. **Check permissions**: the connected account needs access to manage webhooks
 
 ### "Authentication Failed" Error
 
