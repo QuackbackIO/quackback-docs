@@ -6,38 +6,49 @@ icon: "building"
 
 # Set up single sign-on
 
-One less password for your team. Connect any OpenID Connect provider — Okta, Entra ID, Auth0, Keycloak — and let admins and members sign in with their existing work accounts. Verify your domains and you can require SSO so company emails can *only* sign in through your IdP.
+One less password for your team. Connect any OpenID Connect provider (Okta, Entra ID, Auth0, Keycloak) and let team members sign in with their existing work accounts. Verify your domains and you can require SSO so company emails can *only* sign in through your IdP.
 
 <Note>
-This page covers **team SSO** — sign-in for admins and members managing feedback. To let *portal users* (customers) sign in with a custom OIDC provider, see [Portal Authentication](/admin/portal-auth). On [Quackback Cloud](/cloud), SSO is included on Enterprise.
+This page covers **team SSO**: sign-in for team members. To let *portal users* (customers) sign in with a custom OIDC provider, see [Portal Authentication](/admin/portal-auth). On [Quackback Cloud](/cloud), SSO is included on Enterprise.
 </Note>
 
 ## What you get
 
-- **Connection** — link your OIDC provider once.
-- **Test sign-in** — a real end-to-end handshake that proves the connection works before you turn anything on.
-- **Verified domains** — prove you own a domain so its emails route to SSO.
-- **Require SSO** — hard-bind a verified domain so its users can only sign in through your IdP.
-- **Recovery codes** — break-glass sign-in for when your IdP is unreachable.
-- **Attribute mapping** — assign Quackback roles from a claim on the IdP token.
+- **Connection**: link your OIDC provider once.
+- **Test sign-in**: a real end-to-end handshake that proves the connection works before you turn anything on.
+- **Verified domains**: prove you own a domain so its emails route to SSO.
+- **Require SSO**: hard-bind a verified domain so its users can only sign in through your IdP.
+- **Recovery codes**: break-glass sign-in for when your IdP is unreachable.
+- **Attribute mapping**: assign Quackback roles from a claim on the IdP token.
 
 Everything lives under **Admin → Settings → Security**, on the **Single sign-on** page.
 
 ## Step 1: Register Quackback in your IdP
 
-Create an OIDC application in your identity provider:
+Create an OIDC application in your identity provider. Quackback shows the redirect URI on the identity provider page. Copy that value into the IdP. It has this shape:
+
+```
+https://YOUR_DOMAIN/api/auth/callback/<registration-id>
+```
+
+A new provider's registration id looks like `oidc_…`. A provider created earlier may still be `sso` or `custom-oidc`. The id is part of the URI on the page, so copy it rather than typing a path from this guide.
 
 | Field | Value |
 |-------|-------|
 | Application type | Web application |
-| Redirect URI | `https://YOUR_DOMAIN/api/auth/oauth2/callback/sso` |
+| Redirect URI | The URI on the identity provider page |
 | Scopes | `openid email profile` |
 
 Note the **Client ID** and **Client Secret**, and your provider's **discovery URL** (the `/.well-known/openid-configuration` endpoint).
 
 <Warning>
-The redirect URI must match exactly — including `https`, no trailing slash, and the `oauth2/callback/sso` path. A mismatch is the most common cause of a failed test sign-in.
+The redirect URI must match exactly, including `https`, no trailing slash, and the registration id. A mismatch is the most common cause of a failed test sign-in.
 </Warning>
+
+<Note>
+{/* TODO(0.14): confirm against the merged OIDC redirect-style PR (fix(auth): keep existing OIDC providers on the redirect URI their IdP has). */}
+Upgrading from 0.13: providers set up before 0.14 keep their original redirect URI, `/api/auth/oauth2/callback/<registration-id>`, so sign-in keeps working without changes at your IdP. New providers use `/api/auth/callback/<registration-id>`. To move an existing provider to the new URI, add it at your IdP first, switch it in the provider's **Edit** view, then run **Test sign-in** again.
+</Note>
 
 ## Step 2: Add the connection
 
@@ -45,7 +56,7 @@ The redirect URI must match exactly — including `https`, no trailing slash, an
 2. Enter the **Discovery URL**, **Client ID**, and **Client Secret**.
 3. Save.
 
-The client secret is encrypted at rest. Changing the discovery URL, client ID, or secret invalidates any previous test sign-in — you'll need to test again before enabling.
+The client secret is encrypted at rest. Changing the discovery URL, client ID, or secret invalidates any previous test sign-in. You'll need to test again before enabling.
 
 ## Step 3: Run a test sign-in
 
@@ -53,7 +64,7 @@ Before you can enable SSO or enforce it on a domain, Quackback makes you prove t
 
 1. Click **Test sign-in** on the SSO page.
 2. A popup opens your IdP. Sign in.
-3. Quackback runs the full OIDC handshake — discovery, token exchange, signature verification, claim checks — and reports exactly which step failed if any.
+3. Quackback runs the full OIDC handshake (discovery, token exchange, signature verification, claim checks) and reports exactly which step failed if any.
 
 <Tip>
 The test runs in an isolated session and never creates a real login. Run it as often as you need while configuring your IdP.
@@ -63,7 +74,7 @@ A passing test unlocks the **Enabled** toggle and the per-domain **Require SSO**
 
 ## Step 4: Enable SSO
 
-Toggle **Enabled** on. The SSO sign-in option now appears on the team sign-in page. At this point SSO is *available* — it doesn't replace other methods yet.
+Toggle **Enabled** on. The SSO sign-in option now appears on the team sign-in page. At this point SSO is *available*. It doesn't replace other methods yet.
 
 ## Verify your domains
 
@@ -91,7 +102,7 @@ Turn on the **Require SSO** switch next to a verified domain to hard-bind it: `*
 Enabling enforcement has two preconditions:
 
 - A passing **test sign-in** since the last connection change.
-- **Email delivery** configured — magic link is the break-glass path for the rest of the workspace.
+- **Email delivery** configured: magic link is the break-glass path for the rest of the workspace.
 
 A confirmation dialog spells out the impact before you commit. Enforcement takes effect immediately.
 
@@ -114,7 +125,7 @@ Recovery codes are single-use passcodes that get an admin in when SSO is unavail
 To use a code, go to `/auth/recovery`, enter your email and a code. Each code works once. Quackback warns you when fewer than three codes remain.
 
 <Tip>
-Generate recovery codes *before* you turn on Require SSO — running out during a broken-SSO incident is the worst possible time to discover you have none.
+Generate recovery codes *before* you turn on Require SSO. Running out during a broken-SSO incident is the worst possible time to discover you have none.
 </Tip>
 
 ## Auto-provision users
@@ -124,7 +135,7 @@ By default, the first time someone signs in through SSO with an email at a verif
 You can change the default role, or turn auto-provisioning off entirely, in the SSO connection settings. With it off, a user must already exist in Quackback before they can sign in through SSO.
 
 <Note>
-The very first SSO sign-in into a workspace that has no admin is promoted to admin. This is a recovery path for a workspace that lost its last admin — a healthy workspace already has one, so it never triggers.
+The very first SSO sign-in into a workspace that has no admin is promoted to admin. This is a recovery path for a workspace that lost its last admin. A healthy workspace already has one, so it never triggers.
 </Note>
 
 ## Map roles from IdP claims
@@ -134,8 +145,8 @@ Instead of giving every provisioned user the same role, you can source their rol
 Under **Attribute mapping** on the SSO page:
 
 1. Turn on **Attribute mapping**.
-2. Set the **Claim path** — a dotted path (`realm_access.roles`) or a URL-shaped claim (`https://acme.com/roles`). Copy it from your IdP's docs.
-3. Add **rules** — first-match-wins. Each rule maps a value the claim contains to a role, for example `platform-admins → admin`.
+2. Set the **Claim path**: a dotted path (`realm_access.roles`) or a URL-shaped claim (`https://acme.com/roles`). Copy it from your IdP's docs.
+3. Add **rules**: first-match-wins. Each rule maps a value the claim contains to a role, for example `platform-admins → admin`.
 4. Set a **Default role** for users no rule matches.
 5. Optionally turn on **Sync on every sign-in** to re-apply the role on each login. This *demotes* a team member if their IdP group changes.
 
@@ -148,28 +159,28 @@ Role changes from mapping are written to the [audit log](/admin/security#audit-l
 | Field | Value |
 |-------|-------|
 | Discovery URL | `https://your-org.okta.com/.well-known/openid-configuration` |
-| Redirect URI | `https://YOUR_DOMAIN/api/auth/oauth2/callback/sso` |
+| Redirect URI | `https://YOUR_DOMAIN/api/auth/callback/<registration-id>` |
 
 ### Microsoft Entra ID
 
 | Field | Value |
 |-------|-------|
 | Discovery URL | `https://login.microsoftonline.com/<tenant-id>/v2.0/.well-known/openid-configuration` |
-| Redirect URI | `https://YOUR_DOMAIN/api/auth/oauth2/callback/sso` |
+| Redirect URI | `https://YOUR_DOMAIN/api/auth/callback/<registration-id>` |
 
 ### Auth0
 
 | Field | Value |
 |-------|-------|
 | Discovery URL | `https://your-tenant.auth0.com/.well-known/openid-configuration` |
-| Redirect URI | `https://YOUR_DOMAIN/api/auth/oauth2/callback/sso` |
+| Redirect URI | `https://YOUR_DOMAIN/api/auth/callback/<registration-id>` |
 
 ### Keycloak
 
 | Field | Value |
 |-------|-------|
 | Discovery URL | `https://keycloak.example.com/realms/<realm>/.well-known/openid-configuration` |
-| Redirect URI | `https://YOUR_DOMAIN/api/auth/oauth2/callback/sso` |
+| Redirect URI | `https://YOUR_DOMAIN/api/auth/callback/<registration-id>` |
 
 ## How it works
 
@@ -186,7 +197,7 @@ Quackback requires an `email` claim from your IdP. If your provider doesn't rele
 
 ### Test sign-in fails at "token exchange"
 
-Usually a wrong client secret or a redirect URI mismatch. The test report names the failing step — check the exact value against your IdP application.
+Usually a wrong client secret or a redirect URI mismatch. The test report names the failing step. Check the exact value against your IdP application.
 
 ### Test sign-in fails at "claim check"
 
@@ -202,6 +213,6 @@ DNS changes can take time to propagate. Confirm the TXT record with `dig +short 
 
 ## Next steps
 
-- [Configure team security](/admin/security) — 2FA, audit log, and sign-in methods
-- [Authentication overview](/auth/overview) — all sign-in options
-- [Declarative config](/self-hosting/config-file) — manage the SSO connection from a config file
+- [Configure team security](/admin/security): 2FA, audit log, and sign-in methods
+- [Authentication overview](/auth/overview): all sign-in options
+- [Declarative config](/self-hosting/config-file): manage the SSO connection from a config file

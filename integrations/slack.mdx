@@ -26,6 +26,26 @@ The Slack integration works in both directions:
 - Admin access to your Quackback workspace
 - Permission to install apps in your Slack workspace
 
+## Self-hosted: create your Slack app
+
+Self-hosted instances connect through a Slack app you create. Do this once before you connect.
+
+1. Create a Slack app from the [app manifest](https://github.com/QuackbackIO/quackback/blob/main/docs/integrations/slack-app-manifest.json). Set the OAuth redirect URL to `https://YOUR_DOMAIN/oauth/slack/callback`.
+2. Set the request URLs, one per feature:
+
+   | Slack feature | Request URL |
+   |---------------|-------------|
+   | Event subscriptions | `https://YOUR_DOMAIN/api/integrations/slack/hooks/events` |
+   | Interactivity | `https://YOUR_DOMAIN/api/integrations/slack/hooks/interactions` |
+   | Slash commands | `https://YOUR_DOMAIN/api/integrations/slack/hooks/commands` |
+   | Select menus (options load URL) | `https://YOUR_DOMAIN/api/integrations/slack/hooks/options` |
+
+3. In **Admin → Settings → Integrations → Slack**, save the app's **Client ID**, **Client Secret**, and **Signing Secret**.
+
+<Warning>
+Upgrading from 0.13: these request URLs changed. Update them in your Slack app's settings, then **Reconnect** Slack in Quackback so the app is authorized again with its current scopes.
+</Warning>
+
 ## Setup
 
 ### 1. Start the Connection
@@ -101,7 +121,7 @@ Automatically collect feedback from entire Slack channels. When enabled, Quackba
 Messages posted in monitored channels are automatically sent through the feedback pipeline. AI extracts themes, detects duplicates against existing posts, and creates triage suggestions.
 
 <Note>
-Channel monitoring captures new messages only — it does not backfill historical messages. Bot messages and thread replies are excluded.
+Channel monitoring captures new messages only. It does not backfill historical messages. Bot messages and thread replies are excluded.
 </Note>
 
 ## Notification Format

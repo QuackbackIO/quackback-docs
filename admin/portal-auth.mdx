@@ -13,7 +13,7 @@ Configure both at **Admin → Settings → Security → Authentication**. The pa
 | Tab | Controls |
 |-----|----------|
 | **Portal access** | Visibility, allowed domains, email invites, allowed segments, widget sign-in |
-| **Team access** | Team-side 2FA and the SSO summary — see [Security](/admin/security) |
+| **Team access** | Team-side 2FA and the SSO summary, see [Security](/admin/security) |
 | **Sign-in providers** | Password, magic link, social OAuth, and Custom OIDC for both surfaces |
 
 <Note>
@@ -35,11 +35,11 @@ Switching from Public to Private hides your portal from anonymous visitors immed
 
 A private portal evaluates these channels in order. The first match grants access.
 
-1. **Team** — admins and members always have access.
-2. **Allowed email domains** — verified-email users on a listed domain.
-3. **Email invite** — anyone you've sent and who's accepted a portal invite.
-4. **Allowed segments** — members of a [segment](/admin/segments) you've authorized.
-5. **Widget sign-in** — visitors who already signed in via your embedded widget.
+1. **Team**: team members always have access.
+2. **Allowed email domains**: verified-email users on a listed domain.
+3. **Email invite**: anyone you've sent and who's accepted a portal invite.
+4. **Allowed segments**: members of a [segment](/admin/segments) you've authorized.
+5. **Widget sign-in**: visitors who already signed in via your embedded widget.
 
 Visitors who don't match any channel are redirected to sign in. Authenticated visitors who still don't match see a clear "no access" screen with sign-out and account links.
 
@@ -52,7 +52,7 @@ Auto-admit any verified-email user whose address ends with a domain you list. Us
 3. Repeat for additional domains. Domains save automatically.
 
 <Warning>
-Domain access requires the visitor's email to be **verified**. Quackback never trusts an unverified email claim for an allowlist match — anyone could otherwise sign up with `someone@acme.com` they don't own.
+Domain access requires the visitor's email to be **verified**. Quackback never trusts an unverified email claim for an allowlist match. Anyone could otherwise sign up with `someone@acme.com` they don't own.
 </Warning>
 
 ### Email invites
@@ -62,7 +62,7 @@ Invite specific people by email. Each invite is good for a magic link that signs
 1. Open the **Portal access** tab (or **Admin → Users → Invitations**).
 2. Click **Invite people**.
 3. Paste up to 50 email addresses separated by commas, spaces, or newlines.
-4. Optionally add a short personal message (up to 500 characters) — it's included in the email.
+4. Optionally add a short personal message (up to 500 characters): it's included in the email.
 5. Click **Send invites**.
 
 Each recipient gets a branded email with the personal message and a sign-in link. The link is good for 14 days; pending invites expire automatically after that.
@@ -84,7 +84,7 @@ Every send, resend, accept, revoke, link-mint, and expiry is recorded in the aud
 
 ### Allowed segments
 
-Use [segments](/admin/segments) to grant portal access to a whole cohort at once — for example, "everyone on the Pro plan" or "all users from `@bigcorp.com`".
+Use [segments](/admin/segments) to grant portal access to a whole cohort at once, for example "everyone on the Pro plan" or "all users from `@bigcorp.com`".
 
 1. Open the **Portal access** tab.
 2. Under **Allowed segments**, pick one or more segments from the multi-select.
@@ -98,12 +98,12 @@ If you change a segment's rules, membership re-evaluates on the next hourly run 
 
 ### Widget sign-in
 
-When your product embeds the [Quackback widget](/widget) and [identifies signed-in users with `ssoToken`](/widget/identify-users), you can let those visitors carry their widget identity over to the portal — no password, no second sign-up.
+When your product embeds the [Quackback widget](/widget) and [identifies signed-in users with `ssoToken`](/widget/identify-users), you can let those visitors carry their widget identity over to the portal with no password and no second sign-up.
 
-1. Identify widget users with a backend-signed `ssoToken` — see [Identify users](/widget/identify-users)
+1. Identify widget users with a backend-signed `ssoToken`: see [Identify users](/widget/identify-users)
 2. On the Portal access tab, toggle **Widget sign-in** on
 
-Visitors who open your portal from inside a verified widget session are signed into the portal automatically. Behind the scenes the widget hands the portal a one-time token so they do not sign in twice. They remain a **customer** on the portal — this path never grants admin access. See [Session types](/auth/overview#session-types).
+Visitors who open your portal from inside a verified widget session are signed into the portal automatically. Behind the scenes the widget hands the portal a one-time token so they do not sign in twice. They remain a **customer** on the portal. This path never grants admin access. See [Session types](/auth/overview#session-types).
 
 <Warning>
 Widget sign-in needs a verified identify (`ssoToken` signed on your server). Guests and inline email capture are not enough to open a private portal this way.
@@ -143,6 +143,8 @@ A provider's toggle stays locked off until you've saved its Client ID and Client
 
 Bring your own OpenID Connect identity provider for a single button on the portal sign-in form. The configuration form auto-detects common providers (Microsoft Entra ID, Okta, Google Workspace, OneLogin) from the issuer URL and prefills sensible defaults.
 
+Register the redirect URI shown on that form. New providers use `https://YOUR_DOMAIN/api/auth/callback/custom-oidc`; a provider set up before 0.14 keeps `https://YOUR_DOMAIN/api/auth/oauth2/callback/custom-oidc` until you switch it in its Edit view.
+
 - Default: Off
 - Availability: Plans with the Custom OIDC feature. Lower tiers see a tier-lock badge.
 
@@ -179,8 +181,8 @@ Every change to portal access, sign-in providers, or invites is recorded in the 
 
 ## Next steps
 
-- [Team Members](/admin/team) — manage your team and their access
-- [Magic link sign-in](/auth/magic-link) — passwordless email sign-in
-- [OAuth providers](/auth/oauth) — per-provider setup walkthroughs
-- [Single sign-on](/auth/sso) — team-wide SSO with verified domains
-- [Segments](/admin/segments) — group users for inbox filtering and access
+- [Team Members](/admin/team): manage your team and their access
+- [Magic link sign-in](/auth/magic-link): passwordless email sign-in
+- [OAuth providers](/auth/oauth): per-provider setup walkthroughs
+- [Single sign-on](/auth/sso): team-wide SSO with verified domains
+- [Segments](/admin/segments): group users for inbox filtering and access
