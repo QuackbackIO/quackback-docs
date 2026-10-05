@@ -58,7 +58,7 @@ Store the `secret` immediately. It cannot be retrieved again. If you lose it, us
 
 ## Event Types
 
-Quackback exposes 32 webhook-subscribable events, grouped by resource family.
+Quackback exposes 36 webhook-subscribable events, grouped by resource family.
 
 ### Post events
 
@@ -71,6 +71,7 @@ Quackback exposes 32 webhook-subscribable events, grouped by resource family.
 | `post.restored` | Deleted post restored |
 | `post.merged` | Duplicate post merged into a canonical post |
 | `post.unmerged` | Merged post separated back out |
+| `post.voted` | A user votes on a post |
 
 ### Comment events
 
@@ -112,6 +113,7 @@ Board filtering applies only to post and comment events (see [Board Filtering](#
 | `message.created` | A visitor or agent sends a public message |
 | `message.note_created` | An agent adds an internal note (private, opt-in) |
 | `message.deleted` | A public message is deleted |
+| `message.updated` | The author edits a public message |
 
 <Note>
 Conversation and message events require the support inbox to be enabled. System messages (like "chat ended") are represented by `conversation.*` events rather than `message.created`, and internal-note deletions are never emitted. An internal note never reached the visitor, so its deletion doesn't reach one either.
@@ -137,6 +139,7 @@ Ticket events require the [support tickets](/support/overview) feature to be ena
 | Event | Description |
 |-------|-------------|
 | `assistant.handed_off` | The AI assistant hands a conversation to the team |
+| `assistant.resolved` | The AI assistant settles a conversation without handing off |
 
 ### SLA
 

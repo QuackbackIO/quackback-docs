@@ -1,13 +1,13 @@
 ---
 title: "MCP Reference"
-description: "Complete reference for Quackback's MCP tools and resources. Parameters, return values, and examples for all 38 tools and 6 resources."
+description: "Complete reference for Quackback's MCP tools and resources. Parameters, return values, and examples for all 40 tools and 6 resources."
 icon: "book-open"
 order: 2
 ---
 
 # MCP Reference
 
-Quackback's MCP server exposes 38 tools and 6 resources. Tools perform actions (search, create, update, delete). Resources provide lookup data (boards, statuses, tags) that tools reference by ID.
+Quackback's MCP server exposes 40 tools and 6 resources. Tools perform actions (search, create, update, delete). Resources provide lookup data (boards, statuses, tags) that tools reference by ID.
 
 ## Tools
 
@@ -74,7 +74,7 @@ Update a post's status, tags, or owner. All fields except `postId` are optional.
 | `tagIds` | string[] | Replace all tags with these TypeIDs |
 | `ownerPrincipalId` | string \| null | Assign to a team member TypeID, or `null` to unassign |
 
-**Scope:** `write:feedback` + team role (admin or member)
+**Scope:** `write:feedback` + team role
 
 ```
 triage_post({ postId: "post_01abc...", statusId: "status_01xyz..." })
@@ -114,9 +114,9 @@ Add or remove a vote on behalf of another user. Use this to record votes from ex
 | `sourceType` | string | - | Attribution source type (e.g. `"zendesk"`, `"slack"`, `"intercom"`) |
 | `sourceExternalUrl` | string | - | URL linking to the originating record |
 
-**Scope:** `write:feedback` + team role (admin or member)
+**Scope:** `write:feedback` + team role
 
-Adding a vote is idempotent — calling it twice for the same user has no effect. Removing a vote works for any vote type (proxy, integration, or direct).
+Adding a vote is idempotent: calling it twice for the same user has no effect. Removing a vote works for any vote type (proxy, integration, or direct).
 
 ```
 proxy_vote({ postId: "post_01abc...", voterPrincipalId: "principal_01xyz..." })
@@ -249,7 +249,7 @@ Soft-delete a feedback post. The post is hidden from public views but can be res
 |-----------|------|-------------|
 | `postId` | string | Post TypeID to delete |
 
-**Scope:** `write:feedback` + team role (admin or member)
+**Scope:** `write:feedback` + team role
 
 ```
 delete_post({ postId: "post_01abc..." })
@@ -265,7 +265,7 @@ Restore a soft-deleted post. Posts can only be restored within 30 days of deleti
 |-----------|------|-------------|
 | `postId` | string | Post TypeID to restore |
 
-**Scope:** `write:feedback` + team role (admin or member)
+**Scope:** `write:feedback` + team role
 
 ```
 restore_post({ postId: "post_01abc..." })
@@ -282,7 +282,7 @@ Merge a duplicate post into a canonical post. Votes are combined. Reversible via
 | `duplicatePostId` | string | Post TypeID of the duplicate to merge away |
 | `canonicalPostId` | string | Post TypeID of the canonical post to merge into |
 
-**Scope:** `write:feedback` + team role (admin or member)
+**Scope:** `write:feedback` + team role
 
 <Tip>
 Use `search` to find potential duplicates first, then merge them to consolidate votes.
@@ -305,7 +305,7 @@ Restore a merged post to independent state. Recalculates vote counts for both po
 |-----------|------|-------------|
 | `postId` | string | Post TypeID of the merged post to restore |
 
-**Scope:** `write:feedback` + team role (admin or member)
+**Scope:** `write:feedback` + team role
 
 ```
 unmerge_post({ postId: "post_01abc..." })
@@ -323,7 +323,7 @@ Create a changelog entry. Saves as a draft by default. Set `publish: true` to pu
 | `content` | string | - | Changelog content, markdown supported (max 50,000 characters) |
 | `publish` | boolean | `false` | Set to `true` to publish immediately |
 
-**Scope:** `write:changelog` + team role (admin or member)
+**Scope:** `write:changelog` + team role
 
 ```
 create_changelog({ title: "v2.1 Release", content: "## New features\n- Dark mode..." })
@@ -344,7 +344,7 @@ Update an existing changelog entry's title, content, publish state, or linked po
 | `publish` | boolean | `true` to publish, `false` to revert to draft |
 | `linkedPostIds` | string[] | Replace linked posts with these post TypeIDs |
 
-**Scope:** `write:changelog` + team role (admin or member)
+**Scope:** `write:changelog` + team role
 
 ```
 update_changelog({ changelogId: "changelog_01abc...", title: "v2.1.1 Patch" })
@@ -365,7 +365,7 @@ Soft-delete a changelog entry.
 |-----------|------|-------------|
 | `changelogId` | string | Changelog TypeID to delete |
 
-**Scope:** `write:changelog` + team role (admin or member)
+**Scope:** `write:changelog` + team role
 
 ```
 delete_changelog({ changelogId: "changelog_01abc..." })
@@ -380,7 +380,7 @@ Accept a post-to-post merge suggestion, merging the source post into the target.
 | `id` | string | Merge suggestion TypeID (`post_merge_sug_xxx`) |
 | `swapDirection` | boolean | Optional. Reverse which post is kept |
 
-**Scope:** `write:feedback` + team role (admin or member)
+**Scope:** `write:feedback` + team role
 
 ```
 accept_suggestion({ id: "post_merge_sug_01abc..." })
@@ -397,7 +397,7 @@ Dismiss a merge suggestion. Restore it later with `restore_suggestion`.
 |-----------|------|-------------|
 | `id` | string | Merge suggestion TypeID (`post_merge_sug_xxx`) |
 
-**Scope:** `write:feedback` + team role (admin or member)
+**Scope:** `write:feedback` + team role
 
 ```
 dismiss_suggestion({ id: "post_merge_sug_01abc..." })
@@ -413,7 +413,7 @@ Restore a dismissed merge suggestion back to pending.
 |-----------|------|-------------|
 | `id` | string | Merge suggestion TypeID (`post_merge_sug_xxx`) |
 
-**Scope:** `write:feedback` + team role (admin or member)
+**Scope:** `write:feedback` + team role
 
 ```
 restore_suggestion({ id: "post_merge_sug_01abc..." })
@@ -429,7 +429,7 @@ Get the activity log for a post. Shows status changes, merges, tag changes, owne
 |-----------|------|-------------|
 | `postId` | string | Post TypeID |
 
-**Scope:** `read:feedback` + team role (admin or member)
+**Scope:** `read:feedback` + team role
 
 Each activity entry includes the event type, actor name, metadata (e.g., old/new status), and timestamp.
 
@@ -442,7 +442,7 @@ get_post_activity({ postId: "post_01abc..." })
 ## Help Center Tools
 
 <Note>
-Help center tools are only available when the help center feature flag is enabled. See [Help Center](/admin/help-center) for setup.
+Help center tools are only available when the Help Center module is on in **Admin → Settings → General**. See [Help Center](/help-center/setup) for setup.
 </Note>
 
 ### create_article
@@ -515,7 +515,7 @@ Create, update, or delete a help center category.
 
 ## Conversation Tools
 
-Work the support inbox programmatically: list and read conversations, reply to visitors, and change conversation status. All conversation tools require a team role (admin or member) and the support inbox to be enabled.
+Work the support inbox programmatically: list and read conversations, reply to visitors, and change conversation status. All conversation tools require a team role and the support inbox to be enabled.
 
 ### list_conversations
 
@@ -529,7 +529,7 @@ List support-inbox conversations, newest activity first. Returns a compact, pagi
 | `limit` | number (1-100) | `20` | Max results per page |
 | `cursor` | string | - | Pagination cursor from a previous response |
 
-**Scope:** `read:chat` + team role (admin or member)
+**Scope:** `read:chat` + team role
 
 ```
 list_conversations({ status: "open" })
@@ -548,7 +548,7 @@ Get a conversation and its most recent messages.
 | `includeInternal` | boolean | `false` | Include agent-only internal notes |
 | `cursor` | string | - | Cursor from a previous response to fetch older messages |
 
-**Scope:** `read:chat` + team role (admin or member)
+**Scope:** `read:chat` + team role
 
 Internal notes are excluded unless `includeInternal` is `true`. Anonymous visitors' synthetic emails are never returned.
 
@@ -567,11 +567,12 @@ Send an agent reply in a conversation (visible to the visitor). Auto-assigns the
 |-----------|------|-------------|
 | `conversationId` | string | Conversation TypeID |
 | `content` | string | Reply text sent to the visitor (max 4000 characters) |
+| `fileIds` | string[] | Optional. Up to 10 file IDs from [`upload_file`](#upload_file) to attach |
 
-**Scope:** `write:chat` + team role (admin or member)
+**Scope:** `write:chat` + team role
 
 ```
-reply_to_conversation({ conversationId: "conversation_01abc...", content: "Thanks for reaching out — we're on it." })
+reply_to_conversation({ conversationId: "conversation_01abc...", content: "Thanks for reaching out, we're on it." })
 ```
 
 ---
@@ -585,7 +586,7 @@ Change a conversation's status. Snoozing defers it until the next visitor reply;
 | `conversationId` | string | Conversation TypeID |
 | `status` | `"open"` \| `"snoozed"` \| `"closed"` | New status |
 
-**Scope:** `write:chat` + team role (admin or member)
+**Scope:** `write:chat` + team role
 
 ```
 set_conversation_status({ conversationId: "conversation_01abc...", status: "closed" })
@@ -604,7 +605,7 @@ Suggest to the support team (not the visitor) that a resolved conversation be tr
 | `title` | string | Suggested post title |
 | `content` | string | Suggested post body |
 
-**Scope:** `write:chat` + team role (admin or member)
+**Scope:** `write:chat` + team role
 
 ```
 suggest_post({ conversationId: "conversation_01abc...", boardId: "board_01abc...", title: "Add dark mode", content: "Customer asked for a night theme." })
@@ -621,7 +622,7 @@ Embed an existing feedback post as a card in the conversation so the visitor can
 | `conversationId` | string | Conversation TypeID |
 | `postId` | string | Post TypeID |
 
-**Scope:** `write:chat` + team role (admin or member)
+**Scope:** `write:chat` + team role
 
 ```
 share_post({ conversationId: "conversation_01abc...", postId: "post_01xyz..." })
@@ -692,7 +693,7 @@ create_ticket({ type: "customer", title: "Refund not received", description: "Cu
 
 ### reply_to_ticket
 
-Post a reply on a ticket thread (visible to the requester).
+Post a reply on a ticket thread (visible to the requester). Pass up to 10 `fileIds` from [`upload_file`](#upload_file) to attach files.
 
 **Scope:** `write:chat` + team role
 
@@ -704,7 +705,7 @@ reply_to_ticket({ ticketId: "ticket_01abc...", content: "We've issued your refun
 
 ### add_ticket_note
 
-Add an internal note. Never visible to the requester.
+Add an internal note. Never visible to the requester. Pass up to 10 `fileIds` from [`upload_file`](#upload_file) to attach files.
 
 **Scope:** `write:chat` + team role
 
@@ -734,6 +735,37 @@ Remove a customer ticket from a tracker.
 
 ```
 unlink_ticket({ trackerTicketId: "ticket_01tracker...", ticketId: "ticket_01customer..." })
+```
+
+---
+
+## File and Widget Tools
+
+### upload_file
+
+Upload a file so you can attach it to a conversation reply, ticket reply, or ticket note. Returns a `fileId` to pass in `fileIds` on `reply_to_conversation`, `reply_to_ticket`, or `add_ticket_note`.
+
+| Parameter | Type | Description |
+|-----------|------|-------------|
+| `name` | string | File name, including its extension |
+| `contentBase64` | string | File bytes, base64-encoded (max 5 MB decoded) |
+
+**Scope:** `write:chat` + team role
+
+```
+upload_file({ name: "invoice.pdf", contentBase64: "JVBERi0xLjQK..." })
+```
+
+---
+
+### widget_install_status
+
+Check whether the [widget](/widget/installation) is connected on your site. Returns whether the snippet has been seen, whether the widget is enabled, the last detected time, the origin host, and the SDK version. Never returns the signing secret.
+
+**Scope:** `read:feedback` + team role
+
+```
+widget_install_status()
 ```
 
 ---
