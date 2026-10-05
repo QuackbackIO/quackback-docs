@@ -40,6 +40,17 @@ Every workspace needs at least one Owner. You cannot remove or demote the last o
 Upgrading from an earlier release maps the old roles onto the presets: admins become **Owner** and members become **Manager**, so nobody loses access. Review assignments afterwards and move people to narrower roles where it fits.
 </Note>
 
+### Permissions used by the API
+
+A few API endpoints check a specific permission rather than a role, so custom roles work with them too:
+
+| Endpoint | Permission | Presets that have it |
+|----------|-----------|----------------------|
+| `POST /api/v1/apps/link`, `POST /api/v1/apps/unlink` (sidebar apps linking a ticket to a post and voting for the requester) | `post.vote_on_behalf` | Owner, Admin, Manager, Contributor |
+| `GET /api/export` (posts CSV export) | `post.export` | Owner, Admin, Manager |
+
+An API key acts with the permissions of the team member who created it, limited to the scopes on the key.
+
 ### See exactly what each role can do
 
 The **Roles** tab in [Members & Teams](/admin/team) shows the permission catalogue behind every role: roughly 90 individual permissions grouped by area, including workspace settings, people, companies, feedback, conversations, changelog, help center, and integrations. Expand a role there to see precisely which permissions it grants.
