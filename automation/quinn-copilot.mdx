@@ -8,11 +8,7 @@ icon: "users"
 
 Your team spends time hunting for context: what did this customer already try, what does the help center say, has this come up before. Copilot answers those questions inline, without ever speaking to the customer itself.
 
-<Note>
-Inbox AI is off by default. Turn it on in **Admin → Settings → Labs**.
-</Note>
-
-Once it's on, find Copilot's settings at **Admin → AI & Automation → Copilot**.
+Copilot needs an [AI model configured](/admin/ai-features). Find its settings at **Admin → Settings → Copilot**, under AI & Automation. Use **Pause Copilot** there to hide it from teammates in the inbox, and **Resume** to bring it back.
 
 ## What Copilot does
 
@@ -27,32 +23,19 @@ Copilot is teammate-facing only. It never sends a message a customer sees direct
 Internal notes are Copilot-only knowledge. They're never used when drafting anything that could reach a customer, even indirectly.
 </Warning>
 
-## Proactive suggested replies
-
-By default, Copilot only responds when a teammate asks. Turn on **Proactive suggested replies** and Copilot drops a draft above the composer on its own, whenever a teammate opens a conversation or ticket where the customer is waiting on a reply.
-
-<Note>
-Proactive suggested replies is off by default. Turn it on in **Admin → Settings → Labs**.
-</Note>
-
-This is a sub-setting under Inbox AI. It only takes effect once Inbox AI itself is on.
-
 ## Configure Copilot
-
-Copilot shares the same tab layout as the Agent, with one difference: Copilot has no voice settings, since it never writes to customers directly.
 
 | Tab | What you configure |
 |-----|---------------------|
-| **Basics** | Turn Q&A and suggested replies on or off |
 | **Knowledge** | Which sources Copilot can draw on, including internal-only ones |
 | **Guidance** | Rules that steer how Copilot answers |
-| **Actions** | What Copilot can do when a teammate asks it to |
-| **History** | A shared change log with the Agent |
+
+Set which actions Copilot may take in **Admin → Settings → Connectors**. See [Give Quinn actions](/automation/actions).
 
 Drafted replies use the Agent's configured voice, even though you triggered the draft from Copilot. That keeps tone consistent regardless of which agent produced the text a customer eventually reads.
 
 ## Next steps
 
-- [Knowledge sources](/automation/knowledge-sources) -- See what internal-only sources like tickets and past conversations contribute
-- [Give Quinn actions](/automation/actions) -- Let Copilot take actions when a teammate asks
-- [Test and monitor Quinn](/automation/test-and-monitor) -- See how much your team is actually using Copilot
+- [Knowledge sources](/automation/knowledge-sources): see what internal-only sources like tickets and past conversations contribute
+- [Give Quinn actions](/automation/actions): let Copilot take actions when a teammate asks
+- [Monitor Quinn](/automation/test-and-monitor): see how much your team is actually using Copilot

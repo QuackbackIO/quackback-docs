@@ -8,10 +8,10 @@ icon: "sparkles"
 
 Support doesn't scale by hiring alone. Quackback pairs an AI teammate named Quinn with a trigger-driven workflows engine, so routine replies and routing happen without a human in the loop every time.
 
-Everything lives in **Admin → AI & Automation**.
+Everything lives in **Admin → Settings**, under **AI & Automation**: Agent, Copilot, Skills, Connectors, and Workflows.
 
 <Note>
-Quinn's Agent works out of the box for Messenger replies. Copilot and Quinn's actions are Labs opt-ins you turn on when you're ready. See [Configure the Quinn Agent](/automation/quinn-agent) and [Give Quinn actions](/automation/actions).
+Quinn needs an [AI model configured](/admin/ai-features). The Agent replies in Messenger once the [support inbox](/support/overview) is on. Workflows appear when the support inbox is on.
 </Note>
 
 ## Quinn: two peer agents
@@ -19,9 +19,9 @@ Quinn's Agent works out of the box for Messenger replies. Copilot and Quinn's ac
 Quinn isn't one bot with two names. It's two separate configurations that share the same identity:
 
 - **[Agent](/automation/quinn-agent)** replies to customers directly in the [Messenger](/widget) widget. It works the moment you deploy it.
-- **[Copilot](/automation/quinn-copilot)** sits beside your team in the inbox: it answers questions, drafts replies, and never speaks to a customer directly. Copilot is a Labs opt-in.
+- **[Copilot](/automation/quinn-copilot)** sits beside your team in the inbox: it answers questions, drafts replies, and never speaks to a customer directly.
 
-Both agents draw on the same [knowledge sources](/automation/knowledge-sources), though what each can see differs. Both can run [actions](/automation/actions) once you turn that on.
+Both agents draw on the same [knowledge sources](/automation/knowledge-sources), though what each can see differs. Both can run [actions](/automation/actions), including tools from MCP servers you add as connectors.
 
 ## Workflows
 
@@ -29,12 +29,12 @@ Both agents draw on the same [knowledge sources](/automation/knowledge-sources),
 
 Workflows ship with a [template gallery](/automation/templates) so you don't have to start from a blank canvas, and a library of reusable [conversational blocks](/automation/workflow-blocks) for building interactive Messenger flows.
 
-## Test and monitor
+## Monitor
 
-Before you trust Quinn or a workflow with real customers, try it in the [Test agent sandbox](/automation/test-and-monitor). Once it's live, the [Performance page](/automation/test-and-monitor#performance) shows resolution rates, handoffs, and how much your team is actually using Copilot.
+Once Quinn is live, the **Quinn** section of **Admin → Analytics** shows resolution rates, handoffs, action outcomes, and how much your team uses Copilot. See [Monitor Quinn](/automation/test-and-monitor).
 
 ## Next steps
 
-- [Configure the Quinn Agent](/automation/quinn-agent) -- Deploy Quinn to Messenger and set its knowledge and guidance
-- [Build a workflow](/automation/workflows) -- Automate routing, SLAs, and housekeeping
-- [Give Quinn actions](/automation/actions) -- Let Quinn close conversations, create tickets, and call your own APIs
+- [Configure the Quinn Agent](/automation/quinn-agent): deploy Quinn to Messenger and set its knowledge and guidance
+- [Build a workflow](/automation/workflows): automate routing, SLAs, and housekeeping
+- [Give Quinn actions](/automation/actions): let Quinn close conversations, create tickets, and use your own tools

@@ -1,62 +1,40 @@
 ---
-title: "Test and monitor Quinn"
-description: "Try Quinn safely in a sandbox, then track how it performs with real customers."
+title: "Monitor Quinn"
+description: "Track how Quinn performs with real customers and how your team uses Copilot."
 icon: "flask"
 ---
 
-# Test and monitor Quinn
+# Monitor Quinn
 
-Don't find out how Quinn handles a tricky question from an angry customer. Try it yourself first, then keep an eye on how it's actually doing once it's live.
+Once Quinn is live, keep an eye on how it's actually doing. Quinn's numbers live with the rest of your reporting.
 
-## Test agent sandbox
+Find them at **Admin → Analytics**, in the **Quinn** section. Pick a time period at the top, the same as the other [analytics](/admin/analytics) sections.
 
-Find it at **Admin → AI & Automation → Test agent**.
+## Outcomes
 
-The sandbox runs Quinn against your saved configuration: current knowledge sources, guidance, and actions. Nothing you do here reaches your inbox or a real customer.
+How the customer-facing [Agent](/automation/quinn-agent) handled the conversations it joined:
 
-Switch between testing the **Agent** (the customer-facing role Quinn plays in Messenger) and **Copilot** (the teammate-facing Q&A role) to see how each responds with the same settings.
+- **Conversations involved**: how many conversations Quinn took part in
+- **Resolved**: split into confirmed resolutions (the customer said so) and assumed ones
+- **Escalated**: how often Quinn handed off to a human
+- **Pending**: conversations Quinn is still working on
+- **AI CSAT**: satisfaction ratings on conversations Quinn handled
+- **System errors**: turns that failed for a technical reason
+
+## Actions
+
+How often each [action](/automation/actions) was attempted, completed, or failed, broken down per action.
+
+## Copilot
+
+How your team used [Copilot](/automation/quinn-copilot) over the same period. If nobody used it, the section says there was no Copilot activity.
 
 <Tip>
-Test with the questions your customers actually ask, not idealized ones. Pull a few real transcripts and see how Quinn handles them before you turn on automatic replies.
+Before you rely on Quinn with real customers, try it yourself in [Messenger](/widget) with the questions your customers actually ask. Pull a few real transcripts and see how Quinn handles them.
 </Tip>
-
-## Performance
-
-Find it at **Admin → AI & Automation → Performance**.
-
-### Agent metrics
-
-Always visible, covering the customer-facing Agent:
-
-- **Involvement rate** -- how many conversations Quinn takes part in
-- **Resolution rate** -- split into confirmed resolutions (the customer said so) and assumed ones
-- **Escalation rate** -- how often Quinn hands off to a human, with the handed-off count
-- **Actions completed** -- a rolling count, plus a 30-day trend
-
-### Actions funnel
-
-Also always visible: how often each built-in action is attempted, completed, or fails, broken down per action.
-
-### Copilot usage
-
-<Note>
-Copilot usage metrics only appear once Inbox AI is on. See [Use Quinn Copilot](/automation/quinn-copilot).
-</Note>
-
-Once Inbox AI is on, the Performance page adds:
-
-- Questions asked, transforms run, and summaries generated
-- An insert-rate funnel showing how often a Copilot answer, transform, or summary actually lands in a reply or note
-- Helpful votes, including how many were marked unhelpful with a reason
-- Top teammates and a breakdown of transforms by kind
-
-Two sections appear only when their matching Labs flag is on:
-
-- **Actions funnel** -- approval rate and proposed/approved/rejected/expired counts, once Assistant actions is on
-- **Suggestions** -- acceptance rate and shown/inserted/dismissed counts, once Proactive suggested replies is on
 
 ## Next steps
 
-- [Configure the Quinn Agent](/automation/quinn-agent) -- Adjust settings based on what you see in testing
-- [Give Quinn actions](/automation/actions) -- Turn on the actions the funnel is tracking
-- [Build a workflow](/automation/workflows) -- Automate what Quinn's handoffs and escalations should trigger next
+- [Configure the Quinn Agent](/automation/quinn-agent): adjust settings based on what you see
+- [Give Quinn actions](/automation/actions): choose which actions Quinn may take
+- [Build a workflow](/automation/workflows): automate what Quinn's handoffs and escalations should trigger next
