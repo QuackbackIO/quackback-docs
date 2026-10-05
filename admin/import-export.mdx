@@ -1,136 +1,43 @@
 ---
 title: "Import and export data"
-description: "Bring existing feedback from other tools or export for backups."
+description: "Bring existing feedback from other tools or export a board for backups and analysis."
 icon: "arrow-right-left"
 ---
 
 # Import and export data
 
-Bring your existing feedback with you. Whether you're moving from another tool or a spreadsheet, import preserves your vote counts, dates, and history. Export anytime for backups or analysis.
+Bring your existing feedback with you, and take it out whenever you need it. Imports run from one place, **Admin → Settings → Imports & exports**. Each board can also export its own posts as CSV.
 
-## CSV Import
+## Import posts from CSV
 
-### Supported Data
+Imports run in the [Imports & exports](/admin/imports) hub, where you download the template, upload your file, and preview every row before anything changes. A board's **Data** tab (**Admin → Settings → Boards** → select a board → **Data**) has an **Import posts** row that links straight there.
 
-Import posts into any board:
-- Titles and content
-- Statuses and tags
-- Author information
-- Vote counts
-- Dates
+### CSV format
 
-### Import Process
+| Column | Required | Format |
+|--------|----------|--------|
+| `title` | Yes | Text |
+| `content` | Yes | Text or Markdown |
+| `author_email` or `author_name` | One of them | A valid email, or a display name |
+| `status` | No | Status name or slug. Missing statuses are created. |
+| `tags` | No | Comma-separated. Missing tags are created. |
+| `board` | No | Board slug. Missing boards are created. |
+| `email_verified` | No | `true` or `false` |
+| `vote_count` | No | Integer |
+| `created_at` | No | ISO 8601, for example `2024-01-15T10:30:00Z` or `2024-01-15` |
+| `source_id` | No | The item's ID in your old tool. Re-importing a row with the same `source_id` updates it instead of creating a duplicate. |
 
-1. Go to **Admin → Settings → Boards**
-2. Select the target board
-3. Click the **Import Data** tab
-4. Drop a CSV file or click to browse
-5. Click **Import Data** to start the import
-6. Review the results
-
-### CSV Format
-
-#### Required Columns
-
-| Column | Description |
-|--------|-------------|
-| `title` | Post title (required) |
-| `content` | Post body (required) |
-
-#### Optional Columns
-
-| Column | Description | Format |
-|--------|-------------|--------|
-| `status` | Status slug | Must match existing status slug |
-| `tags` | Tag names | Comma-separated |
-| `board` | Board slug | Must match existing board |
-| `author_name` | Author display name | Text |
-| `author_email` | Author email | Valid email |
-| `email_verified` | Whether the author's email is verified | `true` or `false` |
-| `vote_count` | Number of votes | Integer |
-| `created_at` | Creation date | ISO 8601 |
-| `source_id` | The item's ID in your old tool. Re-importing the same `source_id` updates instead of duplicating | Text |
-
-### Example CSV
+Files can be up to 10 MB and 10,000 rows.
 
 ```csv
-title,content,status,tags,board,author_name,author_email,vote_count,created_at
-"Add dark mode support","It would be great to have a dark mode option for the app.","open","feature,ui","","John Doe","john@example.com","5","2024-01-15T10:30:00Z"
-"Fix login timeout","Users are being logged out too quickly.","under_review","bug","","","","2",""
+title,content,status,tags,board,author_name,author_email,vote_count,created_at,source_id
+"Add dark mode support","It would be great to have a dark mode option.","open","feature,ui","features","John Doe","john@example.com","5","2024-01-15T10:30:00Z","idea-123"
+"Fix login timeout","Users are being logged out too quickly.","under_review","bug","bugs","","jane@example.com","2","","idea-124"
 ```
 
-### Import Limits
+### Migrate from another tool
 
-| Limit | Value |
-|-------|-------|
-| File size | 10 MB |
-| Rows | 10,000 |
-| Columns | Unlimited |
-
-### Handle statuses
-
-<Note>
-Statuses in CSV must match existing status slugs (e.g., `open`, `under_review`, `planned`):
-- Unmatched statuses use the default status
-- Create any custom statuses before importing
-</Note>
-
-### Handle tags
-
-Tags are created automatically:
-- New tags created on import
-- Comma-separated in CSV
-- Report shows created tags
-
-### Import Results
-
-After import, you'll see a summary showing:
-
-- Number of posts imported
-- Number of rows skipped
-- Number of new tags created
-- Any row-level errors (expandable to view details)
-
-## CSV Export
-
-### Export Process
-
-1. Go to **Admin → Settings → Boards**
-2. Select a board
-3. Click the **Export Data** tab
-4. Click **Export CSV**
-5. Download starts automatically
-
-### Export Format
-
-Exported CSV includes:
-
-| Column | Description |
-|--------|-------------|
-| `title` | Post title |
-| `content` | Post content |
-| `status` | Status name |
-| `tags` | Comma-separated tags |
-| `board` | Board slug |
-| `author_name` | Author display name |
-| `author_email` | Author email |
-| `vote_count` | Number of votes |
-| `created_at` | Creation timestamp |
-
-### Export Scope
-
-Export is per-board. Select the board you want to export from the board dropdown, then navigate to the Export Data tab.
-
-### Use Cases
-
-- **Backup** - Regular data exports
-- **Analysis** - Import into spreadsheets
-- **Migration** - Move to another system
-- **Reporting** - Share with stakeholders
-
-## Migrate from another tool
-
-Export your data from your current tool as CSV, then map its columns onto the columns above. Typical mappings:
+Export your data from your current tool as CSV, then map its columns onto the template:
 
 - The idea or suggestion title → `title`
 - The description or body → `content`
@@ -138,77 +45,54 @@ Export your data from your current tool as CSV, then map its columns onto the co
 - The vote count → `vote_count`
 - The original ID → `source_id`
 
-For a guided preview, and to create missing boards, statuses, and tags automatically, use [Imports & exports](/admin/imports) instead of the per-board import.
-
-### From Spreadsheet
-
-If you've been tracking feedback in a spreadsheet:
-
-1. Add column headers matching Quackback format
-2. Ensure dates are ISO 8601 format
-3. Clean up status values to match your status slugs
-4. Export as CSV (UTF-8 encoding)
-
-## Best Practices
-
-### Before Import
+Coming from a spreadsheet? Add the column headers above, use ISO 8601 dates, and save as UTF-8 CSV.
 
 <Tip>
-1. **Create statuses first** - Import matches by slug
-2. **Clean your data** - Remove duplicates, fix formatting
-3. **Test with sample** - Import a few rows first
-4. **Backup existing data** - Export current posts
+Import a few rows first and check them in the preview. With `source_id` filled in, you can fix the file and re-run it without creating duplicates.
 </Tip>
 
-### Data Cleaning
+## Export a board as CSV
 
-Common issues to fix:
+1. Go to **Admin → Settings → Boards** and select the board
+2. Open the **Data** tab
+3. Under **Export**, click **Export CSV**
 
-| Issue | Solution |
-|-------|----------|
-| Extra whitespace | Trim cells |
-| Inconsistent statuses | Normalize names |
-| HTML in content | Convert to markdown |
-| Date formats | Use ISO 8601 |
-| Encoding issues | Save as UTF-8 |
+The download includes every post on that board:
 
-### Large Imports
+| Column | Description |
+|--------|-------------|
+| `title` | Post title |
+| `content` | Post content |
+| `status` | Status name |
+| `tags` | Comma-separated tag names |
+| `board` | Board slug |
+| `author_name` | Author display name |
+| `author_email` | Author email |
+| `vote_count` | Number of votes |
+| `created_at` | Creation timestamp |
 
-<Warning>
-For 5,000+ posts:
+Exporting needs the **`post.export`** permission, which Owners, Admins, and Managers have. See [Roles and permissions](/admin/roles-permissions).
 
-1. Split into batches of 2,000
-2. Import sequentially
-3. Verify each batch
-4. Allow time between batches
-</Warning>
+To export the whole workspace (posts, comments, votes, users, companies, conversations, changelog, and help center) as one ZIP, use **Export workspace data** in [Imports & exports](/admin/imports#export-your-data).
 
 ## Troubleshooting
 
 ### "Invalid CSV format"
 
-- Check file encoding (use UTF-8)
-- Verify proper quoting for fields with commas
-- Ensure consistent column count
+- Save the file as UTF-8
+- Quote fields that contain commas
+- Keep the same number of columns on every row
 
-### "Status not found"
+### Dates import wrong
 
-- Create the status before importing
-- Check spelling matches exactly
+Use ISO 8601: `2024-01-15T10:30:00Z` or `2024-01-15`.
 
-### "Date parse error"
+### Large imports
 
-- Use ISO 8601: `2024-01-15T10:30:00Z`
-- Or: `2024-01-15` (date only)
-
-### "Import stuck"
-
-- Large files take time
-- Check browser console for errors
-- Try smaller batches
+Imports run in the background, so you can leave the page. Check progress under **Import history** in [Imports & exports](/admin/imports#track-import-runs).
 
 ## Next Steps
 
-- [Boards](/admin/boards) - Manage import targets
-- [Statuses](/admin/statuses) - Set up statuses before import
-- [Feedback](/admin/inbox) - View imported posts
+- [Imports & exports](/admin/imports): Template import, import history, and workspace export
+- [Boards](/admin/boards): Set up boards before you import
+- [Statuses](/admin/statuses): Review statuses after import

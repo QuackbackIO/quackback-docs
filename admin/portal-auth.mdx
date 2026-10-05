@@ -143,7 +143,9 @@ A provider's toggle stays locked off until you've saved its Client ID and Client
 
 Bring your own OpenID Connect identity provider for a single button on the portal sign-in form. The configuration form auto-detects common providers (Microsoft Entra ID, Okta, Google Workspace, OneLogin) from the issuer URL and prefills sensible defaults.
 
-Register the redirect URI shown on that form. New providers use `https://YOUR_DOMAIN/api/auth/callback/custom-oidc`; a provider set up before 0.14 keeps `https://YOUR_DOMAIN/api/auth/oauth2/callback/custom-oidc` until you switch it in its Edit view.
+Register the redirect URI shown on that form. New providers use `https://YOUR_DOMAIN/api/auth/callback/custom-oidc`.
+
+A custom OIDC provider set up before 0.14 keeps `https://YOUR_DOMAIN/api/auth/oauth2/callback/custom-oidc`, so sign-in keeps working without changes at your IdP. It's listed as a provider in **Admin → Settings → Access & Security → Sign-in → Single sign-on (OIDC)**. To move it to the new URI, register the new URI at your IdP, open the provider, click **Switch to new URI** on its connection card and confirm, then test sign-in again.
 
 - Default: Off
 - Availability: Plans with the Custom OIDC feature. Lower tiers see a tier-lock badge.
