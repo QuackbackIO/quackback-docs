@@ -12,16 +12,16 @@ Quackback splits authentication into two concerns: **who's allowed in** and **ho
 |-----|----------|-----|
 | **Portal access** | Visibility, allowed domains, email invites, allowed segments, widget sign-in | [Control portal access and sign-in](/admin/portal-auth#portal-access) |
 | **Team access** | Team-side 2FA and the SSO summary | [Configure team security](/admin/security) |
-| **Sign-in providers** | Password, magic link, social OAuth, Custom OIDC — per-surface toggles | [Sign-in providers](/admin/portal-auth#sign-in-providers) |
+| **Sign-in providers** | Password, magic link, social OAuth, Custom OIDC, per-surface toggles | [Sign-in providers](/admin/portal-auth#sign-in-providers) |
 
 ## Two audiences
 
 | Audience | Who they are |
 |----------|--------------|
 | **Portal users** | Customers who submit and vote on feedback. |
-| **Team members** | Admins and members who manage feedback. |
+| **Team members** | Teammates with a role (Owner, Admin, Manager, Contributor, or a custom role). |
 
-Team members can browse the public portal while signed into Quackback. The [widget will not treat a team email as a customer](#session-types) — use the portal login or Team access channel instead.
+Team members can browse the public portal while signed into Quackback. The [widget will not treat a team email as a customer](#session-types). Use the portal login or Team access channel instead.
 
 ## Portal access channels
 
@@ -29,7 +29,7 @@ A private portal admits visitors through these channels, evaluated in order:
 
 | Channel | Who it lets in | Requires |
 |---------|----------------|----------|
-| Team | Admins and members | Signed in on Quackback (admin or portal login) |
+| Team | Team members | Signed in on Quackback (admin or portal login) |
 | Allowed domain | Anyone whose verified email matches a listed domain | Email verified |
 | Email invite | A specific person you invited | Email verified |
 | Allowed segment | Any member of a permitted segment | Email verified |
@@ -70,13 +70,13 @@ Quackback rate-limits password and magic-link sign-in attempts per IP and email 
 
 ### Session types
 
-Signing in only unlocks the place someone signed in from. A customer who uses the widget never gets admin dashboard access from that sign-in — even if you later invite them to your team.
+Signing in only unlocks the place someone signed in from. A customer who uses the widget never gets admin dashboard access from that sign-in, even if you later invite them to your team.
 
 | Type | How someone gets it | What they can do |
 |------|---------------------|------------------|
-| **Quackback** | Signs in at your Quackback URL (admin login or the portal login form) | Full team access if they are an admin or member; otherwise customer access |
-| **Widget** | Uses your embedded widget (as a guest or after [identify](/widget/identify-users)) | Customer actions in the widget only — not exports, settings, or the admin inbox |
-| **Portal from widget** | Opens the portal from a verified widget session with [Widget sign-in](/admin/portal-auth#widget-sign-in) on | Customer access on the portal — still not admin |
+| **Quackback** | Signs in at your Quackback URL (admin login or the portal login form) | Team access for their role if they are a team member; otherwise customer access |
+| **Widget** | Uses your embedded widget (as a guest or after [identify](/widget/identify-users)) | Customer actions in the widget only, not exports, settings, or the admin inbox |
+| **Portal from widget** | Opens the portal from a verified widget session with [Widget sign-in](/admin/portal-auth#widget-sign-in) on | Customer access on the portal, still not admin |
 
 ```text
 Guest or identify in the widget  →  Widget
@@ -89,7 +89,7 @@ Signs in at Quackback            →  Quackback (separate)
 ```
 
 <Note>
-You cannot identify a team member through the widget. If the signed identity matches an admin or member, identify returns `IDENTITY_NOT_ALLOWED`. Invite them to use the portal login or admin login instead. If a customer is later added to your team, their existing widget or portal-from-widget sign-in stays a customer sign-in until they sign in on Quackback itself.
+You cannot identify a team member through the widget. If the signed identity matches a team member, identify returns `IDENTITY_NOT_ALLOWED`. Invite them to use the portal login or admin login instead. If a customer is later added to your team, their existing widget or portal-from-widget sign-in stays a customer sign-in until they sign in on Quackback itself.
 </Note>
 
 ## Roles

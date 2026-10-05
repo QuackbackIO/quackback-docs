@@ -173,6 +173,8 @@ Conversations that were pending are now snoozed. Conversations are open, snoozed
 
 ### SSO and OIDC redirect URIs
 
+{/* TODO(0.14): confirm against the merged OIDC redirect-style PR. */}
+
 New sign-in providers use the redirect URI `/api/auth/callback/<id>`. Providers you added before 0.14 keep working with their original `/api/auth/oauth2/callback/<id>`. To switch one to the new URI, add the new URI at your identity provider first, then change it in the provider's **Edit** view in Quackback, and test the connection again.
 
 ### Slack
