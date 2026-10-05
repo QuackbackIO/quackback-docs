@@ -284,15 +284,24 @@ Benefits:
 
 ## Migrations
 
-### Generate Migration
+### Write a Migration
 
-After changing schema files:
+Migrations are hand-written SQL. A schema change is always two edits that land together:
+
+1. A new file in `packages/db/drizzle/`, numbered with the next free four-digit number, plus a matching entry appended to `packages/db/drizzle/meta/_journal.json` (`tag` is the filename without `.sql`)
+2. The matching change to the TypeScript schema in `packages/db/src/schema/`
+
+<Warning>
+Don't run `bun run db:generate` (`drizzle-kit generate`). Its snapshot history is stale, so it produces wrong SQL. Write the SQL by hand.
+</Warning>
+
+Check that the SQL and the TypeScript schema agree:
 
 ```bash
-bun run db:generate
+bun run db:check-drift
 ```
 
-Creates a migration in `packages/db/drizzle/`.
+CI runs the same check.
 
 ### Run Migrations
 
@@ -305,7 +314,7 @@ Migrations run automatically on deployment.
 ### Migration Best Practices
 
 1. **One change per migration** - Easier to debug
-2. **Test rollback** - Ensure reversibility
+2. **Replay-safe** - A migration must be safe to run again (`IF EXISTS`, `IF NOT EXISTS`, guarded updates)
 3. **Non-breaking changes** - Add columns as nullable first
 4. **Data migrations** - Handle existing data carefully
 
