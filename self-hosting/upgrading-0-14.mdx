@@ -33,22 +33,24 @@ With your 0.13 files still in place, stop the app so nothing writes. Don't use `
 docker compose -f docker-compose.prod.yml stop app
 ```
 
-Back up PostgreSQL:
+Back up your configuration, PostgreSQL, and object storage into a directory outside the repository. The bundled storage server changes in this release (see [Bundled object storage is now Silo](#bundled-object-storage-is-now-silo)), so take an offline copy of the whole storage volume:
 
 ```bash
+umask 077
+BACKUP="../quackback-0.13-backup-$(date -u +%Y%m%dT%H%M%SZ)"
+mkdir "$BACKUP"
+cp .env "$BACKUP/environment.env"
+cp docker-compose.prod.yml "$BACKUP/compose-before.yml"
+
+# Keep PostgreSQL running; stop writers first (stopping a stopped service is harmless)
+docker compose -f docker-compose.prod.yml stop app minio
 docker compose -f docker-compose.prod.yml exec -T postgres \
-  sh -c 'exec pg_dump -Fc -U "$POSTGRES_USER" "$POSTGRES_DB"' > quackback-0.13.dump
+  sh -c 'exec pg_dump -Fc -U "$POSTGRES_USER" "$POSTGRES_DB"' > "$BACKUP/database.dump"
+docker cp quackback-minio:/data/. - > "$BACKUP/data.tar"
+tar -tf "$BACKUP/data.tar" > /dev/null
 ```
 
-Back up object storage too. The bundled storage server changes in this release (see [Bundled object storage is now Silo](#bundled-object-storage-is-now-silo)), so take an offline copy of the whole volume:
-
-```bash
-docker compose -f docker-compose.prod.yml stop minio
-docker cp quackback-minio:/data/. - > quackback-0.13-storage.tar
-tar -tf quackback-0.13-storage.tar > /dev/null
-```
-
-Keep both backups private: the storage archive includes credentials. The product repository's `deploy/self-hosted/README.md` has a fuller backup script that also saves the old image and configuration for a rehearsed restore.
+Keep the backup private: the storage archive includes credentials. The product repository's `deploy/self-hosted/README.md` also saves the old storage image so you can rehearse a restore offline.
 
 Then stop the rest of the stack, still without `-v`:
 
@@ -58,13 +60,17 @@ docker compose -f docker-compose.prod.yml down
 
 ### 2. Update the files
 
-Pull the new source and set `QUACKBACK_TAG` in `.env` to the 0.14 release. Then make these `.env` changes:
+Pull the new source with `git pull`. If you don't deploy from a git checkout, download the new `docker-compose.prod.yml`, `.env.prod.example`, and the `docker/postgres/` directory instead. Set `QUACKBACK_TAG` in `.env` to the 0.14 release, then make these `.env` changes.
 
-- **Delete `REDIS_URL`.** Redis and Dragonfly are no longer used.
-- **Delete `MINIO_IMAGE_TAG` and `MC_IMAGE_TAG`.** They're ignored now.
+<Warning>
+Finish every `.env` change before you start 0.14. Some settings, such as the one-email-provider rule, are only checked after the migrations have committed, so a mistake there stops the app on an already-migrated database.
+</Warning>
+
+- **If `.env` has a `REDIS_URL` line, delete it.** Redis and Dragonfly are no longer used. The 0.13 compose file set it for you, so most installs don't have one.
+- **If you set `MINIO_IMAGE_TAG` or `MC_IMAGE_TAG`, remove them.** They're ignored now.
 - **Set `SECRET_KEY`** to the value your 0.13 install used. The compose file refuses to start without it.
 - **Set `TRUSTED_PROXY_HOPS`.** Behind Nginx, Caddy, Traefik, or a Cloudflare Tunnel, set `1`. Behind a CDN plus a proxy, set `2`. If clients connect straight to the app port, keep `0`. See [Trusted proxy hops](#trusted-proxy-hops).
-- **Keep only one email provider.** See [Email](#configure-one-email-provider).
+- **Keep only one email provider**: `EMAIL_SMTP_HOST`, the `EMAIL_SES_*` keys, or `EMAIL_RESEND_API_KEY`. Check this now, because the app stops after migrations if more than one is set. See [Email](#configure-one-email-provider).
 
 ### 3. Pull the new image
 
@@ -92,9 +98,10 @@ In the background, files uploaded before 0.14 are copied into the new storage la
 ### 5. Check and clean up
 
 1. Sign in, open an existing post with an attachment, and upload a new file.
-2. Remove the unused Dragonfly volume:
+2. Remove the unused Dragonfly volume. The project name defaults to the directory name, so look it up first:
 
    ```bash
+   docker volume ls | grep dragonfly
    docker volume rm <project>_dragonfly_data
    ```
 
@@ -234,7 +241,28 @@ With AI configured, Quackback can send new email and Messenger conversations to 
 - **The app exits naming email variables**: you have more than one email provider configured. Keep one.
 - **Realtime updates don't arrive**: `DATABASE_URL` points at a transaction-mode pooler. Use a direct or session-mode connection.
 
-To roll back, stop 0.14, restore the PostgreSQL dump and the storage archive into fresh volumes, set `QUACKBACK_TAG` back to your 0.13 version, and start. Don't run the old image against the migrated database.
+## Roll back
+
+Migrations can't be undone, so rolling back means restoring the backup from step 1 into fresh volumes and running 0.13 again. This sequence deletes the current volumes, so run it only when you mean to roll back. Uploads and credential changes made after the backup are lost.
+
+In a new shell, set `BACKUP` to your backup directory first, for example `BACKUP=../quackback-0.13-backup-20261005T120000Z`.
+
+```bash
+docker compose -f docker-compose.prod.yml down
+docker volume ls | grep -E 'postgres_data|minio_data'   # find <project>
+docker volume rm <project>_postgres_data <project>_minio_data
+cp "$BACKUP/compose-before.yml" docker-compose.prod.yml
+cp "$BACKUP/environment.env" .env
+docker compose -f docker-compose.prod.yml create
+docker compose -f docker-compose.prod.yml up -d postgres
+docker compose -f docker-compose.prod.yml exec -T postgres \
+  sh -c 'pg_restore --no-owner -U "$POSTGRES_USER" -d "$POSTGRES_DB"' \
+  < "$BACKUP/database.dump"
+docker cp - quackback-minio:/data < "$BACKUP/data.tar"
+docker compose -f docker-compose.prod.yml up -d
+```
+
+Never run the 0.13 image against a database 0.14 has migrated.
 
 ## Next steps
 
