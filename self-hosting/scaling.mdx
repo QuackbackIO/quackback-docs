@@ -19,7 +19,7 @@ Every Quackback process reads `QUACKBACK_ROLE` to decide what it does. The defau
 | `worker` | Yes (health probes only) | Yes | Dedicated background processing |
 
 <Note>
-`web` replicas still serve HTTP but never construct a queue consumer. They enqueue jobs and leave them for a worker to pick up. A deployment that only runs `web` replicas queues work that nothing ever processes.
+`web` replicas still serve HTTP but never claim queued jobs. They enqueue jobs and leave them for a worker to pick up. A deployment that only runs `web` replicas queues work that nothing ever processes.
 </Note>
 
 ## Split web and worker replicas
@@ -28,17 +28,17 @@ Run the same image with different `QUACKBACK_ROLE` values:
 
 ```bash
 # Web replicas: scale these behind your load balancer
-docker run -d -e QUACKBACK_ROLE=web -e DATABASE_URL=... -e REDIS_URL=... ghcr.io/quackbackio/quackback:latest
+docker run -d -e QUACKBACK_ROLE=web -e SKIP_MIGRATIONS=true -e DATABASE_URL=... -e SECRET_KEY=... -e BASE_URL=... ghcr.io/quackbackio/quackback:latest
 
 # Worker replicas: one is enough for most workloads
-docker run -d -e QUACKBACK_ROLE=worker -e DATABASE_URL=... -e REDIS_URL=... ghcr.io/quackbackio/quackback:latest
+docker run -d -e QUACKBACK_ROLE=worker -e SKIP_MIGRATIONS=true -e DATABASE_URL=... -e SECRET_KEY=... -e BASE_URL=... ghcr.io/quackbackio/quackback:latest
 ```
 
 <Tip>
 Route load-balancer traffic to `web` replicas only. `worker` replicas serve HTTP so their health probes work, but they don't need, and shouldn't receive, user traffic.
 </Tip>
 
-Background workers handle event delivery (webhooks, notifications, workflows), email sending and inbound polling, AI jobs (summaries, duplicate detection, extraction), analytics refreshes, workflow timers, and imports. They're leader-elected through Postgres, so running more than one `worker` replica is safe: only one replica executes each scheduled sweep at a time.
+Background workers handle event delivery (webhooks, notifications, workflows), email sending and inbound polling, AI jobs (summaries, duplicate detection, extraction), analytics refreshes, workflow timers, and imports. Jobs live in a queue table in PostgreSQL, so running more than one `worker` replica is safe: each job and each scheduled sweep runs once.
 
 <Warning>
 Scale `web` replicas without a `worker` (or `all`) replica running somewhere, and webhooks, notifications, and workflows stop firing. Jobs queue up but nothing consumes them.
@@ -48,13 +48,29 @@ Scale `web` replicas without a `worker` (or `all`) replica running somewhere, an
 
 Every replica, regardless of role, needs:
 
-- The same `DATABASE_URL` (shared PostgreSQL)
-- The same `REDIS_URL` (shared Redis or Dragonfly, for the BullMQ queues)
+- The same `DATABASE_URL` (shared PostgreSQL, which also holds the job queue)
 - The same `SECRET_KEY` (sessions are database-backed, so any replica can serve any request)
+- The same S3-compatible storage and email settings
+
+Sticky sessions aren't required. Realtime updates travel through PostgreSQL `LISTEN`/`NOTIFY`, so `DATABASE_URL` must be a direct or session-mode connection.
+
+## Run migrations once
+
+With one replica, migrations run on startup. With several, set `SKIP_MIGRATIONS=true` on every replica so they don't race, and run migrations as a one-off container before you roll out a new image:
+
+```bash
+docker run --rm \
+  -e DATABASE_URL="postgresql://user:pass@host:5432/quackback" \
+  --entrypoint bun \
+  ghcr.io/quackbackio/quackback:latest \
+  /app/migrate.mjs
+```
+
+Then roll the new image out to the `web` and `worker` replicas.
 
 ## Health checks per role
 
-Point your orchestrator's liveness probe at [`/api/health/live`](/api/health) (process is up, no I/O) and readiness probe at [`/api/health/ready`](/api/health) (database, Redis, migrations, and worker boot status). On a `web` replica the readiness check's worker counts are always zero. That's expected, not a failure.
+Point your orchestrator's liveness probe at [`/api/health/live`](/api/health) (process is up, no I/O) and readiness probe at [`/api/health/ready`](/api/health) (database, migrations, and workers). A `web` replica doesn't run workers, so its readiness check reports `workers.expected: false` and still passes.
 
 ## Next steps
 

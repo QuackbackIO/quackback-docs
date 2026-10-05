@@ -1,12 +1,12 @@
 ---
 title: "Deploy to Railway"
-description: "Deploy Quackback to Railway with one click. No server to manage, automatic SSL, and built-in PostgreSQL and Redis."
+description: "Deploy Quackback to Railway with one click. No server to manage, automatic SSL, and built-in PostgreSQL and file storage."
 icon: "railway"
 ---
 
 # Deploy to Railway
 
-Railway handles infrastructure so you can focus on collecting feedback. One click gives you Quackback, PostgreSQL, and Redis with automatic SSL, deployments on push, and no server management.
+Railway handles infrastructure so you can focus on collecting feedback. One click gives you Quackback, PostgreSQL, and a storage bucket with automatic SSL and no server management.
 
 ## Prerequisites
 
@@ -23,9 +23,11 @@ The template provisions three services:
 
 | Service | Purpose |
 |---------|---------|
-| **Quackback** | The application server |
-| **PostgreSQL** | Database with `pgvector` extension |
-| **Redis** | Background job queue (BullMQ) |
+| **Quackback** | The application server, including background jobs |
+| **PostgreSQL** | Database with the `pgvector` extension (`pgvector/pgvector` image) |
+| **Bucket** | Railway's S3-compatible storage for file uploads |
+
+The template sets `TRUSTED_PROXY_HOPS=1`, because Railway's edge proxies every request. If you turn on Railway's CDN in front of the service, change it to `2`.
 
 ## Manual Setup
 
@@ -38,46 +40,52 @@ If you prefer to configure each service yourself:
 
 ### 2. Add PostgreSQL
 
-1. Click **+ New** → **Database** → **PostgreSQL**
-2. Railway provisions a PostgreSQL instance automatically
+1. Click **+ New** → **Docker Image** and enter `pgvector/pgvector:pg17`
+2. Add a volume mounted at `/var/lib/postgresql/data`
+3. Set `POSTGRES_DB`, `POSTGRES_USER`, and `POSTGRES_PASSWORD`
 
 <Note>
-Quackback requires the `pgvector` extension. Railway's PostgreSQL supports it. Run `CREATE EXTENSION IF NOT EXISTS vector;` via the Railway console if migrations don't create it automatically.
+Quackback requires PostgreSQL 14+ with pgvector 0.5.0+ and `pg_trgm`. The `pgvector/pgvector` image includes both. Connect over Railway's private network directly, not through a transaction-mode pooler: realtime updates use `LISTEN`/`NOTIFY`.
 </Note>
 
-### 3. Add Redis
+### 3. Add a bucket
 
-1. Click **+ New** → **Database** → **Redis**
-2. Railway provisions a Redis instance automatically
+1. Click **+ New** → **Bucket**
+2. Railway provisions S3-compatible storage for uploads
 
 ### 4. Deploy Quackback
 
-1. Click **+ New** → **GitHub Repo**
-2. Connect the `quackbackio/quackback` repository (or your fork)
-3. Railway detects the Dockerfile and builds automatically
+1. Click **+ New** → **Docker Image**
+2. Enter `ghcr.io/quackbackio/quackback:latest` (or pin a release tag)
 
 ### 5. Configure Environment Variables
 
 In the Quackback service settings, add these variables:
 
 ```bash
-# Railway injects DATABASE_URL and REDIS_URL automatically if you link the services.
-# If not linked, set them manually:
-DATABASE_URL=${{Postgres.DATABASE_URL}}
-REDIS_URL=${{Redis.REDIS_URL}}
+DATABASE_URL=postgresql://quackback:${{postgres.POSTGRES_PASSWORD}}@${{postgres.RAILWAY_PRIVATE_DOMAIN}}:5432/quackback
 
-# Authentication (generate with: openssl rand -base64 32)
-SECRET_KEY="your-32-character-minimum-secret-key"
+# Authentication, 32+ characters (generate with: openssl rand -base64 32)
+SECRET_KEY=your-32-character-minimum-secret-key
 
 # Public URL (set after assigning a domain)
-BASE_URL="https://feedback.yourcompany.com"
+BASE_URL=https://feedback.yourcompany.com
+
+# Railway's edge is one proxy hop (use 2 if Railway's CDN is enabled)
+TRUSTED_PROXY_HOPS=1
+
+# Storage bucket
+S3_ENDPOINT=${{Bucket.ENDPOINT}}
+S3_BUCKET=${{Bucket.BUCKET}}
+S3_REGION=${{Bucket.REGION}}
+S3_ACCESS_KEY_ID=${{Bucket.ACCESS_KEY_ID}}
+S3_SECRET_ACCESS_KEY=${{Bucket.SECRET_ACCESS_KEY}}
+S3_FORCE_PATH_STYLE=true
 ```
 
-### 6. Link Services
+### 6. Set the health check
 
-1. Go to the Quackback service → **Variables**
-2. Click **Add Reference** to link `DATABASE_URL` from the PostgreSQL service
-3. Click **Add Reference** to link `REDIS_URL` from the Redis service
+Go to the Quackback service → **Settings** → **Deploy** and set the health check path to `/api/health/ready`. The first start after an upgrade runs migrations, so allow a generous timeout (the template uses 300 seconds).
 
 ### 7. Add a Domain
 
@@ -92,46 +100,44 @@ Railway provides automatic SSL for all domains. No certificate configuration nee
 
 ## Email Configuration
 
-Without email, OTP codes are printed to Railway logs. For production, configure SMTP or Resend:
+Without email, OTP codes are printed to Railway logs. For production, configure exactly one sending provider: SMTP, Amazon SES, or Resend. If more than one is set, the app refuses to start and names the conflicting variables.
 
 ```bash
 # SMTP
-EMAIL_SMTP_HOST="smtp.example.com"
-EMAIL_SMTP_PORT="587"
-EMAIL_SMTP_USER="your-username"
-EMAIL_SMTP_PASS="your-password"
-EMAIL_FROM="feedback@yourcompany.com"
+EMAIL_SMTP_HOST=smtp.example.com
+EMAIL_SMTP_PORT=587
+EMAIL_SMTP_USER=your-username
+EMAIL_SMTP_PASS=your-password
+EMAIL_FROM=Quackback <feedback@yourcompany.com>
+
+# Or Amazon SES (all three keys required)
+# EMAIL_SES_ACCESS_KEY_ID=AKIA...
+# EMAIL_SES_SECRET_ACCESS_KEY=...
+# EMAIL_SES_REGION=us-east-1
 
 # Or Resend
-EMAIL_RESEND_API_KEY="re_xxxxxxxxxxxx"
-EMAIL_FROM="feedback@yourcompany.com"
+# EMAIL_RESEND_API_KEY=re_xxxxxxxxxxxx
 ```
+
+See [Email](/integrations/email) for details.
 
 ## File Storage
 
-For image uploads, configure S3-compatible storage:
-
-```bash
-S3_ENDPOINT="https://your-s3-endpoint"
-S3_BUCKET="quackback-uploads"
-S3_ACCESS_KEY="your-access-key"
-S3_SECRET_KEY="your-secret-key"
-S3_REGION="us-east-1"
-```
-
-<Tip>
-Railway doesn't provide persistent file storage. Use an external S3-compatible service like AWS S3, Cloudflare R2, or Backblaze B2 for file uploads.
-</Tip>
+The template's Railway bucket stores uploads. Files are served through the app at `/api/storage`, so the bucket can stay private. To use another provider instead (AWS S3, Cloudflare R2, Backblaze B2), point the `S3_*` variables at it. See [File storage](/reference/environment-variables#file-storage).
 
 ## Upgrades
 
-Railway rebuilds and redeploys automatically when you push to the connected branch. Migrations run on every startup, so schema changes are applied automatically.
+Migrations run on every startup, so schema changes apply when the new image starts.
 
 To upgrade a template deployment:
 
-1. Fork the Quackback repository if you haven't already
-2. Pull the latest changes from upstream
-3. Push to your fork — Railway redeploys automatically
+1. Back up the PostgreSQL volume and the bucket
+2. Change the Quackback service's image tag to the new release (or redeploy to pull `latest`)
+3. Watch the deploy logs until migrations finish and the health check passes
+
+<Warning>
+Upgrading from 0.13? Follow [Upgrade from 0.13 to 0.14](/self-hosting/upgrading-0-14). Remove the old Redis service and `REDIS_URL` variable, and add `TRUSTED_PROXY_HOPS=1`.
+</Warning>
 
 ## Monitoring
 
@@ -148,17 +154,17 @@ View real-time logs in the Railway dashboard:
 Railway can restart the service if it becomes unhealthy:
 
 1. Go to **Settings** → **Deploy**
-2. Set the health check path to [`/api/health/ready`](/api/health) (checks database, Redis, migrations, and worker boot status). Use [`/api/health/live`](/api/health) instead if you only want to confirm the process is up.
+2. Set the health check path to [`/api/health/ready`](/api/health) (checks database, migrations, and background workers). Use [`/api/health/live`](/api/health) instead if you only want to confirm the process is up.
 
 ## Cost
 
-Railway bills based on usage. A typical Quackback instance costs $5–20/month depending on traffic:
+Railway bills based on usage. A typical Quackback instance costs $5 to $20 a month depending on traffic:
 
 | Resource | Estimate |
 |----------|----------|
 | Quackback (512 MB RAM) | ~$5/mo |
 | PostgreSQL | ~$5/mo |
-| Redis | ~$2/mo |
+| Bucket | Depends on stored files |
 
 <Note>
 Railway's free trial includes $5 of usage. After that, the Hobby plan starts at $5/month with $5 of included usage.
@@ -166,11 +172,11 @@ Railway's free trial includes $5 of usage. After that, the Hobby plan starts at 
 
 ## Troubleshooting
 
-### Build Fails
+### Deploy Fails
 
 Check the build logs for errors. Common causes:
-- Missing environment variables — ensure `DATABASE_URL` and `SECRET_KEY` are set
-- Docker build issues — Railway uses the repository's Dockerfile
+- Missing environment variables: make sure `DATABASE_URL`, `SECRET_KEY`, and `BASE_URL` are set
+- More than one email provider configured: the log names the conflicting variables
 
 ### Database Connection Failed
 

@@ -47,8 +47,7 @@ Common issues and solutions for self-hosted Quackback deployments.
    ```bash
    # Must be set:
    DATABASE_URL
-   REDIS_URL
-   SECRET_KEY
+   SECRET_KEY   # 32+ characters
    BASE_URL
    ```
 
@@ -86,10 +85,13 @@ PORT=8080 bun run start
 
 **Solutions**:
 
-1. **Check migration status**
-   ```bash
-   bun run db:migrate 2>&1 | head -50
-   ```
+1. **Read the startup log**. Before it changes anything, the migrator checks the database and lists every problem it finds with the fix, for example:
+   - PostgreSQL older than 14
+   - pgvector missing or older than 0.5.0 (`ALTER EXTENSION vector UPDATE;` as a superuser)
+   - `pg_trgm` not available (install the PostgreSQL contrib package)
+   - the database user lacks the `TEMPORARY` privilege (`GRANT TEMPORARY ON DATABASE quackback TO your_user;`)
+
+   If a migration itself fails, the log names it. All migrations in a run share one transaction, so a failure rolls the whole run back and the next start retries from the same point.
 
 2. **Ensure database user has permissions**
    ```sql
@@ -97,7 +99,9 @@ PORT=8080 bun run start
    GRANT ALL PRIVILEGES ON SCHEMA public TO your_user;
    ```
 
-3. **Reset and retry** (development only)
+3. **Don't interrupt a long first start**. After a large upgrade, the first start can take several minutes. Stopping the container rolls the run back and the next start begins again.
+
+4. **Reset and retry** (development only)
    ```bash
    bun run db:reset
    bun run db:migrate
@@ -125,6 +129,12 @@ Only use `db:reset` in development environments. This will delete all data.
        image: pgvector/pgvector:pg18
    ```
 
+### Realtime updates don't arrive
+
+**Symptoms**: New messages, presence, or inbox updates only show after a page refresh.
+
+**Solution**: Realtime uses PostgreSQL `LISTEN`/`NOTIFY`, which a transaction-mode pooler drops. Point `DATABASE_URL` at the database directly or at a session-mode pooler. If a reverse proxy buffers streaming responses, see [Live chat updates arrive late](/self-hosting/reverse-proxy#live-chat-updates-arrive-late-or-not-at-all).
+
 ## Authentication Problems
 
 ### "Invalid session" after login
@@ -151,8 +161,8 @@ Only use `db:reset` in development environments. This will delete all data.
 
 **Solutions**:
 
-1. **Check console** (development)
-   - OTP codes print to console if no email configured
+1. **Check the logs**
+   - OTP codes print to the server log if no email provider is configured
 
 <Note>
 In development mode without email configuration, OTP codes are printed to the server console for easy testing.
@@ -160,11 +170,14 @@ In development mode without email configuration, OTP codes are printed to the se
 
 2. **Verify email configuration**
    ```bash
-   # Check SMTP settings
+   # SMTP
    EMAIL_SMTP_HOST
    EMAIL_SMTP_PORT
    EMAIL_SMTP_USER
    EMAIL_SMTP_PASS
+   # or SES: EMAIL_SES_ACCESS_KEY_ID, EMAIL_SES_SECRET_ACCESS_KEY, EMAIL_SES_REGION
+   # or Resend: EMAIL_RESEND_API_KEY
+   EMAIL_FROM
    ```
 
 3. **Check spam folder**
@@ -174,6 +187,12 @@ In development mode without email configuration, OTP codes are printed to the se
    # Many SMTP providers have test tools
    swaks --to test@example.com --server smtp.example.com
    ```
+
+### "More than one outbound email provider is configured"
+
+**Symptoms**: The app exits at startup and the log lists two or more email providers with their variables.
+
+**Solution**: Configure exactly one of SMTP, Amazon SES, or Resend, and remove the others' variables. If you keep a Resend key only to receive inbound mail through Resend while SMTP or SES sends, set `EMAIL_INBOUND_PROVIDER=resend`. See [Email](/integrations/email).
 
 ### OAuth redirect errors
 
@@ -185,6 +204,8 @@ In development mode without email configuration, OTP codes are printed to the se
    ```
    https://your-domain.com/api/auth/callback/github
    ```
+
+   Custom OIDC providers added before 0.14 may still use `/api/auth/oauth2/callback/<id>`. Register whichever URI the provider's Edit view in Quackback shows.
 
 2. **Check for trailing slashes**
    - Must match exactly in provider settings
@@ -257,12 +278,12 @@ In development mode without email configuration, OTP codes are printed to the se
    ```bash
    curl http://localhost:3000/api/health/ready
    ```
-   Look at `checks.workers` in the response. A nonzero `failed` count means a worker's boot init threw; check the app logs for the failing worker's name.
+   Look at `checks.workers` in the response. `expected: true` with `running: false` means the job worker didn't start; check the app logs for the error.
 
 3. **See [Scale with multiple replicas](/self-hosting/scaling)** for how web and worker roles split.
 
 <Note>
-On a `web`-role replica, `checks.workers` in the readiness response always reads zero counts. That's expected: workers boot on `worker`/`all` replicas only, not a sign of failure.
+On a `web`-role replica, `checks.workers` reports `expected: false` and the check passes. Workers run on `worker` and `all` replicas only.
 </Note>
 
 ### IMAP inbound email is not creating conversations
@@ -293,6 +314,16 @@ On a `web`-role replica, `checks.workers` in the readiness response always reads
    ```
 
 5. **Confirm the conversations channel is enabled** in **Admin > Settings > Channels**
+
+### Everyone shares one rate limit
+
+**Symptoms**: Visitors get rate-limited at the same moment, and the log warns about proxy headers.
+
+**Solution**: The app sits behind a proxy with `TRUSTED_PROXY_HOPS=0`. Set it to the number of proxies in front of the app. See [Set the trusted proxy hops](/self-hosting/reverse-proxy#set-the-trusted-proxy-hops).
+
+### A leftover `REDIS_URL`
+
+Quackback no longer uses Redis or Dragonfly. A `REDIS_URL` from an older install is ignored and safe to delete, along with the Redis or Dragonfly service.
 
 ## Integration Issues
 
@@ -345,7 +376,7 @@ On a `web`-role replica, `checks.workers` in the readiness response always reads
 
 **Symptoms**: `docker compose up -d` starts the datastores but Quackback itself never runs.
 
-**Solution**: Use the production compose file. A bare `docker compose up -d` uses the repo's root `docker-compose.yml`, which is **development infrastructure only** (Postgres, Dragonfly, MinIO — no app service). Self-host with:
+**Solution**: Use the production compose file. A bare `docker compose up -d` uses the repo's root `docker-compose.yml`, which is **development infrastructure only** (PostgreSQL, object storage, and a mail catcher, with no app service). Self-host with:
 
 ```bash
 cp .env.prod.example .env   # fill in your values
@@ -357,7 +388,7 @@ docker compose -f docker-compose.prod.yml logs app
 
 **Symptoms**: The container exits immediately with `ERR_INVALID_URL`, often on `DATABASE_URL`.
 
-**Solution**: Remove quotes from your `.env`. Docker's `--env-file` does **not** strip quotes or inline `# comments` — it reads everything after `=` literally, so `DATABASE_URL="postgresql://..."` is passed with the quotes attached. Use plain `KEY=value`.
+**Solution**: Remove quotes from your `.env`. Docker's `--env-file` does **not** strip quotes or inline `# comments`. It reads everything after `=` literally, so `DATABASE_URL="postgresql://..."` is passed with the quotes attached. Use plain `KEY=value`.
 
 ### Container keeps restarting
 

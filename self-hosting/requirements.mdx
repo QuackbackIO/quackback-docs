@@ -15,27 +15,33 @@ Hardware, software, and infrastructure requirements for self-hosting Quackback.
 | CPU | 1 core | 2+ cores |
 | RAM | 1 GB | 2+ GB |
 | Storage | 10 GB | 20+ GB |
-| PostgreSQL | 18+ | 18+ |
+| PostgreSQL | 14+ | 17 or 18 |
 
 ## Software Requirements
 
 ### PostgreSQL
 
-**Version**: 18 or higher (required)
+PostgreSQL is the only datastore Quackback needs. It holds your data, the background job queue, caches, rate limits, and realtime events.
 
-**Required Extensions**:
-- `pgvector` - Vector similarity search
-- `pg_cron` - Scheduled jobs (optional)
+| Requirement | Details |
+|-------------|---------|
+| Version | PostgreSQL 14 or newer |
+| `vector` extension | pgvector 0.5.0 or newer (HNSW indexes) |
+| `pg_trgm` extension | Ships with the PostgreSQL contrib package |
+| `TEMPORARY` privilege | The app's database user needs it. PostgreSQL grants it by default. |
+| Connection mode | A direct or session-mode connection. Not a transaction-mode pooler. |
 
+Quackback creates both extensions on startup. If the database user can't create extensions, ask a superuser to run `CREATE EXTENSION IF NOT EXISTS vector;` and `CREATE EXTENSION IF NOT EXISTS pg_trgm;` once.
 
-### Redis or Dragonfly
+<Warning>
+Realtime updates use PostgreSQL `LISTEN`/`NOTIFY`, which doesn't work through a transaction-mode pooler (for example PgBouncer in transaction mode, or a hosted pooler on port 6543). Point `DATABASE_URL` at the database directly or at a session-mode pooler.
+</Warning>
 
-Required for background job processing (BullMQ).
+Before it runs migrations, Quackback checks the server version, both extensions, and the `TEMPORARY` privilege. If anything is missing it stops without changing the database and names what to fix.
 
-| Component | Version |
-|-----------|---------|
-| Redis | 7+ |
-| Dragonfly (alternative) | 1.x+ |
+### Object storage
+
+File uploads need S3-compatible storage: AWS S3, Cloudflare R2, Backblaze B2, a Railway bucket, or the bundled PGSTY Silo (a maintained MinIO fork) in the Docker Compose stack. Without storage, uploads are disabled.
 
 ### Docker (Recommended)
 
@@ -52,7 +58,7 @@ If running without Docker:
 
 | Component | Version |
 |-----------|---------|
-| Bun | 1.3.7+ |
+| Bun | 1.4.0+ |
 
 ## Network Requirements
 
@@ -62,7 +68,7 @@ If running without Docker:
 |------|---------|----------|
 | 3000 | Application (default) | Yes |
 | 5432 | PostgreSQL | Internal only |
-| 6379 | Redis/Dragonfly | Internal only |
+| 9000 | Bundled object storage | Internal only |
 | 443 | HTTPS (via proxy) | Production |
 | 80 | HTTP redirect | Optional |
 
@@ -75,7 +81,7 @@ You need:
 ### Outbound Connections
 
 Quackback needs to reach:
-- Email provider (SMTP or Resend API)
+- Email provider (SMTP, Amazon SES, or Resend)
 - OAuth providers (GitHub, Google, etc.)
 - Integration services (Slack, etc.)
 
@@ -131,7 +137,7 @@ Plan for regular backups to prevent data loss. Point-in-time recovery is recomme
 |---------|-----|
 | EC2 | Application server |
 | RDS | Managed PostgreSQL |
-| ElastiCache | Optional caching |
+| S3 | File uploads |
 | ALB | Load balancing |
 
 Minimum instance: `t3.small`
@@ -192,6 +198,8 @@ Block:
 
 ### Secrets
 
+`SECRET_KEY` is required and must be at least 32 characters. Generate one with `openssl rand -base64 32` and keep it the same across upgrades: it signs sessions and encrypts stored credentials.
+
 <Warning>
 Securely manage all secrets including `SECRET_KEY`, database credentials, OAuth client secrets, and integration tokens. Use environment variables or a secrets management solution.
 </Warning>
@@ -213,7 +221,7 @@ For higher loads, split HTTP serving from background processing across replicas.
 Options:
 - Vertical scaling (bigger instance)
 - Read replicas (for read-heavy loads)
-- Connection pooling (PgBouncer)
+- Connection pooling in session mode (PgBouncer `pool_mode = session`)
 
 ## Set up monitoring
 
