@@ -1,6 +1,6 @@
 # CLAUDE.md
 
-Documentation source for Quackback. Pure MDX content repo — no build tooling. Fetched by `QuackbackIO/website` at build time via GitHub API.
+Documentation source for Quackback. Pure MDX content repo with no build tooling. Fetched by `QuackbackIO/website` at build time via GitHub API.
 
 **Published at**: https://quackback.io/docs
 
@@ -29,7 +29,7 @@ icon: "layout-grid"
 
 ## MDX Components
 
-`<Tip>`, `<Note>`, `<Warning>`, `<Info>` — place at point of decision, not page end. API docs use multi-language code blocks (curl > JS > Python).
+`<Tip>`, `<Note>`, `<Warning>`, `<Info>`: place at point of decision, not page end. API docs use multi-language code blocks (curl > JS > Python).
 
 ## Writing Style
 

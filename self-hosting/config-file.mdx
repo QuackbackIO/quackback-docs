@@ -17,13 +17,13 @@ The config file is entirely optional. Without it, every setting stays editable i
 Quackback watches `/etc/quackback/config.yaml`. When the file is present:
 
 - Every value it declares is **reconciled** into the workspace settings.
-- Those fields become **read-only in the dashboard** — the UI shows them with a "Managed" badge and rejects writes.
+- Those fields become **read-only in the dashboard**. The UI shows them with a "Managed" badge and rejects writes.
 - Any field the file *doesn't* declare stays freely editable.
 
 Edit the file and Quackback re-reconciles automatically. Remove a field and that setting becomes editable again.
 
 <Warning>
-Secrets are never read from this file. OAuth client secrets and the SSO client secret stay encrypted in the database — set them through the dashboard.
+Secrets are never read from this file. OAuth client secrets and the SSO client secret stay encrypted in the database. Set them through the dashboard.
 </Warning>
 
 ## File format
@@ -62,7 +62,7 @@ spec:
       customCss: false
 ```
 
-`apiVersion`, `kind`, and `spec` are required. Everything inside `spec` is optional — declare only what you want to manage.
+`apiVersion`, `kind`, and `spec` are required. Everything inside `spec` is optional. Declare only what you want to manage.
 
 ## Schema reference
 
@@ -96,7 +96,7 @@ spec:
 | `ssoOidc.autoCreateUsers` | boolean | Just-in-time provisioning on first SSO sign-in. Defaults to `true`. |
 
 <Note>
-Per-domain **Require SSO** enforcement isn't declared in the file — manage it on the [SSO page](/auth/sso#require-sso-for-a-domain).
+Per-domain **Require SSO** enforcement isn't declared in the file. Manage it on the [SSO page](/auth/sso#require-sso-for-a-domain).
 </Note>
 
 ### `spec.features`
@@ -105,7 +105,7 @@ A map of feature-flag names to booleans. Each key locks one flag while leaving t
 
 ### `spec.tierLimits`
 
-Numeric limits — `null` means unlimited. Partial objects are allowed; the file only needs the limits it wants to lock.
+Numeric limits. `null` means unlimited. Partial objects are allowed; the file only needs the limits it wants to lock.
 
 | Field | Type |
 |-------|------|
@@ -129,6 +129,6 @@ For a manual install, place the file at `/etc/quackback/config.yaml` and make su
 
 ## Next steps
 
-- [Deploy with Docker](/self-hosting/docker) — Docker Compose setup
-- [Environment variables](/reference/environment-variables) — runtime configuration
-- [Set up single sign-on](/auth/sso) — the SSO connection this file can manage
+- [Deploy with Docker](/self-hosting/docker): Docker Compose setup
+- [Environment variables](/reference/environment-variables): runtime configuration
+- [Set up single sign-on](/auth/sso): the SSO connection this file can manage

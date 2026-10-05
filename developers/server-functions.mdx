@@ -93,7 +93,7 @@ const getBoardSchema = z.object({
 
 // Schema with validation rules. Note: board access (the per-action
 // View/Vote/Comment/Submit tier matrix) is set separately via
-// `updateBoardAccessFn` after creation — see
+// `updateBoardAccessFn` after creation; see
 // apps/web/src/lib/server/functions/boards.ts.
 const createBoardSchema = z.object({
   name: z

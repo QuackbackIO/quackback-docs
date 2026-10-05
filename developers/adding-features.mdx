@@ -121,12 +121,10 @@ export const ID_PREFIXES = {
 
 After modifying schema files:
 
-```bash
-# Generate migration from schema changes
-bun run db:generate
+Write the SQL migration by hand in `packages/db/drizzle/` and add its entry to `drizzle/meta/_journal.json` (see [Write a Migration](/developers/database#write-a-migration)). Don't run `db:generate`. Then:
 
-# Review the generated SQL in packages/db/drizzle/
-# Then apply it
+```bash
+bun run db:check-drift   # the SQL and the TypeScript schema must agree
 bun run db:migrate
 ```
 
@@ -853,8 +851,10 @@ export const bookmarksRelations = relations(bookmarks, ({ one }) => ({
 export * from './bookmarks'
 ```
 
+Write `packages/db/drizzle/<next number>_bookmarks.sql` with the `CREATE TABLE` statement and add its journal entry, then:
+
 ```bash
-bun run db:generate
+bun run db:check-drift
 bun run db:migrate
 ```
 
@@ -1152,7 +1152,7 @@ When adding a feature to Quackback:
 1. **Plan**: Identify which layers need changes
 2. **Schema**: Add tables in `packages/db/src/schema/`
 3. **TypeID**: Add prefix in `packages/ids/src/prefixes.ts`
-4. **Migrate**: Run `bun run db:generate && bun run db:migrate`
+4. **Migrate**: Write the SQL migration by hand, then run `bun run db:check-drift && bun run db:migrate`
 5. **Service**: Add business logic in `apps/web/src/lib/server/domains/\{feature\}/`
 6. **Server Functions**: Add API in `apps/web/src/lib/server/functions/`
 7. **Hooks**: Add React hooks in `apps/web/src/lib/client/hooks/`

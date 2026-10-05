@@ -87,8 +87,8 @@ cd apps/web && bun run typecheck
 When modifying the schema:
 
 1. Edit files in `packages/db/src/schema/`
-2. Generate migration: `bun run db:generate`
-3. Test migration: `bun run db:migrate`
+2. Write the SQL migration by hand in `packages/db/drizzle/` and add its journal entry (never run `db:generate`)
+3. Check and apply: `bun run db:check-drift`, then `bun run db:migrate`
 4. Verify with Drizzle Studio: `bun run db:studio`
 
 ## Testing

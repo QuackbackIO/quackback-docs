@@ -153,7 +153,7 @@ bun run dev              # Start dev server
 bun run build            # Production build
 
 # Database
-bun run db:generate      # Generate migration from schema changes
+bun run db:check-drift   # Check SQL migrations match the TypeScript schema
 bun run db:migrate       # Run pending migrations
 bun run db:studio        # Open Drizzle Studio (DB GUI)
 bun run db:seed          # Seed demo data
