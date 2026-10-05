@@ -12,9 +12,9 @@ Push feedback into your Jira workflow. Automatically create Jira issues when fee
 
 The Jira integration enables:
 
-- **Create issues from feedback posts** -- automatically create a Jira issue with a configurable project and issue type when new feedback is submitted
-- **Link posts to issues** -- link feedback posts to Jira issues for traceability
-- **Status sync** -- map Jira workflow statuses to feedback post statuses and keep them in sync via inbound webhooks
+- **Create issues from feedback posts**: automatically create a Jira issue with a configurable project and issue type when new feedback is submitted
+- **Link posts to issues**: link feedback posts to Jira issues for traceability
+- **Status sync**: map Jira workflow statuses to feedback post statuses and keep them in sync via inbound webhooks
 
 ## Prerequisites
 
@@ -47,16 +47,16 @@ The Jira integration enables:
 
 The app requests these OAuth scopes: `read:jira-work`, `write:jira-work`, `offline_access`.
 
-- `read:jira-work` -- read projects, issues, and workflow states
-- `write:jira-work` -- create and update issues
-- `offline_access` -- refresh the access token when it expires
+- `read:jira-work`: read projects, issues, and workflow states
+- `write:jira-work`: create and update issues
+- `offline_access`: refresh the access token when it expires
 
 ### 4. Select a Project
 
 Back in Quackback:
 
 1. Choose the Jira project where issues should be created
-2. Select the issue type (e.g., Task, Story, Bug) -- the list is fetched from the selected project
+2. Select the issue type (e.g., Task, Story, Bug): the list is fetched from the selected project
 
 ### 5. Configure Status Mappings
 
@@ -64,7 +64,7 @@ Map Jira workflow states to Quackback statuses:
 
 1. Go to the Jira integration settings
 2. Configure status mappings between Jira states and Quackback statuses
-3. Mappings are configurable per workspace -- map each Jira state name to the corresponding Quackback status, or set it to ignore
+3. Mappings are configurable per workspace: map each Jira state name to the corresponding Quackback status, or set it to ignore
 
 Status sync works via Jira webhooks. When a linked Jira issue changes workflow state, the corresponding Quackback post status updates automatically.
 
@@ -156,17 +156,17 @@ Disconnecting removes the registered webhook. Jira does not support server-side 
 
 ### Issues Not Being Created
 
-1. **Check integration status** -- look for errors in settings
-2. **Verify project selection** -- ensure a Jira project is selected
-3. **Check issue type** -- confirm a valid issue type is configured
-4. **Check event mappings** -- confirm `post.created` is mapped
-5. **Admin permissions** -- the connected Jira account must have permission to create issues in the selected project
+1. **Check integration status**: look for errors in settings
+2. **Verify project selection**: ensure a Jira project is selected
+3. **Check issue type**: confirm a valid issue type is configured
+4. **Check event mappings**: confirm `post.created` is mapped
+5. **Admin permissions**: the connected Jira account must have permission to create issues in the selected project
 
 ### Status Sync Not Working
 
-1. **Check status mappings** -- ensure Jira workflow states are mapped to Quackback statuses
-2. **Verify webhook** -- the Jira webhook may need to be re-registered (webhooks expire after 30 days)
-3. **Check permissions** -- the connected account needs access to the project's issues
+1. **Check status mappings**: ensure Jira workflow states are mapped to Quackback statuses
+2. **Verify webhook**: the Jira webhook may need to be re-registered (webhooks expire after 30 days)
+3. **Check permissions**: the connected account needs access to the project's issues
 
 ### "Authentication Failed" Error
 

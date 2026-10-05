@@ -132,13 +132,13 @@ Each integration has an **On post delete** toggle in its settings page. When ena
 
 ### What happens
 
-- The post is soft-deleted first -- this always succeeds
+- The post is soft-deleted first: this always succeeds
 - Selected linked issues are archived or closed in parallel
-- If an external API call fails, you'll see a warning toast -- the post is still deleted
+- If an external API call fails, you'll see a warning toast: the post is still deleted
 - The link's status is updated to `archived`, `closed`, or `error` in the database
 
 <Note>
-Issue-tracking integrations archive or close linked issues -- they never hard-delete them. You can reopen or unarchive in the external tool if needed.
+Issue-tracking integrations archive or close linked issues: they never hard-delete them. You can reopen or unarchive in the external tool if needed.
 </Note>
 
 ## Best Practices

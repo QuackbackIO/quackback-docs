@@ -26,7 +26,7 @@ Anonymous visitors keep using the widget after `init`. A session mints on their 
 
 ## Identify signed-in users
 
-Call `identify` after login, on page load if the session already exists, and whenever the signed-in user changes. Once per session — not on every navigation.
+Call `identify` after login, on page load if the session already exists, and whenever the signed-in user changes. Once per session, not on every navigation.
 
 1. Get the host signing secret (agent prompt on [Install](/widget/installation), or Reveal / Copy). Any server-only env name works.
 2. Sign a JWT (HS256, ~5 minutes) with `sub` and `email`
@@ -59,7 +59,7 @@ Reserved JWT fields are not stored as attributes: `sub`, `id`, `email`, `name`, 
 Team and admin accounts cannot be identified through the widget. A token whose `sub` or `email` matches a staff user returns `IDENTITY_NOT_ALLOWED`.
 </Note>
 
-Identify signs the visitor in as a **customer in the widget** only. That sign-in never unlocks the admin dashboard — even if you later invite the same person to your team. See [Session types](/auth/overview#session-types).
+Identify signs the visitor in as a **customer in the widget** only. That sign-in never unlocks the admin dashboard, even if you later invite the same person to your team. See [Session types](/auth/overview#session-types).
 
 ---
 
@@ -271,7 +271,7 @@ Configure attributes in **Admin → Settings → People → Attributes** first. 
 
 ## Sign portal users in from the widget
 
-If you run a private portal, a verified widget visitor can open the portal already signed in — no password, no second sign-up.
+If you run a private portal, a verified widget visitor can open the portal already signed in, with no password, no second sign-up.
 
 1. Identify widget users with `ssoToken` (this page)
 2. Turn on **Widget sign-in** under **Admin → Settings → Security → Authentication → Portal access**

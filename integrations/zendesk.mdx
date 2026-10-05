@@ -6,17 +6,17 @@ icon: "zendesk"
 
 # Zendesk
 
-Connect support data to product decisions. The Zendesk integration lets your support agents capture feedback directly from tickets and enriches feedback posts with customer context -- so you can see who is asking for what and why.
+Connect support data to product decisions. The Zendesk integration lets your support agents capture feedback directly from tickets and enriches feedback posts with customer context: so you can see who is asking for what and why.
 
 ## Overview
 
 The Zendesk integration provides:
 
-- **Capture feedback** -- turn Zendesk tickets into feedback posts directly from the agent interface using the sidebar app
-- **Link tickets to posts** -- connect Zendesk tickets to existing feedback posts so you can track how many support conversations relate to a feature request
-- **AI suggestions** -- automatically surface relevant existing posts based on the ticket subject
-- **Customer context** -- enrich feedback with Zendesk user data like organization, tags, and role
-- **Vote on behalf** -- let agents upvote posts on behalf of the ticket requester when creating or linking
+- **Capture feedback**: turn Zendesk tickets into feedback posts directly from the agent interface using the sidebar app
+- **Link tickets to posts**: connect Zendesk tickets to existing feedback posts so you can track how many support conversations relate to a feature request
+- **AI suggestions**: automatically surface relevant existing posts based on the ticket subject
+- **Customer context**: enrich feedback with Zendesk user data like organization, tags, and role
+- **Vote on behalf**: let agents upvote posts on behalf of the ticket requester when creating or linking
 
 <Note>
 Zendesk is an enrichment integration. It pulls user and organization data into Quackback and provides a sidebar app for agents to capture feedback. It does not create tickets or send notifications to Zendesk.
@@ -91,7 +91,7 @@ The sidebar app lets your Zendesk agents search, link, and create feedback posts
 
 1. Go to **Admin → Settings → Developers** in Quackback
 2. Create a new API key
-3. Copy the key immediately -- it starts with `qb_` and is only shown once
+3. Copy the key immediately: it starts with `qb_` and is only shown once
 
 <Warning>
 Store this API key securely. It grants access to create and manage feedback posts in your workspace. If compromised, revoke it and create a new one.
@@ -107,8 +107,8 @@ Download the Quackback Zendesk app package from your Quackback instance. The app
 2. Click **Upload private app**
 3. Upload the Quackback app package
 4. Configure the app settings:
-   - **Quackback URL** -- your Quackback instance URL (e.g., `https://feedback.yourcompany.com`)
-   - **API Key** -- the API key you generated in step 1 (starts with `qb_`)
+   - **Quackback URL**: your Quackback instance URL (e.g., `https://feedback.yourcompany.com`)
+   - **API Key**: the API key you generated in step 1 (starts with `qb_`)
 5. Click **Install**
 
 #### 4. Enable the App
@@ -141,22 +141,22 @@ Agents can create a new feedback post directly from the sidebar:
 2. Select a **board** from the dropdown (lists all public boards)
 3. Enter a **title** (required, max 200 characters)
 4. Add an optional **description** (max 10,000 characters)
-5. **Link to ticket** -- checked by default, links the new post to the current Zendesk ticket
-6. **Vote on behalf of requester** -- checked by default, casts an upvote attributed to the ticket requester's email
+5. **Link to ticket**: checked by default, links the new post to the current Zendesk ticket
+6. **Vote on behalf of requester**: checked by default, casts an upvote attributed to the ticket requester's email
 
 <Tip>
-The "vote on behalf" feature is powerful for tracking demand. When multiple agents create or link posts for different tickets, you can see exactly how many customers requested a feature -- not just how many tickets mentioned it.
+The "vote on behalf" feature is powerful for tracking demand. When multiple agents create or link posts for different tickets, you can see exactly how many customers requested a feature: not just how many tickets mentioned it.
 </Tip>
 
 ### Customer Context
 
 When you view a feedback post in Quackback, the integration can look up the author's email in Zendesk and display:
 
-- **Name** -- the user's full name
-- **Email** -- the user's email address
-- **Role** -- the user's Zendesk role (end-user, agent, admin)
-- **Organization** -- the associated organization name and ID
-- **Tags** -- all tags applied to the user in Zendesk
+- **Name**: the user's full name
+- **Email**: the user's email address
+- **Role**: the user's Zendesk role (end-user, agent, admin)
+- **Organization**: the associated organization name and ID
+- **Tags**: all tags applied to the user in Zendesk
 
 <Tip>
 Tags in Zendesk are often used to segment customers by plan, region, or priority level. This data appears alongside feedback posts to help you prioritize by customer segment.
@@ -212,27 +212,27 @@ Disconnecting revokes the OAuth token with Zendesk and removes the stored creden
 
 ### Sidebar App Not Loading
 
-1. **Check the Quackback URL** -- verify the URL in the Zendesk app settings matches your Quackback instance (no trailing slash)
-2. **Check the API key** -- ensure the API key starts with `qb_` and has not been revoked
-3. **Check browser console** -- look for CORS or network errors in the browser developer tools
-4. **Verify the app is installed** -- confirm the Quackback app appears in Zendesk Admin Center
+1. **Check the Quackback URL**: verify the URL in the Zendesk app settings matches your Quackback instance (no trailing slash)
+2. **Check the API key**: ensure the API key starts with `qb_` and has not been revoked
+3. **Check browser console**: look for CORS or network errors in the browser developer tools
+4. **Verify the app is installed**: confirm the Quackback app appears in Zendesk Admin Center
 
 ### No Suggestions Showing
 
-1. **Check the ticket subject** -- suggestions are based on the ticket subject line. Very short or generic subjects may not produce matches
-2. **Verify posts exist** -- the workspace needs existing feedback posts for suggestions to work
-3. **Check the API key permissions** -- the API key must belong to an admin account
+1. **Check the ticket subject**: suggestions are based on the ticket subject line. Very short or generic subjects may not produce matches
+2. **Verify posts exist**: the workspace needs existing feedback posts for suggestions to work
+3. **Check the API key permissions**: the API key must belong to an admin account
 
 ### User Not Found
 
-1. **Check the email** -- the lookup matches by searching for the email address
-2. **Verify the user exists** -- confirm the user is in your Zendesk instance
-3. **Check permissions** -- the connected Zendesk account must have access to search users
+1. **Check the email**: the lookup matches by searching for the email address
+2. **Verify the user exists**: confirm the user is in your Zendesk instance
+3. **Check permissions**: the connected Zendesk account must have access to search users
 
 ### Organization Data Missing
 
-1. **Check user association** -- the user must be associated with an organization in Zendesk
-2. **Verify organization exists** -- confirm the organization has not been deleted
+1. **Check user association**: the user must be associated with an organization in Zendesk
+2. **Verify organization exists**: confirm the organization has not been deleted
 
 ### "Subdomain Not Configured" Error
 
@@ -257,6 +257,6 @@ This means the Zendesk app settings are missing the Quackback URL:
 
 ## Next Steps
 
-- [HubSpot](/integrations/hubspot) -- Enrich feedback with HubSpot contact and deal data
-- [Intercom](/integrations/intercom) -- Enrich feedback with Intercom contact data
-- [Integrations Overview](/integrations/overview) -- All integrations
+- [HubSpot](/integrations/hubspot): Enrich feedback with HubSpot contact and deal data
+- [Intercom](/integrations/intercom): Enrich feedback with Intercom contact data
+- [Integrations Overview](/integrations/overview): All integrations

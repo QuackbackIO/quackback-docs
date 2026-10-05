@@ -42,7 +42,7 @@ For team members the toggle only controls whether magic link appears on the sign
 
 Magic link needs a way to send email. Without one, the link is logged to the server console (useful in development only).
 
-Configure SMTP or Resend with the `EMAIL_*` environment variables — see [Email delivery](/integrations/email) for provider setup.
+Configure one email provider (SMTP, Amazon SES, or Resend) with the `EMAIL_*` environment variables. See [Email delivery](/integrations/email) for provider setup.
 
 <Warning>
 Don't require SSO enforcement or rely on magic link in production until email delivery is working. If links can't be sent, affected users can't sign in.
@@ -54,6 +54,6 @@ Magic-link requests are rate-limited per IP and email address, and Quackback ema
 
 ## Next steps
 
-- [OAuth providers](/auth/oauth) — social login with GitHub, Google, and more
-- [Set up custom OIDC](/auth/sso) — enterprise single sign-on
-- [Authentication overview](/auth/overview) — all sign-in options
+- [OAuth providers](/auth/oauth): social login with GitHub, Google, and more
+- [Set up custom OIDC](/auth/sso): enterprise single sign-on
+- [Authentication overview](/auth/overview): all sign-in options

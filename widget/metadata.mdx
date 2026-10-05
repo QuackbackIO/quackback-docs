@@ -26,7 +26,7 @@ Metadata is **merged** on each call. You can update individual keys without clea
 // Initial metadata
 Quackback("metadata", { page: "/dashboard", plan: "pro" });
 
-// User navigates — only page changes
+// User navigates: only page changes
 Quackback("metadata", { page: "/settings" });
 // Result: { page: "/settings", plan: "pro" }
 ```

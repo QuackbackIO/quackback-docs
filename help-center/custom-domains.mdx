@@ -19,7 +19,7 @@ On [Quackback Cloud](/cloud), custom domains start at Pro.
 3. Enter your domain (e.g., `help.yourcompany.com`)
 4. Click **Save**
 
-Once saved, the system generates a CNAME target — a value like `cname.quackback.app`. Copy it. You'll need it in the next step.
+Once saved, the system generates a CNAME target, a value like `cname.quackback.app`. Copy it. You'll need it in the next step.
 
 ## Set up DNS
 
@@ -34,9 +34,9 @@ Add a CNAME record at your DNS provider pointing your domain to the target the s
 
 **Common providers:**
 
-- **Cloudflare** — DNS > Add record. Set the proxy status to **DNS only** (grey cloud), not Proxied.
-- **Route 53** — Hosted zones > your domain > Create record. Choose CNAME, paste the target.
-- **Namecheap** — Advanced DNS > Add new record. Type: CNAME Record, Host: `help`, Value: the target.
+- **Cloudflare**: DNS > Add record. Set the proxy status to **DNS only** (grey cloud), not Proxied.
+- **Route 53**: Hosted zones > your domain > Create record. Choose CNAME, paste the target.
+- **Namecheap**: Advanced DNS > Add new record. Type: CNAME Record, Host: `help`, Value: the target.
 
 <Tip>
 Cloudflare users: keep the record in DNS-only mode. Proxied mode can interfere with SSL certificate provisioning.
@@ -50,7 +50,7 @@ The system checks your CNAME automatically after you save. The status appears in
 
 | Status | Meaning |
 |--------|---------|
-| **Pending** | Verification in progress — check back in a few minutes |
+| **Pending** | Verification in progress; check back in a few minutes |
 | **Verified** | Your custom domain is live |
 | **Failed** | CNAME not found or pointing to the wrong target |
 
@@ -58,9 +58,9 @@ Once verified, your help center serves from the custom domain immediately. The d
 
 ## Troubleshoot DNS issues
 
-**CNAME not resolving** — Double-check the target value for typos. Copy it fresh from the admin settings if in doubt.
+**CNAME not resolving**: Double-check the target value for typos. Copy it fresh from the admin settings if in doubt.
 
-**Still failing after 10 minutes** — Verify with `nslookup`:
+**Still failing after 10 minutes**: Verify with `nslookup`:
 
 ```bash
 nslookup help.yourcompany.com
@@ -68,7 +68,7 @@ nslookup help.yourcompany.com
 
 The response should show your CNAME target in the answer. If it shows something else, your DNS record isn't set correctly.
 
-**Need to switch domains** — You can update the custom domain field at any time. The old domain stops working immediately when you save the new one.
+**Need to switch domains**: You can update the custom domain field at any time. The old domain stops working immediately when you save the new one.
 
 <Note>
 SSL certificates are provisioned automatically once verification succeeds. There's nothing extra to configure.
@@ -76,4 +76,4 @@ SSL certificates are provisioned automatically once verification succeeds. There
 
 ## Next steps
 
-- [Search and discovery](/help-center/search) — How your help center finds and ranks articles
+- [Search and discovery](/help-center/search): How your help center finds and ranks articles

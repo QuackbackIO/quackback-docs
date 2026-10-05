@@ -6,7 +6,7 @@ icon: "device-phone-mobile"
 
 # Embed the widget in mobile apps
 
-Collect feedback directly inside your native iOS and Android apps. The mobile SDKs wrap the web widget in a native WebView with a floating launcher button, user identification, and event callbacks — the same experience as the web widget, optimized for mobile.
+Collect feedback directly inside your native iOS and Android apps. The mobile SDKs wrap the web widget in a native WebView with a floating launcher button, user identification, and event callbacks: the same experience as the web widget, optimized for mobile.
 
 ## iOS
 
@@ -43,7 +43,7 @@ import Quackback
 Quackback.configure(QuackbackConfig(
     appId: "your-app-id",
     baseURL: URL(string: "https://feedback.yourapp.com")!,
-    locale: "fr"  // optional — omit to auto-detect
+    locale: "fr"  // optional; omit to auto-detect
 ))
 
 // 2. Identify the current user
@@ -99,10 +99,10 @@ Quackback.off(token)
 
 | Event | Payload keys | Description |
 |-------|-------------|-------------|
-| `.ready` | — | Widget loaded |
+| `.ready` | - | Widget loaded |
 | `.vote` | `postId`, `direction` | User voted |
 | `.submit` | `postId`, `title` | User submitted feedback |
-| `.close` | — | Panel dismissed |
+| `.close` | - | Panel dismissed |
 
 ### Clean up
 
@@ -147,7 +147,7 @@ class MyApp : Application() {
     }
 }
 
-// After user signs in — omit identify for anonymous visitors
+// After user signs in; omit identify for anonymous visitors
 Quackback.identify(ssoToken = fetchedSsoToken)
 
 // If you already know the user at app startup, bundle identity into configure:
